@@ -1,0 +1,118 @@
+﻿@model IEnumerable<MMS.Models.CausaPQRS>
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Cause PQRS";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            $("#selectBuscarTipoPQRS").select2({
+                placeholder: "Search @Html.DisplayNameFor(model => model.TipoPQRS)",
+                allowClear: true,
+                theme: "bootstrap"
+            })
+
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "Id" },
+                    { data: "TipoPQRS" },
+                    { data: "Nombre" },
+                    {
+                        data: "Id",
+                        render: function (value) {
+                            return (
+                                `<a href='/@controllerName/Details/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>` +
+                                `<a href='/@controllerName/Edit/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>` +
+                                `<a href='/@controllerName/Delete/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Delete"]' data-toggle="tooltip" data-placement="top" title="Delete"><i class='material-icons'>delete</i></a>`
+                            );
+                        }
+                    }
+                ], {
+                    mainFilter: true,
+                    filterControls: ["selectBuscarTipoPQRS"],
+                    fnServerParams: function () {
+                        return [
+                            { name: "_tipopqrs", value: $('#selectBuscarTipoPQRS').val() },
+                        ];
+                    },
+                    fnSetFilterControls: function (values) {
+
+                    }
+                });
+
+        });
+    </script>
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Create" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Create"]" onclick="redirtWithReturnSearch(this, event);">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Id)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.TipoPQRS)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Nombre)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th></th>
+                            <th>
+                                <select id="selectBuscarTipoPQRS" class="ms full-width" style="width:100% !important;">
+                                    <option value=""></option>
+                                    <option value="1">Return</option>
+                                    <option value="2">Guarantee</option>
+                                    <option value="3">New</option>
+                                </select>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

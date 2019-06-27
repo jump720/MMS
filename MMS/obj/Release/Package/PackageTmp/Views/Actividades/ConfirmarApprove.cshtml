@@ -1,0 +1,123 @@
+﻿@model MMS.Models.ActividadAutorizacion
+
+@{
+    ViewBag.Title = "Confirmar Atorización";
+    Layout = null;
+}
+
+<script type="text/javascript">
+
+    $("#formActividadAutorizacion").submit(function (event) {
+        
+        $('#Autorizar').attr("disabled", true);
+        //return false;
+        var textVal = document.getElementById('ActividadAutorizacionMotivo').value;
+        var textVal2 = document.getElementById('TipoAutorizacion').value;
+       
+        if (textVal == "" && textVal2 == "Rechazado") {
+
+            //document.getElementById('ActividadAutorizacionMotivo').className = "invalid";
+            //document.getElementById('Validation').innerHTML = "";
+            //var text = document.createTextNode("Debes escribir algún motivo.");
+            msgError("Debes escribir algún motivo.");
+           // document.getElementById('Validation').appendChild(text);
+            return false;
+        } else {
+            $('#Rechazar').attr("disabled", true);
+            return true;
+        }
+
+    });
+</script>
+
+@using (Html.BeginForm("Approve", "Actividades", FormMethod.Post, new { id = "formActividadAutorizacion" }))
+{
+    @Html.AntiForgeryToken()
+
+    string tipoAutorizacion = ViewBag.TipoAutorizacion.ToString();
+    string estadoAutorizacion = "";
+    if (ViewBag.TipoAutorizacion == MMS.Models.EstadoAutorizaActividad.Autorizado)
+    {
+        estadoAutorizacion = "Autorizar";
+    }
+    else
+    {
+        estadoAutorizacion = "Rechazar";
+    }
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Panel de aprobación (@estadoAutorizacion)</h4>
+    </div>
+    if (ViewBag.Error == "La actividad ha sido rechazada por otro usuario.")
+    {
+        <div class="modal-body">
+            <h5>@ViewBag.Error</h5>
+        </div>
+        <hr class="m-b-0 m-t--10" />
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancelar</button>
+        </div>
+    }
+    else
+    {
+
+        <div class="modal-body">
+            <div class="row clearfix">
+                <div class="col-12">
+
+
+                    <p>
+                        ¿Estás seguro que quieres <strong><u>@estadoAutorizacion</u></strong> la Actividad <strong><u>@Html.DisplayFor(model => model.Actividad.ActividadTitulo)</u></strong>
+                        del usuario <strong><u>@ViewBag.UsuarioElabora</u></strong>?
+                    </p>
+
+                    <span id="Validation" class="red-text text-darken-2">@ViewBag.Error</span>
+                    @Html.ValidationSummary(true, "", new { @class = "red-text text-accent-4" })
+
+                    @Html.HiddenFor(model => model.ActividadId)
+                    @Html.Hidden("TipoAutorizacion", tipoAutorizacion)
+                    @if (ViewBag.TipoAutorizacion == MMS.Models.EstadoAutorizaActividad.Rechazado)
+                    {
+                        <div class="row">
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ActividadAutorizacionMotivo, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.LabelFor(model => model.ActividadAutorizacionMotivo, htmlAttributes: new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.ActividadAutorizacionMotivo, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ActividadAutorizacionMotivo, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.Label("ActividadAutorizacionMotivo", "Motivo Aprobación", new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.ActividadAutorizacionMotivo, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <hr class="m-b-0 m-t--10" />
+        <div class="modal-footer">
+            <button type="submit" id="@estadoAutorizacion" class="btn btn-primary waves-effect">Aceptar</button>
+            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancelar</button>
+        </div>
+
+    }
+
+
+
+}

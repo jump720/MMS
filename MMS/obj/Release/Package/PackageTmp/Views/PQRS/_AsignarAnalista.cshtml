@@ -1,0 +1,115 @@
+﻿@model MMS.Models.AsignarAnalistaViewModel
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jsSelect2")
+<script src="~/Scripts/WCSS/AsignarAnalista.js"></script>
+
+<script type="text/javascript">
+    $.MMS.AsignarAnalista.init = function () {
+
+
+        var templateUsuario = function (data) {
+            return '<div class="select2-result-repository clearfix" style="width: 50%">' +
+                `<div><b>${data.UsuarioId} - ${data.UsuarioNombre}</b></div>` +
+                '</div>';
+        };
+
+        var select2UsuarioOptions = {
+            placeholder: "Search Analyst",
+            theme: "bootstrap",
+            ajax: {
+                type: "GET",
+                url: function (params) {
+                    return "/api/Usuarios/BuscarAnalista?q=" + encodeURIComponent(params.term)
+                },
+                delay: 300,
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.UsuarioNombre,
+                                id: item.UsuarioId,
+                                data: item
+                            }
+                        }),
+                        pagination: { more: (params.page * 30) < data.total_count }
+                    };
+                }
+            },
+            minimumInputLength: 1,
+            templateResult: function (repo) {
+                if (repo.loading)
+                    return repo.text;
+
+                return templateUsuario(repo.data);
+            },
+            templateSelection: function (repo) {
+                if (!repo.id)
+                    return repo.text;
+
+                return templateUsuario(repo.data);
+            },
+            escapeMarkup: function (m) { return m; }
+        };
+        $("#AnalistaId").select2(select2UsuarioOptions);
+
+        $.MMS.AsignarAnalista("edit");
+    };
+</script>
+
+@using (Html.BeginForm("AsignarAnalista", "api/" + controllerName, FormMethod.Post, new { id = "formAsignar" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Assign analyst @Model.TipoPQRS.ToString(): <em>@Model.Asunto</em></h4>
+    </div>
+
+    <div class="modal-body">
+        <div class="row clearfix">
+            @Html.HiddenFor(model => model.TipoPQRS)
+            @Html.HiddenFor(model => model.Asunto)
+            @Html.HiddenFor(model => model.DataId)
+            @*@Html.HiddenFor(model => model.RecordId)
+            @Html.HiddenFor(model => model.RecordOrder)*@
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @*@Html.EditorFor(model => model.AnalistaId, new { htmlAttributes = new { @class = "form-control" } })*@
+
+                        @Html.LabelFor(model => model.AnalistaId, htmlAttributes: new { @class = "form-label" })
+                        <select id="AnalistaId" name="AnalistaId" class="ms full-width" style="width: 100%"></select>
+                    </div>
+                    @Html.ValidationMessageFor(model => model.AnalistaId, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(model => model.Comment, new { @class = "form-control", @rows = "4" } )
+                        @Html.LabelFor(model => model.Comment, htmlAttributes: new { @class = "form-label" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.Comment, "", new { @class = "" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="m-b-0 m-t--10" />
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+}
+
+

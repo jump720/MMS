@@ -1,0 +1,134 @@
+﻿@model MMS.Models.FlujoPQRSViewModel
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Flow";
+    ViewBag.Subtitle = "View";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+
+
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsVue")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="~/Scripts/WCSS/FlujosPQRS.js"></script>
+
+
+    @*<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.16/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.4.2/Sortable.min.js"></script>
+    <script src="https://npmcdn.com/vue-sortable@latest"></script>*@
+
+    <script type="text/javascript">
+        $(function () {
+
+
+            var steps = [
+                @foreach (var f in Model.Flujo.Where(f => f.Id != 1 && f.Id != 2 && f.Id != 3))
+
+
+                {<text>
+                       {
+                           MotivoPQRSId: @f.MotivoPQRSId,
+                           Id: @f.Id,
+                           Order: @f.Order,
+                           Nombre: @Html.Raw(Json.Encode(f.Nombre)),
+                           TipoPaso: `@f.TipoPaso`,
+                       },
+
+                   </text>
+
+
+                }
+            ];
+
+
+
+            $.MMS.FlujosPQRS("details",@Model.Flujo.FirstOrDefault().MotivoPQRSId, steps);
+
+        });
+    </script>
+}
+
+<div class="row clearfix">
+    <div class="col-md-12">
+        <div class="card" id="cardForm">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title Motivo: @Model.Flujo.FirstOrDefault().MotivoPQRS.Nombre<small>@ViewBag.Subtitle</small>
+                </h2>
+
+            </div>
+            <div class="body">
+
+                <div class="row clearfix" id="steps">
+                    <ul class="list-group">
+                        @foreach (var s in Model.Flujo.Where(f => f.Id == 1 || f.Id == 2))
+                        {
+                            <li class="list-group-item disabled">
+                                <p> <b>Nombre etapa: </b><small>@s.Nombre  </small></p>
+                                <p> <b>Tipo: </b><small>@s.TipoPaso </small></p>
+                            </li>
+                        }
+                    </ul>
+                    <template v-if="list.length == 0">
+                        <ul class="list-group">
+
+                            <li class="list-group-item disabled">
+                                No Steps
+                            </li>
+
+                        </ul>
+                    </template>
+                    <template v-else>
+
+                        <div class="list-group" >
+                            <button type="button" class="list-group-item disabled" v-for="item in list">
+                                <div class="col-md-10" style="margin-bottom: 0px !important; ">
+                                    <p style="margin-bottom: 0px !important;"> <b>Nombre etapa: </b><small>{{ item.Nombre }} </small></p>
+                                    <p style="margin-bottom: 0px !important;"> <b>Tipo: </b><small>{{ item.TipoPaso }} </small></p>
+                                </div>
+                                <div class="col-md-2" style="margin-bottom: 0px !important;padding-top: 10px !important; ">
+
+                                </div>
+                            </button>
+                        </div>
+                    </template>
+
+                    <ul class="list-group">
+                        @foreach (var s in Model.Flujo.Where(f => f.Id == 3))
+                        {
+                            <li class="list-group-item disabled">
+
+                                <p> <b>Nombre etapa: </b><small>@s.Nombre  </small></p>
+                                <p> <b>Tipo: </b><small>@s.TipoPaso </small></p>
+                            </li>
+                        }
+                    </ul>
+
+
+
+
+
+                </div>
+
+
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @Html.ActionLink("Modify", "Edit", new
+           {
+               id = Model.Flujo.FirstOrDefault().MotivoPQRSId
+           }, new { @class = "btn btn-success waves-effect " + ViewData[$"has_{ViewContext.RouteData.Values["controller"].ToString()}Edit"] })
+                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+        </div>
+    </div>
+</div>

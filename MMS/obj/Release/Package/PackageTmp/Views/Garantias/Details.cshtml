@@ -1,0 +1,490 @@
+﻿
+@model MMS.Models.GarantiaViewModel
+@{
+    ViewBag.Title = "Guarantee";
+    ViewBag.Subtitle = "View";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+    @Styles.Render("~/Content/Dropzone")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/Dropzone")
+
+    @*<script src="http://code.jquery.com/ui/1.11.3/jquery-ui.js" type="text/javascript"></script>
+        <script src="~/Scripts/Validate/jquery.validate.js" type="text/javascript"></script>*@
+
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jsVue")
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    <script src="~/Scripts/WCSS/Garantias.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+
+            var dataItems = [ @foreach (var item in Model.Items)
+            {
+
+                <text>
+                { id: @item.ItemId, text: @Html.Raw(Json.Encode(item.Items.Descripcion)), data: @Html.Raw(Json.Encode(item.Items)) },
+                </text>
+            }
+            ];
+
+
+            var dataMotivo = [ @foreach (var item in Model.Items)
+            {
+
+                <text>
+                { id: @item.MotivoPQRSId, text: @Html.Raw(Json.Encode(item.MotivoPQRS.Nombre)), data: @Html.Raw(Json.Encode(item.MotivoPQRS)) },
+                </text>
+            }
+            ];
+
+
+            var dataCausa= [ @foreach (var m in ViewBag.CausaPQRS)
+            {
+
+                <text>
+                { id: @m.Id, text: @Html.Raw(Json.Encode(m.Nombre)), data: @Html.Raw(Json.Encode(m)) },
+                </text>
+            }
+            ];
+
+            var files = [ @foreach (var file in Model.GarantiaArchivos)
+            {
+
+                <text>
+                { order: @file.Order, FileName: @Html.Raw(Json.Encode(file.FileName)), New: false },
+                </text>
+            }
+            ];
+
+            var items = [
+                 @foreach (var item in Model.Items)
+            {<text>
+                {
+                    Id: @item.Id,
+                    ItemId: @item.ItemId,
+                    ItemDesc: `@item.Items.Codigo -  @Html.Raw(Json.Encode(item.Items.Descripcion))`,
+                    Cantidad: `@item.Cantidad`,
+                    Precio: `@Math.Round(item.Precio,0)`,
+                    NroFactura: `@item.NroFactura`,
+                    NroGuia: `@item.NroGuia`,
+                    MotivoPQRSId: @Html.Raw(Json.Encode(item.MotivoPQRS)),
+                    CausaPQRSId: @((item.CausaPQRS != null) ? Html.Raw(Json.Encode(item.CausaPQRS)) : Html.Raw(Json.Encode(new MMS.Models.CausaPQRS()))) ,
+                    ComentarioAdicional:  @Html.Raw(Json.Encode(item.ComentarioAdicional)),
+                    Estado: `@item.Estado`,
+                    CantidadRecibida: `@item.CantidadRecibida`,
+                    CantidadSubida: `@item.CantidadSubida`,
+                    ComentarioEstadoMercancia:  @Html.Raw(Json.Encode(item.ComentarioEstadoMercancia)),
+                    DocSoporte: `@item.DocSoporte`,
+                    PrecioAsumido: `@Math.Round(item.PrecioAsumido ?? 0, 0)`,
+                    EditButton: `@ViewData[$"has_pqrs_{Html.Raw(Json.Encode(Model.Garantia.Id))}_{Html.Raw(Json.Encode(item.Id))}_{Html.Raw(Json.Encode(item.MotivoPQRSId))}"]`,
+                },
+
+            </text>
+            }
+            ];
+            $.MMS.Garantias("details", items, @Html.Raw(Json.Encode(Model.Garantia)), dataItems,dataMotivo,files,dataCausa);
+
+
+
+        });
+    </script>
+}
+
+
+<div class="row clearfix">
+    <div class="col-md-12">
+        <div class="card" id="cardForm">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title (@Model.Garantia.NroTracking - @Model.Garantia.Estado)<small>@ViewBag.Subtitle</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+                            <i class="material-icons">attach_file</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="javascript:void(0);" onclick="AttachFile()" class="waves-effect waves-block">Attach Files</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                @Html.ValidationSummary(false, "", new { @class = "hide" })
+                @Html.HiddenFor(model => model.Garantia.Id)
+                @Html.HiddenFor(model => model.Garantia.Estado)
+                @Html.HiddenFor(model => model.Garantia.FechaCreacion)
+
+                <div class="row clearfix">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            @Html.DropDownListFor(model => model.Garantia.ClienteId, new SelectList(new List<string>(), "", ""), new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                            @Html.ValidationMessageFor(model => model.Garantia.ClienteId, "", new { @class = "" })
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Garantia.NroTracking, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", } })
+                                @Html.LabelFor(model => model.Garantia.NroTracking, htmlAttributes: new { @class = "form-label active" })
+                                @Html.ValidationMessageFor(model => model.Garantia.NroTracking, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Garantia.FechaCreacion, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", Value = DateTime.Today.ToString("u").Substring(0, 10) } })
+                                @Html.LabelFor(model => model.Garantia.FechaCreacion, htmlAttributes: new { @class = "form-label active" })
+                                @Html.ValidationMessageFor(model => model.Garantia.FechaCreacion, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <input type="text" class="form-control" readonly="readonly" value="@ViewBag.UsuarioNombre" />
+                                <input type="text" class="form-control" readonly="readonly" value="@ViewBag.UsuarioId" name="Garantia.UsuarioIdCreacion" style="display: none;" />
+
+                                @*@Html.EditorFor(model => model.Garantia.UsuarioIdCreacion, new { htmlAttributes = new { @class = "form-control", @Value = ViewBag.UsuarioId, @readonly = "readonly"  } })*@
+                                @Html.LabelFor(model => model.Garantia.UsuarioIdCreacion, htmlAttributes: new { @class = "form-label active" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Garantia.Asunto, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.LabelFor(model => model.Garantia.Asunto, htmlAttributes: new { @class = "form-label" })
+                                @Html.ValidationMessageFor(model => model.Garantia.Asunto, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextAreaFor(model => model.Garantia.Observacion, 4, 0, new { @class = "form-control no-resize", @placeholder = "Comments..." })
+                                @Html.ValidationMessageFor(model => model.Garantia.Observacion, "", new { @class = "" })
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Garantia.Destinatarios, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.LabelFor(model => model.Garantia.Destinatarios, htmlAttributes: new { @class = "form-label" })
+                                @Html.ValidationMessageFor(model => model.Garantia.Destinatarios, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="header">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <a href="javascript:void(0)" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float " id="btnAdd" onclick="ItemsModal('create',null);">
+                                                    <i class="material-icons" style="color:black !important">add</i>
+                                                </a>
+                                            </td>
+                                            <td style="padding-left: 10px">
+                                                <h2>
+                                                    Items <small>List..</small>
+                                                </h2>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="body">
+
+                                    <table class="table table-condensed table-hover table-striped table-va-middle" id="tableItems">
+                                        <thead>
+                                            <tr>
+
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].ItemId)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].Cantidad)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].Precio)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].NroFactura)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].NroGuia)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].MotivoPQRSId)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].CausaPQRSId)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].Estado)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].CantidadRecibida)</th>
+                                                <th>@Html.DisplayNameFor(model => model.Items[0].CantidadSubida)</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template v-if="items.length == 0">
+                                                <tr class="align-center">
+                                                    <td colspan="11"><em>This template has no Items.</em></td>
+                                                </tr>
+                                            </template>
+
+                                            <template v-else>
+                                                <tr v-for="(item, index) in items">
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].Id'" v-bind:value="index" />
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].ItemId'" v-bind:value="item.ItemId" />
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].ComentarioAdicional'" v-bind:value="item.ComentarioAdicional" />
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].ComentarioEstadoMercancia'" v-bind:value="item.ComentarioEstadoMercancia" />
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].PrecioAsumido'" v-bind:value="item.PrecioAsumido" />
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].DocSoporte'" v-bind:value="item.DocSoporte" />
+                                                        {{ item.ItemDesc }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].Cantidad'" v-bind:value="item.Cantidad" />
+                                                        {{ item.Cantidad }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].Precio'" v-bind:value="item.Precio" />
+                                                        {{ item.Precio }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].NroFactura'" v-bind:value="item.NroFactura" />
+                                                        {{ item.NroFactura }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].NroGuia'" v-bind:value="item.NroGuia" />
+                                                        {{ item.NroGuia }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].MotivoPQRSId'" v-bind:value="item.MotivoPQRSId.Id" />
+                                                        {{ item.MotivoPQRSId.Nombre }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].CausaPQRSId'" v-bind:value="item.CausaPQRSId.Id" />
+                                                        {{ item.CausaPQRSId.Nombre }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].Estado'" v-bind:value="item.Estado" />
+
+                                                        <span v-if="item.Estado === 'Approved'">Approved</span>
+                                                        <span v-if="item.Estado === 'Rejected'">Rejected</span>
+                                                        <span v-if="item.Estado === '1'">Approved</span>
+                                                        <span v-if="item.Estado === '2'">Rejected</span>
+                                                        <span v-if="item.Estado === ''">No Status</span>
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].CantidadRecibida'" v-bind:value="item.CantidadRecibida" />
+                                                        {{ item.CantidadRecibida }}
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" v-bind:name="'Items[' + index + '].CantidadSubida'" v-bind:value="item.CantidadSubida" />
+                                                        {{ item.CantidadSubida }}
+                                                    </td>
+                                                    <td>
+                                                        <a v-on:click.prevent="details(index)" class='btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnDetails'><i class='material-icons'>remove_red_eye</i></a>
+                                                        <a v-on:click.prevent="edit(index)" class='bg-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnEdit'><i class='material-icons'>mode_edit</i></a>
+                                                        <a v-on:click.prevent="remove(index)" class='bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnDelete'><i class='material-icons'>delete</i></a>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @if (Model.Garantia.Estado == MMS.Models.EstadoFormatoPQRS.Open || Model.Garantia.Estado == MMS.Models.EstadoFormatoPQRS.In_Process)
+                {
+                    @Html.ActionLink("Modify", "Edit", new { id = Model.Garantia.Id }, new { @class = "btn btn-success waves-effect " + ViewData[$"has_{ViewContext.RouteData.Values["controller"].ToString()}Edit"] })
+                }
+                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+            <div id="frmFiles">
+                <div class="modal fade" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close btn-link " data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="">Attach Files : <small id="tSize">0.00</small> <small> /50 mb</small> </h4>
+                            </div>
+                            <div class="modal-body" data-spy="scroll" data-target="#ListFiles">
+                                <div id="ListFiles">
+                                    <a href="javascript:void(0)" class="btn btn-default waves-effect btnAdd" v-on:click.prevent="addNewFile($event)">Add File</a>
+                                    <div class="row clearfix">
+                                        <template v-if="files.length == 0">
+                                            <div class="col-md-12" style="padding-top: 12px;">
+                                                <em>This template has no Items.</em>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <div class="col-md-12" v-for="(f, idx) in files" style="padding-top: 12px;">
+                                                <div class="col-md-10" v-if="f.New"><input type="file" v-bind:name="'Files[' + idx + ']'" v-on:change.prevent="SizeFile(idx,$event)" /></div>
+                                                <div class="col-md-2" v-if="f.New"><p v-bind:id="'Size' + idx"></p></div>
+                                                <div class="col-md-10" v-if="!f.New"><i class="material-icons">insert_drive_file</i> <a v-bind:href="'../DescargarArchivo?d=' + @Model.Garantia.Id + '&o=' + f.order" target="_blank"> {{f.FileName}} </a></div>
+                                                <div class="col-md-2" v-if="!f.New"><a v-on:click.prevent="remove(idx)" class='bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnDelete'><i class='material-icons'>delete</i></a></div>
+
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <hr class="m-b-0 m-t--10" />
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="frmItems">
+                <div class="modal fade" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="_titlemodal">Modify Item : </h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row clearfix">
+                                    <div class="col-md-12">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <select id="_selectItemId" class="ms full-width" style="width: 100%" required></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_Cantidad" class="form-control" type="number" required />
+                                                <label for="_Cantidad" class="form-label">@Html.DisplayNameFor(model => model.Items[0].Cantidad)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_Precio" class="form-control text-right" type="text" />
+                                                <label for="_Precio" class="form-label">@Html.DisplayNameFor(model => model.Items[0].Precio)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_NroFactura" class="form-control" type="text" maxlength="50" />
+                                                <label for="_NroFactura" class="form-label">@Html.DisplayNameFor(model => model.Items[0].NroFactura)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_NroGuia" class="form-control" type="text" maxlength="50" />
+                                                <label for="_NroGuia" class="form-label">@Html.DisplayNameFor(model => model.Items[0].NroGuia)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <select id="_selectMotivoPQRSId" class="ms full-width" style="width: 100%"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <select id="_selectCausaPQRSId" class="ms full-width" style="width: 100%"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_ComentarioAdicional" class="form-control" type="text" maxlength="200" />
+                                                <label for="_ComentarioAdicional" class="form-label">@Html.DisplayNameFor(model => model.Items[0].ComentarioAdicional)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 AdditionalInfo">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <select id="_selectEstado" class="ms full-width" style="width: 100%">
+                                                    <option value="">--Empty--</option>
+                                                    <option value="1">Approved</option>
+                                                    <option value="2">Rejected</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 AdditionalInfo">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_DocSoporte" class="form-control" type="text" maxlength="50" />
+                                                <label for="_DocSoporte" class="form-label">@Html.DisplayNameFor(model => model.Items[0].DocSoporte)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 AdditionalInfo">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_CantidadRecibida" class="form-control" type="number" />
+                                                <label for="_CantidadRecibida" class="form-label">@Html.DisplayNameFor(model => model.Items[0].CantidadRecibida)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 AdditionalInfo">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_CantidadSubida" class="form-control" type="number" />
+                                                <label for="_CantidadSubida" class="form-label">@Html.DisplayNameFor(model => model.Items[0].CantidadRecibida)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 AdditionalInfo">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_ComentarioEstadoMercancia" class="form-control" type="text" maxlength="200" />
+                                                <label for="_ComentarioEstadoMercancia" class="form-label">@Html.DisplayNameFor(model => model.Items[0].ComentarioEstadoMercancia)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 AdditionalInfo">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input id="_PrecioAsumido" class="form-control text-right" type="text" />
+                                                <label for="_PrecioAsumido" class="form-label">@Html.DisplayNameFor(model => model.Items[0].PrecioAsumido)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="m-b-0 m-t--10" />
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary waves-effect " id="btnSave">Save</button>
+                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

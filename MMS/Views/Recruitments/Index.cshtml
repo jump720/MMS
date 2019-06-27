@@ -1,0 +1,235 @@
+﻿@model IEnumerable<MMS.Models.Recruitment>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Recrutamento";
+    ViewBag.Subtitle = "Lista";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+          
+            $("#selectBuscarEstado").select2({
+                placeholder: "Search @Html.DisplayNameFor(model => model.Estado)",
+                allowClear: true,
+                theme: "bootstrap"
+            })
+
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "Id" },
+                    { data: "Type" },
+                    { data: "Appointment" },
+                    { data: "Department" },
+                    { data: "CentroCosto" },
+                    { data: "StartDate" },
+                    { data: "Estado" },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+
+                            var result = `<a href='/@controllerName/Details/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>`;
+
+                            if (row.Estado == "Open" || row.Estado == "In Process") {
+                                result += `<a href='/@controllerName/Edit/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`;
+                            }
+
+                            if (row.Estado == 'Open') {
+                                result += `<a href='/@controllerName/Delete/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Delete"]' data-toggle="tooltip" data-placement="top" title="Delete"><i class='material-icons'>delete</i></a>`;
+                                result += `<a href='javascript:void(0)' onclick="SendSC('/Api/Recruitments/CreaPQRSRecord?TipoPQRS=4&id=${row.Id}')" class='btn-table bg-grey btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_PQRSCreaPQRSRecord"]' data-toggle="tooltip" data-placement="top" title="Send to CS"><i class='material-icons'>send</i></a>`;
+                            }
+                            return result;
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["txtBuscarId", "txtBuscarType", "txtBuscarAppointment", "txtBuscarDepartmentId", "txtBuscarCentroCostoID", "txtBuscarStartDate", "selectBuscarEstado"],
+                    fnServerParams: function () {
+                        return [
+                            { name: "_id", value: $('#txtBuscarId').val() },
+                            { name: "_type", value: $('#txtBuscarType').val() },
+                            { name: "_appointment", value: $('#txtBuscarAppointment').val() },
+                            { name: "_department", value: $('#txtBuscarDepartmentId').val() },
+                            { name: "_centroCosto", value: $('#txtBuscarCentroCostoID').val() },
+                            { name: "_startDate", value: $('#txtBuscarStartDate').val() },
+                            { name: "_estado", value: $('#selectBuscarEstado').val() },
+                        ];
+                    },
+                    //fnSetFilterControls: function (values) {
+                    //    var clienteId = values[3];
+                    //    var analistaId = values[4];
+
+
+                    //    if (!clienteId)
+                    //        return;
+                    //    else
+                    //        $.get("/api/Devoluciones/ClienteDescripcion/" + clienteId, function (result) {
+                    //            if (result)
+                    //                $('#selectBuscarCliente').append(`<option value='${clienteId}'> ${clienteId} - ${result}</option>`).val(values[3]).change();
+                    //        });
+
+                    //    if (!analistaId)
+                    //        return;
+                    //    else
+                    //        $.get("/api/Usuarios/UsuarioDescripcion/" + analistaId, function (result) {
+                    //            if (result)
+                    //                $('#selectBuscarAnalista').append(`<option value='${analistaId}'>${analistaId} - ${result}</option>`).val(values[3]).change();
+                    //        });
+                    //}
+                }
+                );
+
+        });
+
+        function SendSC(href) {
+            sLoading();
+            $.post(href)
+                .done(function (result) {
+                    if (result) {
+                        msgSuccess(`Recruitment has been sent successfully`);
+                    }
+                    else
+                        msgError(`Warning, review information.`);
+                })
+                .fail(function (jqXHR, textStatus, errorThrown) {
+                    msgError(errorThrown);
+                })
+                .always(function () {
+                    hLoading();
+                    dt.api().draw('page');
+                });
+
+
+        }
+    </script>
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Create" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Create"]" onclick="redirtWithReturnSearch(this, event);">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.RecruitmentId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Type)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Appointment)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.DepartmentId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.CentroCostoID)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.StartDate)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Estado)
+                            </th>
+                            <th style="width: 15%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarId" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.RecruitmentId)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarType" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Type)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarAppointment" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Appointment)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarDepartmentId" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.DepartmentId)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarCentroCostoID" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.CentroCostoID)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                              <input type="text" id="txtBuscarStartDate" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.StartDate)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <select id="selectBuscarEstado" class="ms full-width" style="width:100% !important;">
+                                    <option value=""></option>
+                                    <option value="Open">Open</option>
+                                    <option value="In Process">In Process</option>
+                                    <option value="Complete">Complete</option>
+                                    <option value="Deleted">Deleted</option>
+                                </select>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

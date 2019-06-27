@@ -1,0 +1,454 @@
+﻿@model MMS.Models.ActividadViewModel
+@{
+    ViewBag.Title = "Actividad";
+    ViewBag.Subtitle = "Eliminar";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+    @Styles.Render("~/Content/TagsInput")
+    <link href="/Content/dist/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet" />
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/TagsInput")
+
+    @*<script src="http://code.jquery.com/ui/1.11.3/jquery-ui.js" type="text/javascript"></script>
+        <script src="~/Scripts/Validate/jquery.validate.js" type="text/javascript"></script>*@
+
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jsVue")
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    <script src="/Content/dist/plugins/momentjs/moment.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+    <script src="~/Scripts/Transacciones/Actividades/Create.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            
+            var items = [@foreach (var item in Model.Items)
+            {
+
+                <text>
+                {
+                    ActividadItemId: @item.ActividadItemId,
+                    ProductoId: "@item.ProductoId",
+                    ActividadItemDescripcion: "@item.ActividadItemDescripcion",
+                    ActividadItemCantidad: @item.ActividadItemCantidad,
+                    ActividadItemProducto: "@item.ActividadItemProducto",
+                    ActividadItemPrecio: @item.ActividadItemPrecio.ToString().Replace(",","."),
+                    CentroCostoID: "@item.CentroCostoID",
+                    Total: @item.ActividadItemCantidad * @item.ActividadItemPrecio.ToString().Replace(",", "."),
+                    delete: @item.delete.ToString().ToLower()
+                },
+                </text>
+            }];
+
+            var centroCostos = [ @foreach (var m in ViewBag.CentroCosto)
+            {
+
+                <text>
+                { id: "@m.CentroCostoID", text: @Html.Raw(Json.Encode(m.CentroCostoDesc)), data: @Html.Raw(Json.Encode(m)) },
+                </text>
+            }
+            ];
+
+
+            var options = {
+                centroCostos: centroCostos,
+                FechaDesde: "@Model.Actividad.ActividadFechaDesde.ToString("u").Substring(0, 10)",
+                FechaHasta: "@Model.Actividad.ActividadFechaHasta.ToString("u").Substring(0, 10)"
+            }
+
+            var files = [ @foreach (var file in Model.Archivos)
+            {
+
+                <text>
+                { order: @file.Order, FileName: @Html.Raw(Json.Encode(file.FileName)), New: false },
+                </text>
+            }
+            ];
+            $.MMS.Actividad("delete",@Html.Raw(Json.Encode(Model.Actividad)), items, files, options);
+        });
+    </script>
+}
+
+
+<div class="row clearfix">
+    <div class="col-md-12">
+        <div class="card" id="cardForm">
+            <div class="header bg-red">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+                            <i class="material-icons">attach_file</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="javascript:void(0);" onclick="AttachFile()" class="waves-effect waves-block">Adjuntar archivos</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                @Html.HiddenFor(model => model.Actividad.ActividadId)
+                @Html.HiddenFor(model => model.Actividad.UsuarioIdElabora)
+                @Html.HiddenFor(model => model.Actividad.ActividadEstado)
+                @Html.HiddenFor(model => model.Actividad.ActividadFecha)
+                @Html.HiddenFor(model => model.Actividad.ActividadFechaMod)
+                @Html.HiddenFor(model => model.Actividad.PlantaID)
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="body">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        @Html.DropDownListFor(model => model.Actividad.ClienteID, new SelectList(new List<string>(), "", ""), new { @class = "ms full-width", @style = "width: 100%" })
+                                        @Html.ValidationMessageFor(model => model.Actividad.ClienteID, "", new { @class = "" })
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.Actividad.ActividadFechaDesde, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.LabelFor(model => model.Actividad.ActividadFechaDesde, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Actividad.ActividadFechaDesde, "", new { @class = "" })
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.Actividad.ActividadFechaHasta, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.LabelFor(model => model.Actividad.ActividadFechaHasta, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Actividad.ActividadFechaHasta, "", new { @class = "" })
+                                    </div>
+                                </div>
+                                <div class="row col-md-12">
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="input-group">
+                                                <div class="form-line">
+                                                    @Html.EditorFor(model => model.Actividad.ActividadTitulo, new { htmlAttributes = new { @class = "form-control" } })
+                                                    @Html.LabelFor(model => model.Actividad.ActividadTitulo, htmlAttributes: new { @class = "form-label" })
+                                                </div>
+                                            </div>
+                                            @Html.ValidationMessageFor(model => model.Actividad.ActividadTitulo, "", new { @class = "" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="input-group">
+                                                <div class="form-line">
+                                                    @Html.EditorFor(model => model.Actividad.ActividadCuenta, new { htmlAttributes = new { @class = "form-control" } })
+                                                    @Html.LabelFor(model => model.Actividad.ActividadCuenta, htmlAttributes: new { @class = "form-label" })
+                                                </div>
+                                            </div>
+                                            @Html.ValidationMessageFor(model => model.Actividad.ActividadCuenta, "", new { @class = "" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        @Html.DropDownList("Actividad.TipoActividadID", null, "Selecione uma Atividade", new { @class = "ms full-width", @style = "width: 100%" })
+                                        @*@Html.DropDownListFor(model => model.Actividad.TipoActividadID, new SelectList(new List<string>(), "", ""), new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })*@
+                                        @Html.ValidationMessageFor(model => model.Actividad.TipoActividadID, "", new { @class = "" })
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.Actividad.ActividadMetaE, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                                @Html.LabelFor(model => model.Actividad.ActividadMetaE, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Actividad.ActividadMetaE, "", new { @class = "" })
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.Actividad.ActividadMetaV, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                                @Html.LabelFor(model => model.Actividad.ActividadMetaV, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Actividad.ActividadMetaV, "", new { @class = "" })
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-float">
+                                        <div class="input-group ">
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.Actividad.CanalID, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                                @Html.LabelFor(model => model.Actividad.CanalID, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @*@Html.DropDownList("Actividad.CanalID", null, "Selecione un canal", new { @class = "ms full-width", @style = "width: 100%" })
+                                        @Html.ValidationMessageFor(model => model.Actividad.CanalID, "", new { @class = "" })*@
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        @Html.DropDownList("Actividad.MarcaID", null, "Selecione las marcas", new { @class = "ms full-width", @style = "width: 100%", multiple = "multiple" })
+                                        @Html.HiddenFor(model => model.Actividad.Marcas)
+                                        @Html.ValidationMessageFor(model => model.Actividad.Marcas, "", new { @class = "" })
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                            <div class="form-line">
+                                                <input class="form-control text-box single-line" id="vigencia" type="text" value="" readonly>
+                                                <label class="form-label" for="vigencia">Vigencia</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            @Html.TextAreaFor(model => model.Actividad.ActividadLugarEnvioPOP, 4, 0, new { @class = "form-control no-resize" })
+                                            @Html.LabelFor(model => model.Actividad.ActividadLugarEnvioPOP, htmlAttributes: new { @class = "form-label" })
+                                            @Html.ValidationMessageFor(model => model.Actividad.ActividadLugarEnvioPOP, "", new { @class = "" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            @Html.TextAreaFor(model => model.Actividad.ActividadObjetivo, 4, 0, new { @class = "form-control no-resize" })
+                                            @Html.LabelFor(model => model.Actividad.ActividadObjetivo, htmlAttributes: new { @class = "form-label" })
+                                            @Html.ValidationMessageFor(model => model.Actividad.ActividadObjetivo, "", new { @class = "" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row clearfix">
+                                    <div class="col-md-4">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                @Html.TextAreaFor(model => model.Actividad.ActividadDesc, 4, 0, new { @class = "form-control no-resize" })
+                                                @Html.LabelFor(model => model.Actividad.ActividadDesc, htmlAttributes: new { @class = "form-label" })
+                                                @Html.ValidationMessageFor(model => model.Actividad.ActividadDesc, "", new { @class = "" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table>
+                                    <tr>
+                                        <td colspan="7"></td>
+                                    </tr>
+
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row clearfix" id="actividadContent">
+
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="header">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="bottom" title="Ver Presupuesto" class="btn btn-default btn-circle waves-effect waves-circle waves-float" v-on:click.prevent="ModalPresupuesto();">
+                                            <i class="material-icons" style="color:black !important">money</i>
+                                        </a>
+                                    </td>
+                                    <td style="padding-left: 10px">
+                                        <h2>
+                                            Productos
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                        <div class="body">
+                            <table class="table table-condensed table-hover table-striped table-va-middle" id="tableItems">
+                                <thead>
+                                    <tr>
+                                        <th>@Html.DisplayNameFor(model => model.Items[0].ProductoId)</th>
+                                        <th>@Html.DisplayNameFor(model => model.Items[0].ActividadItemCantidad)</th>
+                                        <th>@Html.DisplayNameFor(model => model.Items[0].ActividadItemPrecio)</th>
+                                        <th>Total</th>
+                                        <th>@Html.DisplayNameFor(model => model.Items[0].CentroCostoID)</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="items.length == 0">
+                                        <tr class="align-center">
+                                            <td colspan="11"><em>Sin productos.</em></td>
+                                        </tr>
+                                    </template>
+
+                                    <template v-else>
+                                        <tr v-for="(item, index) in items" v-if="" v-bind:style="{display: (item.delete) ? 'none' : 'table-row'}">
+                                            <td width="25%">
+                                                <input type="hidden" v-bind:name="'Items[' + index + '].ActividadItemId'" v-bind:id="'items_' + index + '_ActividadItemId'" v-model="items[index].ActividadItemId" />
+                                                <input type="hidden" v-bind:name="'Items[' + index + '].delete'" v-bind:id="'items_' + index + '_delete'" v-model="items[index].delete" />
+                                                <input type="hidden" v-bind:name="'Items[' + index + '].ActividadItemProducto'" v-bind:id="'items_' + index + '_ActividadItemProducto'" v-model="items[index].ActividadItemProducto" />
+                                                <input type="hidden" v-bind:name="'Items[' + index + '].ActividadItemDescripcion'" v-bind:id="'items_' + index + '_ActividadItemDescripcion'" v-model="items[index].ActividadItemDescripcion" />
+                                                @*<input type="text" class="form-control"  v-bind:value="item.ProductoId" />*@
+                                                <select v-bind:name="'Items[' + index + '].ProductoId'" class="ms full-width " v-bind:data-index="index" v-bind:id="'items_' + index + '_ProductoId'" style="width: 100%" disabled></select>
+                                            </td>
+
+                                            <td>
+                                                <input type="text" class="form-control text-right" v-bind:name="'Items[' + index + '].ActividadItemCantidad'"
+                                                       v-bind:id="'items_' + index + '_ActividadItemCantidad'" readonly
+                                                       v-model="items[index].ActividadItemCantidad" v-on:keyup="CalcularTotales(index)" />
+                                                @*<input type="text" class="form-control text-right"    />*@
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right" v-bind:name="'Items[' + index + '].ActividadItemPrecio'"
+                                                       v-bind:id="'items_' + index + '_ActividadItemPrecio'" readonly
+                                                       v-model="items[index].ActividadItemPrecio" v-on:keyup="CalcularTotales(index)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right" v-model="items[index].Total" readonly />
+                                            </td>
+                                            <td width="20%">
+                                                <select v-bind:name="'Items[' + index + '].CentroCostoID'" class="ms full-width " v-bind:data-index="index" v-bind:id="'items_' + index + '_CentroCostoID'" style="width: 100%" disabled>
+                                                    <option value="-1">Empty</option>
+                                                </select>
+                                            </td>
+
+                                        </tr>
+                                    </template>
+                                </tbody>
+
+                            </table>
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="modalPresupuesto" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h3 class="modal-title">Presupuesto:</h3>
+
+                            </div>
+                            <div class="modal-body">
+                                <table id="tablePresupuesto" class="table table-bordered table-hover table-condensed table-striped table-va-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                C. Costo
+                                            </th>
+                                            <th>
+                                                Presupuesto
+                                            </th>
+                                            <th>
+                                                Gasto
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyPresupuesto">
+                                        <template v-if="Presupuesto.length == 0">
+                                            <tr>
+                                                <td colspan="3"> No tiene presupuesto</td>
+                                            </tr>
+                                        </template>
+                                        <template v-for="(p, index) in Presupuesto ">
+                                            <tr>
+                                                <td>{{p.centroCostoDesc}}</td>
+                                                <td>{{p.presupuesto}}</td>
+                                                <td>{{p.gasto}}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @using (Html.BeginForm())
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="submit" value="Eliminar" class="btn btn-danger waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="frmFiles">
+    <div class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="">Archivos adjuntos : <small id="tSize">0.00</small> <small> /50 mb</small> </h4>
+                </div>
+                <div class="modal-body" data-spy="scroll" data-target="#ListFiles">
+                    <div id="ListFiles">
+                        
+                        <div class="row clearfix">
+                            <template v-if="files.length == 0">
+                                <div class="col-md-12" style="padding-top: 12px;">
+                                    <em>This template has no Items.</em>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="col-md-12" v-for="(f, idx) in files" style="padding-top: 12px;">
+
+                                    <div class="col-md-10" v-if="f.New"><input type="file" v-bind:name="'Files[' + idx + ']'" v-on:change.prevent="SizeFile(idx,$event)" /></div>
+                                    <div class="col-md-2" v-if="f.New"><p v-bind:id="'Size' + idx"></p></div>
+
+                                    <div class="col-md-10" v-if="!f.New">
+                                        <input type="hidden" v-bind:name="'Archivos[' + idx + '].Order'" v-bind:value="f.order" />
+                                        <input type="file" v-bind:name="'Files[' + idx + ']'" v-on:change.prevent="SizeFile(idx,$event)" style="display:none;" />
+                                        <i class="material-icons">insert_drive_file</i>
+                                        <a v-bind:href="'../DescargarArchivo?d=' + @Model.Actividad.ActividadId + '&o=' + f.order" target="_blank"> {{f.FileName}} </a>
+                                    </div>
+
+                                </div>
+                            </template>
+                        </div>
+
+                    </div>
+                </div>
+                <hr class="m-b-0 m-t--10" />
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

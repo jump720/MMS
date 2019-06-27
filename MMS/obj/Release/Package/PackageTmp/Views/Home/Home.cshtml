@@ -1,0 +1,77 @@
+﻿
+@{
+    ViewBag.Title = "MMS";
+}
+
+<script src="~/Scripts/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="~/Scripts/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<!-- jQuery Touch Punch - Enable Touch Drag and Drop -->
+<script src="~/Scripts/Metro/jquery.touch-punch.min.js"></script>
+
+<!-- jQuery.Shapeshift -->
+<script src="~/Scripts/Metro/jquery.shapeshift.min.js"></script>
+
+<!-- CSS -->
+<style>
+    .cont-shapeshift {
+        border: 1px dashed #CCC;
+        position: relative;
+    }
+        .cont-shapeshift > div {
+            position: absolute;
+            height: 100px;
+            width: 100px;
+        }
+            .cont-shapeshift > div[data-ss-colspan="2"] {
+                width: 210px;
+            }
+            .cont-shapeshift > div[data-ss-colspan="3"] {
+                width: 320px;
+            }
+        .cont-shapeshift > .ss-placeholder-child {
+            background-color: rgba(27, 170, 255, 0.15);
+            border: 1px dotted #0091ea;
+        }
+</style>
+
+<!-- Javascript -->
+<script>
+    var a = jQuery.noConflict();
+    a(document).ready(function () {
+        a(".cont-shapeshift").shapeshift({
+            minColumns: 3
+        });
+    })
+</script>
+
+<ul id="dropdown-shapeshift-1" class="dropdown-content">
+    <li>Crear</li>
+    <li>Modificar</li>
+    <li>Consultar</li>
+</ul>
+<div class="cont-shapeshift">
+    <div data-ss-colspan="2" class="z-depth-1 grey lighten-4 row">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title grey-text text-darken-4">
+                    Actividades
+                </span>
+                <a href="/Actividades/Create" class="btn-floating btn-lg waves-effect waves-light blue tooltipped" data-position="right" data-delay="50" data-tooltip="Crear actividad." style="transform: scaleY(1.1) scaleX(1.1);">
+                    <i class="material-icons">add</i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div data-ss-colspan="2" class="z-depth-1 grey lighten-4 row">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title grey-text text-darken-4">
+                    Movimientos
+                </span>
+                <a href="/Movimientos/Create" class="btn-floating btn-lg waves-effect waves-light blue tooltipped" data-position="right" data-delay="50" data-tooltip="Crear movimiento." style="transform: scaleY(1.1) scaleX(1.1);">
+                    <i class="material-icons right">add</i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

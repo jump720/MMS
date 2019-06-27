@@ -1,0 +1,121 @@
+﻿@model IEnumerable<MMS.Models.Correos>
+
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Email List";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsSelect2")
+
+    @*mod 29 06 2018*@
+<script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "Nombre Usuario" },
+                    { data: "Mail" },
+                    { data: "Grupo" },
+                    {
+                        data: "Active",
+                        render: function (value) {
+                            return htmlCheckbox(value);
+                        }
+                    },
+                    //{
+                    //    data: null,
+                    //    render: function (data, type, row) {
+                    //        return `(${row.ClienteID}) - ${row.ClienteRazonSocial}`
+                    //    }
+                    //},
+                    {
+                        data: "",
+                        render: function (data, type, row) {
+                            return (
+                                `<a href='/@controllerName/Details?id=${row.Id}' onclick="CorreoModal(event, this.href);"class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>` +
+                                `<a href='/@controllerName/Edit?id=${row.Id}' onclick="CorreoModal(event, this.href);" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`+
+                                `<a href='/@controllerName/Delete?id=${row.Id}' onclick="CorreoModal(event, this.href);" class='btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Delete"]' data-toggle="tooltip" data-placement="top" title="Delete"><i class='material-icons'>delete</i></a>`
+                            );
+                        }
+                    }
+                ]);
+
+        });
+
+        function CorreoModal(event, href) {
+            ajaxModal(event, href, 4, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.Correos.init();
+                },
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+</script>
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Create" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Create"]" onclick="CorreoModal(event, this.href);">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title<small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Nombre)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Mail)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Grupo)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Active)
+                            </th>                          
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

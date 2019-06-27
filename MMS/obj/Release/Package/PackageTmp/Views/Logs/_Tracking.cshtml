@@ -1,0 +1,100 @@
+﻿@model IEnumerable<MMS.Models.Log>
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Logs";
+    ViewBag.Subtitle = "Tracking";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+
+<script src="~/Scripts/_LayoutTT.js"></script>
+
+@Scripts.Render("~/bundles/jsDataTables")
+@Scripts.Render("~/bundles/jqueryval")
+<script src="~/Scripts/PerfectStore/BuscarEstablecimiento.js"></script>
+
+<script type="text/javascript">
+    @*$.MMS.BuscarEstablecimiento.init = function () {
+        $.MMS.BuscarEstablecimiento(`@controllerName`, `@controllerNameWeb`);
+    };*@
+</script>
+
+
+
+
+<div class="modal-header">
+    <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Search Establishment</h4>
+</div>
+
+<div class="modal-body">
+    <table id="tableTracking" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle table-responsive">
+        <thead>
+            <tr>
+                <th width="20%">
+                    @Html.DisplayNameFor(model => model.Fecha)
+                </th>
+                <th width="10%">
+                    @Html.DisplayNameFor(model => model.Usuario)
+                </th>
+                <th width="30%">
+                    @Html.DisplayNameFor(model => model.EventoId)
+                </th>
+                <th width="10%">
+                    @Html.DisplayNameFor(model => model.Key)
+                </th>
+                <th width="20%">
+                    @Html.DisplayNameFor(model => model.Cliente)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Data)
+                </th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+            <tr>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtBuscarFecha" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Fecha)" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtBuscarUsuario" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Usuario)" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <select id="selectBuscarEventos" class="ms full-width"></select>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtBuscarKey" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Key)" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtBuscarCliente" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Cliente)" />
+                        </div>
+                    </div>
+                </th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<hr class="m-b-0 m-t--10" />
+

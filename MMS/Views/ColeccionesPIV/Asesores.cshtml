@@ -1,0 +1,125 @@
+@model MMS.Models.ColeccionPIV
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Sellers : " + Model.Nombre;
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Asesores/@Model.Id", "/@controllerName/Asesores/@Model.Id",
+                [
+                    { data: "Cedula" },
+                    { data: "NombreCompleto" },
+                    {
+                        data: "Meta",
+                        render: function (value) {
+                            return `<p class="text-right margin-0">$ ${value.formatMoney(0)}</p>`;
+                        }
+
+                    },
+                    @if (Model.CDE)
+                    {<text>
+                    {
+                        data: "Icon",
+                        render: function (value) {
+                            if (value)
+                                return `<img src="/Content/dist/images/levels/${value}.png" width="25">`;
+                            else
+                                return "";
+                        }
+                    },
+                    </text>}
+                    {
+                        data: "Id",
+                        render: function (value) {
+                            return (
+                                `<a href='/@controllerName/DetailsAsesor/${value}' onclick="showAsesorModal(event, this.href)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}DetailsAsesor"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>` +
+                                `<a href='/@controllerName/EditAsesor/${value}' onclick="showAsesorModal(event, this.href)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}EditAsesor"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>` +
+                                `<a href='/@controllerName/DeleteAsesor/${value}' onclick="showAsesorModal(event, this.href)" class='btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}DeleteAsesor"]' data-toggle="tooltip" data-placement="top" title="Delete"><i class='material-icons'>delete</i></a>`
+                                );
+                        }
+                    }
+                ]);
+        });
+
+        function showAsesorModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.Asesores.init();
+                },
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/CreateAsesor?coleccionPIVId=@Model.Id" onclick="showAsesorModal(event, this.href)" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}CreateAsesor"]">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => ((List<MMS.Models.Asesor>)model.Asesores)[0].Cedula)
+                            </th>
+                            <th>
+                                Full Name
+                            </th>
+                            <th style="text-align: right;">
+                                @Html.DisplayNameFor(model => ((List<MMS.Models.Asesor>)model.Asesores)[0].Meta)
+                            </th>
+                            @if (Model.CDE)
+                            {
+                                <th>
+                                    COE Category
+                                </th>
+                            }
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+        </div>
+    </div>
+</div>

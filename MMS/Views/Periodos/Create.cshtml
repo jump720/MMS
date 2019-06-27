@@ -1,0 +1,177 @@
+﻿@model MMS.Models.PeriodoViewModel
+
+@{
+    ViewBag.Title = "Periods";
+    ViewBag.Subtitle = "Create";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    <link href="/Content/dist/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet" />
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsVue")
+    <script src="~/Scripts/Peak/Periodos.js"></script>
+    <script src="/Content/dist/plugins/momentjs/moment.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            @{if (Model == null)
+            {<text>
+            var revisiones = [];
+            </text>}
+            else
+            {<text>
+            var revisiones = [
+                @foreach (var revision in Model.Revisiones)
+                    {<text>
+                    {
+                        Id: @revision.Id,
+                        Nombre: `@revision.Nombre`,
+                        FechaIni: '@revision.FechaIni.ToString("yyyy-MM-dd")',
+                        FechaFin: '@revision.FechaFin.ToString("yyyy-MM-dd")',
+                        ActivoManual: @revision.ActivoManual.ToString().ToLower(),
+                    },
+                </text>}
+            ];
+            </text>}
+            }
+            $.MMS.Periodos("create", revisiones);
+        });
+    </script>
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-8">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Periodo.Descripcion, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Periodo.Descripcion, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Periodo.Descripcion, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.Periodo.FechaIni, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.LabelFor(model => model.Periodo.FechaIni, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Periodo.FechaIni, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-condensed table-hover table-va-middle" id="tableRevisiones">
+                                <thead>
+                                    <tr>
+                                        <th width="30%">Reviews</th>
+                                        <th width="30%">Start Date</th>
+                                        <th width="30%">Finish Date</th>
+                                        <th width="10%">Manually Enabled</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(revision, index) in revisiones">
+                                        <td>
+                                            <div class="form-group m-b-0">
+                                                <div class="form-line">
+                                                    <input type="text" v-bind:name="`Revisiones[${index}].Nombre`" v-bind:class="'form-control periodoRevisionNombre-' + index" v-model="revision.Nombre" placeholder="@Html.DisplayNameFor(model => model.Revisiones[0].Nombre)">
+                                                </div>
+                                                <span class="field-validation-valid " v-bind:data-valmsg-for="`Revisiones[${index}].Nombre`" data-valmsg-replace="true"></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="input-group" style="margin-bottom: 0px;">
+                                                <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                                <div class="form-line">
+                                                    <input v-bind:name="`Revisiones[${index}].FechaIni`" type="text" v-bind:class="'form-control text-box single-line fechaIni-' + index" placeholder="Start Date" v-model="revision.FechaIni" v-bind:data-index="index" />
+                                                </div>
+                                            </div>
+                                            <span class="field-validation-valid " v-bind:data-valmsg-for="`Revisiones[${index}].FechaIni`" data-valmsg-replace="true"></span>
+                                        </td>
+                                        <td>
+                                            <div class="input-group" style="margin-bottom: 0px;">
+                                                <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                                <div class="form-line">
+                                                    <input v-bind:name="`Revisiones[${index}].FechaFin`" type="text" v-bind:class="'form-control text-box single-line fechaFin-' + index" placeholder="Finish Date" v-model="revision.FechaFin" v-bind:data-index="index" />
+                                                </div>
+                                            </div>
+                                            <span class="field-validation-valid " v-bind:data-valmsg-for="`Revisiones[${index}].FechaFin`" data-valmsg-replace="true"></span>
+                                        </td>
+                                        <td>
+                                            <input class="check-box" v-bind:id="`Revisiones_${index}__ActivoManual`" type="checkbox" v-model="revision.ActivoManual" v-on:change="disableManual(index)">
+                                            <label v-bind:for="`Revisiones_${index}__ActivoManual`" class="m-b--10"></label>
+                                            <input type="hidden" v-bind:name="`Revisiones[${index}].ActivoManual`" v-bind:value="revision.ActivoManual" />
+                                        </td>
+                                        <td>
+                                            <a v-on:click.prevent="remove(index)" class='bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table'><i class='material-icons'>delete</i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Final Review</td>
+                                        <td>
+                                            <div class="input-group" style="margin-bottom: 0px;">
+                                                <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                                <div class="form-line">
+                                                    @Html.EditorFor(model => model.Periodo.RevisionFinalFechaIni, new { htmlAttributes = new { @class = "form-control", @placeholder = "Final Review Start Date" } })
+                                                </div>
+                                            </div>
+                                            @Html.ValidationMessageFor(model => model.Periodo.RevisionFinalFechaIni, "", new { @class = "" })
+                                        </td>
+                                        <td>
+                                            <div class="input-group" style="margin-bottom: 0px;">
+                                                <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                                <div class="form-line">
+                                                    @Html.EditorFor(model => model.Periodo.FechaFin, new { htmlAttributes = new { @class = "form-control", @placeholder = "Final Review Finish Date" } })
+                                                </div>
+                                            </div>
+                                            @Html.ValidationMessageFor(model => model.Periodo.FechaFin, "", new { @class = "" })
+                                        </td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"><button type="button" class="btn btn-default waves-effect full-width" v-on:click="add()">Add Review Period</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+}

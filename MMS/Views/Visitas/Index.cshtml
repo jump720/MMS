@@ -1,0 +1,267 @@
+﻿@*Nombre, direccion, ubicacion, fecha, hora, usuario, tipo visita, tipo empresa*@
+@model IEnumerable<MMS.Models.Visita>
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    string controllerNameWeb = ViewContext.RouteData.Values["controller"].ToString() + "Web";
+    ViewBag.Title = "Visits";
+    ViewBag.Subtitle = "Lista";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssDataTablesResponsive")
+}
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsDataTablesResponsive")
+    @*<script src="https://cdn.datatables.net/responsive/2.2.1/js/dataTables.responsive.min.js"></script>*@
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerNameWeb/Index", "/@controllerName/Index",
+                [
+                    { data: "Fecha" },
+                    {
+                        data: "NombreEstablecimiento",
+                        render: function (data, type, row) {
+                            if (row.NombreEstablecimiento != null)
+                                if (row.NombreEstablecimiento.length > 20) {
+                                    return row.NombreEstablecimiento.substring(0, 20);
+                                }
+                            return row.NombreEstablecimiento;
+                        }
+                    },
+                    { data: "TipoIndustriaId" },
+                    {
+                        data: "UsuarioId",
+                        render: function (data, type, row) {
+                            if (row.UsuarioId != null)
+                                if (row.UsuarioId.length > 20) {
+                                    return row.UsuarioId.substring(0, 20);
+                                }
+                            return row.UsuarioId;
+                        }
+                    },
+                    {
+                        data: "Direccion",
+                        render: function (data, type, row) {
+                            if (row.Direccion != null)
+                                if (row.Direccion.length > 20) {
+                                    return row.Direccion.substring(0, 20);
+                                }
+
+                            return row.Direccion;
+                        }
+                    },
+                    { data: "Ubicacion" },
+                    {
+                        data: "Administrador",
+                        render: function (data, type, row) {
+                            if (row.Administrador != null)
+                                if (row.Administrador.length > 20) {
+                                    return row.Administrador.substring(0, 20);
+                                }
+
+                            return row.Administrador;
+
+                        }
+                    },
+                    { data: "TipoVisitaId" },
+                    {
+                        data: "Completada",
+                        render: function (value) {
+                            return htmlCheckbox(value);
+                        }
+                    },
+                    {
+                        data: "Id",
+                        render: function (data, type, row) {
+                            var result = `<a href='/@controllerName/Details/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>`;
+                            if (row.Completada) {
+
+                            } else {
+                                result += `<a href='/@controllerName/Edit/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>` +
+                                `<a href='/@controllerName/Delete/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Delete"]' data-toggle="tooltip" data-placement="top" title="Delete"><i class='material-icons'>delete</i></a>` +
+                                `<a href='javascript:void(0)' onclick="SetComplete('/Api/VisitasWeb/SetComplete?id=${row.Id}')" class='btn-table btn-success btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}SetComplete"]' data-toggle="tooltip" data-placement="top" title="Complete"><i class='material-icons'>send</i></a>`;
+                            }
+
+                            return result;
+                            @*return (
+                                `<a href='/@controllerName/Details/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>` +
+                                `<a href='/@controllerName/Edit/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`+
+                                `<a href='/@controllerName/Delete/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Delete"]' data-toggle="tooltip" data-placement="top" title="Delete"><i class='material-icons'>delete</i></a>`
+                            );*@
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["txtNombreEstablecimiento", "txtTipoIndustriaId", "txtUsuarioId", "txtDireccion", "txtUbicacion", "txtAdministrador", "txtTipoVisitaId"],
+                    fnServerParams: function () {
+                        return [
+                            //{ name: "_fecha", value: $('#txtFecha').val() },
+                            { name: "_nombreestablecimiento", value: $('#txtNombreEstablecimiento').val() },
+                            { name: "_tipoindustriaid", value: $('#txtTipoIndustriaId').val() },
+                            { name: "_usuarioid", value: $('#txtUsuarioId').val() },
+                            { name: "_direccion", value: $('#txtDireccion').val() },
+                            { name: "_ubicacion", value: $('#txtUbicacion').val() },
+                            { name: "_administrador", value: $('#txtAdministrador').val() },
+                            { name: "_tipovisitaid", value: $('#txtTipoVisitaId').val() },
+                        ];
+                    }
+                });
+
+        });
+
+
+        function BuscarEstablecimientoModal(event, href) {
+            ajaxModal(event, href, 4, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.BuscarEstablecimiento.init();
+                },
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+
+
+        function SetComplete(href) {
+            swal({
+                title: "Confirmation",
+                text: "You are going to mark this visit as completed, this process can't be undone, are you sure you want proceed?",
+                type: "warning",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                showLoaderOnConfirm: true,
+            }, function () {
+                //$("#btnSave").click();
+                sLoading();
+                $.post(href)
+                    .done(function (result) {
+                        if (result.Res) {
+                            msgSuccess(result.Msg);
+                        }
+                        else
+                            msgError(result.Msg);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        msgError(errorThrown);
+                    })
+                    .always(function () {
+                        hLoading();
+                        dt.api().draw('page');
+                    });
+
+                swal.close();
+            });
+        }
+
+    </script>
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/BuscarEstablecimiento" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Create"]" onclick="BuscarEstablecimientoModal(event, this.href);">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle display responsive nowrap">
+                    <thead>
+                        <tr>
+                            <th class="all">@Html.DisplayNameFor(model => model.Fecha)</thclass="all">
+                            <th class="all">@Html.DisplayNameFor(model => model.NombreEstablecimiento)</th>
+                            <th>@Html.DisplayNameFor(model => model.TipoIndustriaId)</th>
+                            <th>@Html.DisplayNameFor(model => model.UsuarioId)</th>
+                            <th>@Html.DisplayNameFor(model => model.Direccion)</th>
+                            <th>Location</th>
+                            <th class="none">@Html.DisplayNameFor(model => model.Administrador)</th>
+                            <th>@Html.DisplayNameFor(model => model.TipoVisitaId)</th>
+                            <th>Status</th>
+                            <th style="width:95px" class="all"></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtNombreEstablecimiento" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.NombreEstablecimiento)" />
+                                    </div>
+                                </div>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtTipoIndustriaId" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.TipoIndustriaId)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtUsuarioId" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.UsuarioId)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtDireccion" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Direccion)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtUbicacion" class="form-control" style="width: 100%;" placeholder="Search Location" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtAdministrador" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Administrador)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtTipoVisitaId" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.TipoVisitaId)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

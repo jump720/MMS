@@ -1,0 +1,399 @@
+﻿
+@model MMS.Models.VisitasViewModel
+@{
+    ViewBag.Title = "Visits";
+    ViewBag.Subtitle = "Create";
+
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+    @Styles.Render("~/Content/Dropzone")
+    @Styles.Render("~/Content/TagsInput")
+    <link href="/Content/dist/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet" />
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/Dropzone")
+    @Scripts.Render("~/bundles/TagsInput")
+
+    @*<script src="http://code.jquery.com/ui/1.11.3/jquery-ui.js" type="text/javascript"></script>
+        <script src="~/Scripts/Validate/jquery.validate.js" type="text/javascript"></script>*@
+
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jsVue")
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    <script src="~/Scripts/PerfectStore/Visitas.js"></script>
+    <script src="/Content/dist/plugins/momentjs/moment.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+
+    @*<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjIbeCicEy-8wAjluHL5tlMJW2bH-PH5s&callback=initMap" type="text/javascript"></script>*@
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            $('[data-toggle="tooltip"]').tooltip();
+
+            var photos = [];
+
+            $.MMS.Visitas("create", photos, @ViewBag.TipoIndustriaAutomotriz);
+        });
+
+
+    </script>
+}
+
+@using (Html.BeginForm("Create", "Visitas", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(false, "", new { @class = "hide" })
+                    @Html.HiddenFor(model => model.Visita.Latitud)
+                    @Html.HiddenFor(model => model.Visita.Longitud)
+                    @Html.HiddenFor(model => model.Visita.FechaConfirmacion, new { @Value = DateTime.Today.ToString("u").Substring(0, 10) })
+                    @Html.HiddenFor(model => model.Visita.Activa, new { @Value = true })
+                    @Html.HiddenFor(model => model.Visita.Completada, new { @Value = false })
+                    @Html.HiddenFor(model => model.Visita.InteresCompra, new { @Value = false })
+                    @*@Html.HiddenFor(model => model.Visita.DisponibilidadProducto, new { @Value = false })*@
+
+
+                    <div class="row clearfix">
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.UsuarioId, new { htmlAttributes = new { @Value = ViewBag.UsuarioId, @Hidden = "Hidden" } })
+                                    <input id="UsuarioNombre" value="@ViewBag.UsuarioNombre" class="form-control" readonly="readonly" />
+                                    <label for="UsuarioNombre" class="form-label active">User</label>
+                                    @*@Html.LabelFor(model => model.Visita.UsuarioId, htmlAttributes: new { @class = "form-label" })*@
+                                    @Html.ValidationMessageFor(model => model.Visita.UsuarioId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @*@if (Model.Visita != null)
+                                    {
+                                        @Html.EditorFor(model => model.Visita.Fecha, new { htmlAttributes = new { @class = "form-control", @Value = Model.Visita.Fecha.ToString("u").Substring(0, 10) } });
+                                    }
+                                    else
+                                    {*@
+                                        @Html.EditorFor(model => model.Visita.Fecha, new { htmlAttributes = new { @class = "form-control", @Value = DateTime.Today.ToString("u").Substring(0, 10) } })
+                                    @*}*@
+                                    @Html.LabelFor(model => model.Visita.Fecha, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.Fecha, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @*@Html.LabelFor(model => model.Visita.TipoVisitaId, htmlAttributes: new { @class = "form-select-label" })*@
+                                    @Html.DropDownList("Visita.TipoVisitaId", null, "Seleccione una opción", new { @class = "ms full-width form-control", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.Visita.TipoVisitaId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @*@Html.LabelFor(model => model.Visita.TipoIndustriaId, htmlAttributes: new { @class = "form-select-label" })*@
+                                    @Html.DropDownList("Visita.TipoIndustriaId", null, "Seleccione una opción", new { @class = "ms full-width", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.Visita.TipoIndustriaId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 clearfix">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @if (Model.Visita == null)
+                                    {
+                                        @Html.EditorFor(model => model.Visita.Nit, new { htmlAttributes = new { @class = "form-control" } })
+                                    }
+                                    else
+                                    {
+                                        @Html.EditorFor(model => model.Visita.Nit, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                    }
+                                    @Html.LabelFor(model => model.Visita.Nit, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.Nit, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+
+                                    @Html.EditorFor(model => model.Visita.Dv, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                    @Html.LabelFor(model => model.Visita.Dv, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.Dv, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 ">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @if (Model.Visita == null)
+                                    {
+                                        @Html.EditorFor(model => model.Visita.NombreEstablecimiento, new { htmlAttributes = new { @class = "form-control" } })
+                                    }
+                                    else
+                                    {
+                                        @Html.EditorFor(model => model.Visita.NombreEstablecimiento, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                    }
+                                    @Html.LabelFor(model => model.Visita.NombreEstablecimiento, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.NombreEstablecimiento, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 ">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.RazonSocial, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Visita.RazonSocial, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.RazonSocial, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 ">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.Administrador, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Visita.Administrador, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.Administrador, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 ">
+                            <div class="input-group form-float">
+                                <span class="input-group-addon">
+                                    <i class="material-icons">phone</i>
+                                </span>
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.Telefono, new { htmlAttributes = new { @class = "form-control", @PlaceHolder = Html.DisplayNameFor(model => model.Visita.Telefono) } })
+                                    @*@Html.LabelFor(model => model.Visita.Telefono, htmlAttributes: new { @class = "form-label" })*@
+                                    @Html.ValidationMessageFor(model => model.Visita.Telefono, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-4" id="paisContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.Visita.PaisId, htmlAttributes: new { @class = "form-select-label" })
+                                        @*@Html.DropDownList("Visita.PaisId", null, new { @class = "ms full-width", @onchange = "_DDLocation('PaisID'+';'+'Visita_DepartamentoId')" })*@
+                                        @Html.DropDownListFor(model => model.Visita.PaisId, null, "", new { @class = "ms full-width", @onchange = "_DDLocation('PaisID'+';'+'Visita_DepartamentoId')" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Visita.PaisId, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="dptoContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.Visita.DepartamentoId, htmlAttributes: new { @class = "form-select-label" })
+                                        @*<select id="Visita_DepartamentoId" name="Visita.DepartamentoId" class="ms full-width" style="width: 100%" onchange="_DDLocation('DepartamentoID' + ';' + 'Visita_CiudadId' + ';' + 'Visita_PaisId')"></select>*@
+                                        @Html.DropDownListFor(model => model.Visita.DepartamentoId, null, "", new { @class = "ms full-width", @onchange = "_DDLocation('DepartamentoID'+';'+'Visita_CiudadId' + ';' + 'Visita_PaisId')" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Visita.DepartamentoId, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="ciudadContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.Visita.CiudadId, htmlAttributes: new { @class = "form-select-label" })
+                                        @*<select id="Visita_CiudadId" name="Visita.CiudadId" class="ms full-width" style="width: 100%"></select>*@
+                                        @Html.DropDownListFor(model => model.Visita.CiudadId, null, "", new { @class = "ms full-width" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Visita.CiudadId, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+
+                        <div class="col-md-5 ">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.Direccion, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Visita.Direccion, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.Direccion, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.Barrio, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Visita.Barrio, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.Barrio, "", new { @class = "" })
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group form-float">
+                                <button type="button" class="btn bg-grey btn-circle-lg waves-effect waves-circle waves-float" onclick="GetLocation()">
+                                    <i class="material-icons" id="locationico">location_searching</i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-3">
+                            <div class="input-group form-float">
+                                <span class="input-group-addon">
+                                    <i class="material-icons">attach_money</i>
+                                </span>
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.VentaRealizada, new { htmlAttributes = new { @class = "form-control text-right", @PlaceHolder = Html.DisplayNameFor(model => model.Visita.VentaRealizada) } })
+                                    @Html.ValidationMessageFor(model => model.Visita.VentaRealizada, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Visita.NumeroMecanicos, new { htmlAttributes = new { @class = "form-control text-right", @type = "number" } })
+                                    @Html.LabelFor(model => model.Visita.NumeroMecanicos, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Visita.NumeroMecanicos, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            @Html.EditorFor(model => model.Visita.DisponibilidadProducto)
+                            @Html.LabelFor(model => model.Visita.DisponibilidadProducto, htmlAttributes: new { @class = "fix-checkbox" })
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @*@Html.LabelFor(model => model.Visita.Marcas, htmlAttributes: new { @class = "form-select-label" })*@
+                                    @*<select id="Visita_CiudadId" name="Visita.CiudadId" class="ms full-width" style="width: 100%"></select>*@
+                                    @Html.DropDownList("Marcas", null, new { @class = "ms full-width",@multiple = "multiple" })
+                                    @Html.HiddenFor(model => model.Visita.Marcas)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextAreaFor(model => model.Visita.Comentarios, new { @class = "form-control", @rows = "5" })
+                                    @Html.LabelFor(model => model.Visita.Comentarios, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Visita.Comentarios, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a href="#fotos_tab" data-toggle="tab">
+                                        <i class="material-icons">photo_album</i> Fotos Generales
+                                    </a>
+                                </li>
+                                @*<li role="presentation">
+                                        <a href="#productos_tab" data-toggle="tab">
+                                            <i class="material-icons">storage</i> Productos
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#ventas_tab" data-toggle="tab">
+                                            <i class="material-icons">import_contacts</i> Ventas
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#publicidad_tab" data-toggle="tab">
+                                            <i class="material-icons">photo_library</i> Publicidad
+                                        </a>
+                                    </li>*@
+                            </ul>
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade in active" id="fotos_tab">
+
+                                    <div class="card">
+                                        <div class="body">
+                                            <div id="ListPhotos">
+                                                <a href="javascript:void(0)" class="btn btn-default waves-effect" v-on:click.prevent="addNewPhoto($event)" style="margin-bottom: 12px;">Add Photo</a>
+                                                <div class="row clearfix">
+                                                    <template v-if="photos.length == 0">
+                                                        <div class="col-md-12">
+                                                            <em>This template has no Items.</em>
+                                                        </div>
+                                                    </template>
+                                                    <template v-else>
+                                                        <div class="col-md-12" v-for="(f, idx) in photos">
+                                                            <input type="file" accept="image/*" v-bind:name="'Photos[' + idx + ']'" />
+                                                        </div>
+                                                    </template>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*<div class="card">
+                                            <div class="header">
+                                                <h5>Photos</h5>
+                                            </div>
+                                            <div class="body">
+
+                                            </div>
+                                        </div>*@
+                                </div>
+                                @*<div role="tabpanel" class="tab-pane fade" id="productos_tab">
+                                        <div class="row clearfix">
+                                            <div class="col-md-3">
+                                                <div class="demo-switch-title">Interes de compra</div>
+                                                <div class="switch">
+                                                    <label>
+                                                        <input type="checkbox" checked="" name="Visita.InteresCompra" id="Visita_InteresCompra">
+                                                        <span class="lever"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="demo-switch-title">RED</div>
+                                                <div class="switch">
+                                                    <label>
+                                                        <input type="checkbox" checked="" name="Visita.DisponibilidadProducto" id="Visita_DisponibilidadProducto">
+                                                        <span class="lever"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane fade" id="ventas_tab">
+
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane fade" id="publicidad_tab">
+
+                                    </div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+}

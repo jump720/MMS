@@ -1,0 +1,101 @@
+﻿@model MMS.Models.ColeccionPIVViewModel
+
+@{
+    ViewBag.Title = "PIP Collections";
+    ViewBag.Subtitle = "View";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsVue")
+    <script src="~/Scripts/PIV/ColeccionesPIV.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            var clientes = [
+                @foreach (var cliente in Model.Clientes)
+                {<text>
+                    {
+                        Id: '@cliente.ClienteID',
+                        RazonSocial: '@cliente.ClienteRazonSocial',
+                        Ciudad: '@cliente.ciudad.CiudadDesc',
+                        Departamento: '@cliente.ciudad.departamentos.DepartamentoDesc',
+                        Pais: '@cliente.ciudad.departamentos.paises.PaisDesc',
+                        Canal: '@cliente.canal.CanalDesc',
+                    },
+                </text>}
+            ];
+            $.MMS.ColeccionesPIV("details", clientes);
+        });
+    </script>
+}
+
+<div class="row clearfix">
+    <div class="col-md-12">
+        <div class="card" id="cardForm">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    <div class="col-md-6">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.ColeccionPIV.Nombre, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.LabelFor(model => model.ColeccionPIV.Nombre, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        @Html.EditorFor(model => model.ColeccionPIV.CDE)
+                        @Html.LabelFor(model => model.ColeccionPIV.CDE, htmlAttributes: new { @class = "fix-checkbox" })
+                    </div>
+
+                    <div class="col-md-12">
+                        <table class="table table-condensed table-hover table-striped table-va-middle" id="tableClientes">
+                            <thead>
+                                <tr>
+                                    <th>@Html.DisplayNameFor(model => model.Clientes[0].ClienteID)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Clientes[0].ClienteRazonSocial)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Clientes[0].PaisID)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Clientes[0].DepartamentoID)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Clientes[0].CiudadID)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Clientes[0].CanalID)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if="clientes.length == 0">
+                                    <tr class="align-center">
+                                        <td colspan="7"><em>This PIP Collection has no Customers.</em></td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr v-for="(cliente, index) in clientes">
+                                        <td>
+                                            <input type="hidden" v-bind:name="'ClientesId[' + index + ']'" v-bind:value="cliente.Id" />
+                                            <span class="codigo-cliente">{{ cliente.Id }}</span>
+                                        </td>
+                                        <td>{{ cliente.RazonSocial }}</td>
+                                        <td>{{ cliente.Pais }}</td>
+                                        <td>{{ cliente.Departamento }}</td>
+                                        <td>{{ cliente.Ciudad }}</td>
+                                        <td>{{ cliente.Canal }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @Html.ActionLink("Modify", "Edit", new { id = Model.ColeccionPIV.Id }, new { @class = "btn btn-success waves-effect " + ViewData[$"has_{ViewContext.RouteData.Values["controller"].ToString()}Edit"] })
+                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+        </div>
+    </div>
+</div>

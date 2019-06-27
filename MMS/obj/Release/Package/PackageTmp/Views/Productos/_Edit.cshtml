@@ -1,0 +1,81 @@
+﻿@model MMS.Models.Producto
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@Styles.Render("~/bundles/cssSelect2")
+
+@Scripts.Render("~/bundles/jsSelect2")
+@Scripts.Render("~/bundles/jqueryval")
+<script src="~/Scripts/Catalogos/Productos.js"></script>
+
+<script type="text/javascript">
+    $.MMS.Productos.init = function () {
+        $.MMS.Productos("edit");
+    };
+</script>
+
+@using (Html.BeginForm("Edit", "api/" + controllerName, FormMethod.Post, new { id = "frmProductos" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Modify Producto</h4>
+    </div>
+
+    <div class="modal-body" id="cardForm">
+        <div class="row clearfix">
+            @Html.HiddenFor(model => model.ProductoId)
+
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.ProductoId, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.LabelFor(model => model.ProductoId, htmlAttributes: new { @class = "form-label" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.ProductoId, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.ProductoDesc, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.LabelFor(model => model.ProductoDesc, htmlAttributes: new { @class = "form-label" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.ProductoDesc, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="input-group">
+                        <div class="form-line">
+                            @Html.LabelFor(model => model.TipoProductoID, htmlAttributes: new { @class = "form-select-label" })
+                            @Html.DropDownListFor(model => model.TipoProductoID, null, "", new { @class = "ms full-width" })
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(model => model.TipoProductoID, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                        <div class="form-line">
+                            @Html.EditorFor(model => model.ProductoPrecio, new { htmlAttributes = new { @class = "form-control text-right" } })
+                            @Html.LabelFor(model => model.ProductoPrecio, htmlAttributes: new { @class = "form-label" })
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(model => model.ProductoPrecio, "", new { @class = "" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="m-b-0 m-t--10" />
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+}

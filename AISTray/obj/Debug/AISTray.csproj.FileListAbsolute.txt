@@ -1,0 +1,9 @@
+C:\Users\e7d32\Source\Repos\MMS\AISTray\bin\Debug\AISTray.exe.config
+C:\Users\e7d32\Source\Repos\MMS\AISTray\bin\Debug\AISTray.exe
+C:\Users\e7d32\Source\Repos\MMS\AISTray\bin\Debug\AISTray.pdb
+C:\Users\e7d32\Source\Repos\MMS\AISTray\obj\Debug\AISTray.Form1.resources
+C:\Users\e7d32\Source\Repos\MMS\AISTray\obj\Debug\AISTray.Properties.Resources.resources
+C:\Users\e7d32\Source\Repos\MMS\AISTray\obj\Debug\AISTray.csproj.GenerateResource.Cache
+C:\Users\e7d32\Source\Repos\MMS\AISTray\obj\Debug\AISTray.csproj.CoreCompileInputs.cache
+C:\Users\e7d32\Source\Repos\MMS\AISTray\obj\Debug\AISTray.exe
+C:\Users\e7d32\Source\Repos\MMS\AISTray\obj\Debug\AISTray.pdb

@@ -1,0 +1,140 @@
+﻿@model MMS.Models.ObjetosViewModel
+
+@{
+    ViewBag.Title = "Objects";
+    ViewBag.Subtitle = "Edit";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jsVue")
+    <script src="~/Scripts/Seguridad/Objetos.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+
+            $.MMS.Objetos("edit");
+
+        });
+    </script>
+}
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Objeto.ObjetoId, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Objeto.ObjetoId, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Objeto.ObjetoId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Objeto.ObjetoDesc, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Objeto.ObjetoDesc, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Objeto.ObjetoDesc, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            @Html.EditorFor(model => model.Objeto.ObjetoMenu)
+                            @Html.LabelFor(model => model.Objeto.ObjetoMenu, htmlAttributes: new { @class = "fix-checkbox" })
+                            @Html.ValidationMessageFor(model => model.Objeto.ObjetoMenu, "", new { @class = "" })
+                        </div>
+
+                        <div class="col-md-9 is-objeto-menu">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Objeto.ObjetoIcono, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Objeto.ObjetoIcono, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Objeto.ObjetoIcono, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 is-objeto-menu">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Objeto.ObjetoOrden, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Objeto.ObjetoOrden, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Objeto.ObjetoOrden, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-9 is-objeto-menu">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.DropDownList("Objeto_ObjetoIdPadre", null, "Select menu...", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.Objeto.ObjetoIdPadre, "", new { @class = "" })
+                                    @*@Html.LabelFor(model => model.ObjetoOrden, htmlAttributes: new { @class = "form-label" })*@
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-12 is-objeto-menu">
+                            <table class="table table-condensed table-hover table-striped table-va-middle" id="tableApps">
+                                <thead>
+                                    <tr>
+                                        <th>@Html.DisplayNameFor(model => model.Apps[0].AplicacionNombre)</th>
+                                        <th>@Html.DisplayNameFor(model => model.Apps[0].Seleccionado)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.Apps.Count; i++)
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                @*@Html.EditorFor(model => model.Objetos[i].ObjetoId, new { htmlAttributes = new { @class = "form-control", @readonly= "readonly" } })*@
+                                                @Html.HiddenFor(model => model.Apps[i].AplicacionId)
+                                                @Model.Apps[i].AplicacionNombre
+                                            </td>
+                                            <td>
+                                                @Html.EditorFor(model => model.Apps[i].Seleccionado, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.LabelFor(model => model.Apps[i].Seleccionado, " ", htmlAttributes: new { @class = "fix-checkbox" })
+                                            </td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+

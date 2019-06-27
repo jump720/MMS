@@ -1,0 +1,177 @@
+﻿@model MMS.Models.UsuariosViewModel
+@{
+    ViewBag.Title = "User";
+    ViewBag.Subtitle = "View";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="~/Scripts/Seguridad/Usuarios.js" type="text/javascript"></script>
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    @*<script src="~/Scripts/jquery.number/jquery.number.js" type="text/javascript"></script>*@
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            tableObjetos = $("#tableRoles").dataTable({
+                scrollY: '55vh',
+                scrollCollapse: true,
+                searching: false,
+                paging: false
+            });
+
+
+
+
+
+
+
+            $.MMS.Usuarios("details");
+        });
+
+
+
+
+    </script>
+}
+
+
+
+
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">                   
+
+                    <div class="row clearfix">
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioId, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioId, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioNombre, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioNombre, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioCorreo, new { htmlAttributes = new { @class = "form-control", @type = "email" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioCorreo, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.Usuariopassword, new { htmlAttributes = new { @class = "form-control", @type = "password" } })
+                                    @Html.LabelFor(model => model.Usuario.Usuariopassword, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.DropDownList("Usuario_UsuarioPadreId", null, "Select Manager...", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioMontoAut, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioMontoAut, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            @Html.EditorFor(model => model.Usuario.Usuarioactivo)
+                            @Html.LabelFor(model => model.Usuario.Usuarioactivo, htmlAttributes: new { @class = "fix-checkbox" })
+                        </div>
+                        <div class="col-md-6">
+                            @Html.EditorFor(model => model.Usuario.UsuarioAprobadorPrincipal, new { htmlAttributes = new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" } })
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.DropDownList("UsuarioHV_AreaId", null, "Select Area...", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.UsuarioHV.AreaId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.UsuarioHV.Cargo, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.UsuarioHV.Cargo, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.UsuarioHV.Cargo, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <table class="table table-condensed table-hover table-striped table-va-middle" id="tableRoles">
+                                <thead>
+                                    <tr>
+                                        <th>@Html.DisplayNameFor(model => model.Roles[0].RolId)</th>
+                                        <th>@Html.DisplayNameFor(model => model.Roles[0].Seleccionado)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.Roles.Count; i++)
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                @*@Html.EditorFor(model => model.Objetos[i].ObjetoId, new { htmlAttributes = new { @class = "form-control", @readonly= "readonly" } })*@
+                                                @Html.HiddenFor(model => model.Roles[i].RolId)
+                                                @Html.HiddenFor(model => model.Roles[i].RolNombre)
+                                                @Model.Roles[i].RolNombre
+                                            </td>
+                                            <td>
+                                                @Html.EditorFor(model => model.Roles[i].Seleccionado, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.LabelFor(model => model.Roles[i].Seleccionado, " ", htmlAttributes: new { @class = "fix-checkbox" })
+                                            </td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    @Html.ActionLink("Modify", "Edit", new { id = Model.Usuario.UsuarioId }, new { @class = "btn btn-success waves-effect " + ViewData[$"has_{ViewContext.RouteData.Values["controller"].ToString()}Edit"] })
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+

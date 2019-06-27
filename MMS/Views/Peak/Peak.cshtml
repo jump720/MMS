@@ -1,0 +1,2108 @@
+﻿@{
+    MMS.Models.Periodo periodoModel = null;
+    MMS.Models.PeriodoRevision periodoRevisionModel = null;
+    MMS.Models.Peak peakModel = null;
+    MMS.Models.PeakObjetivo peakObjetivoModel = null;
+    MMS.Models.PeakObjetivoRevision peakObjetivoRevisionModel = null;
+    MMS.Models.PeakRevision peakRevisionModel = null;
+    MMS.Models.PeakCoreValue peakCoreValueModel = null;
+    MMS.Models.PeakPlanDesarrollo peakPlanDesarrolloModel = null;
+
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Peak Performance Review";
+    ViewBag.Subtitle = "Manage";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssVueTooltip")
+    <link href="/Content/dist/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet" />
+    <link href="/Content/dist/plugins/nouislider/nouislider.min.css" rel="stylesheet" />
+    <link href="~/Content/dist/plugins/sweetalert/swalExtend.css" rel="stylesheet" />
+
+    <style>
+        .col-no-m {
+            margin-bottom: 0px !important;
+        }
+
+        .card .header .header-dropdown i {
+            font-size: 28px !important;
+            margin-top: -5px;
+        }
+
+        .card .header .header-dropdown li {
+            margin-left: 4px;
+        }
+
+        .no-click {
+            pointer-events: none;
+        }
+
+        .fix-btn-link {
+            padding-top: 3px;
+            padding-left: 9px;
+        }
+
+        .btn-sm-circle {
+            margin-right: 0px !important;
+        }
+
+        .no-hover-bg {
+            pointer-events: none;
+        }
+
+        .hover-bg, .no-hover-bg {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+            .hover-bg .textfield, .no-hover-bg .textfield {
+                border-left: 3px solid #ddd;
+                padding-left: 6px;
+                margin-left: 20px;
+            }
+
+            .hover-bg:hover .textfield {
+                border-left: 3px solid #2196f3;
+            }
+
+            .hover-bg:hover {
+                background-color: #ddd;
+                cursor: pointer;
+            }
+
+                .hover-bg:hover .form-select-label {
+                    color: #2196f3;
+                    cursor: pointer;
+                    text-decoration: underline;
+                }
+
+            .hover-bg .material-icons {
+                color: #2196f3;
+                margin-right: 5px;
+            }
+
+            .no-hover-bg .material-icons {
+                color: #999;
+                margin-right: 5px;
+            }
+
+            .hover-bg:hover .material-icons {
+                color: #2196f3;
+            }
+    </style>
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsVue")
+    @Scripts.Render("~/bundles/jsVueTooltip")
+    <script src="~/Scripts/Peak/Peak.js"></script>
+    <script src="/Content/dist/plugins/momentjs/moment.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+    <script src="/Content/dist/plugins/nouislider/nouislider.js"></script>
+    <script src="~/Content/dist/plugins/sweetalert/swalExtend.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $.MMS.Peak(@ViewBag.Id, "@ViewBag.Tipo");
+        });
+    </script>
+}
+
+<div class="row" id="peakContent">
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+                <ul class="header-dropdown m-r-0">
+                    <li v-tooltip.top-right="'Confirm Associate\'s Information'" v-if="tipo == 'manage' && !peak.Id">
+                        <a href="javascript:void(0);" v-on:click="modalConfirmacion()">
+                            <i class="material-icons">warning</i>
+                        </a>
+                    </li>                    
+                    <li v-tooltip.top-right="'Download Peak'" v-if="peak.Estado == 6">
+                        <a v-bind:href="`/Peak/File/${peak.Id}`" target="_blank">
+                            <i class="material-icons">file_download</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="body" style="padding-bottom: 0px;">
+                <div class="row">
+                    <div class="col-md-12 col-no-m">
+
+                        <div class="col-md-5 col-no-m p-l-0">
+                            <div class="card col-no-m">
+                                <div class="body">
+                                    <div class="row">
+                                        <div class="col-md-4 col-no-m">
+                                            <img height="125" v-bind:src="`/Profile/Picture/${usuario.Id}`" style="border-width: 1px;border-color: #ded;border-style: solid; padding: 6px;" />
+                                        </div>
+
+                                        <div class="col-md-8 col-no-m m-l--15">
+                                            <div class="row">
+                                                <div class="col-md-12 col-no-m">
+                                                    <label class="font-18 col-blue">Associate</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-4 col-no-m">
+                                                    <label>Full Name</label>
+                                                </div>
+                                                <div class="col-md-8 col-no-m">
+                                                    {{ usuario.Nombre }}
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-4 col-no-m">
+                                                    <label>@Html.DisplayNameFor(model => peakModel.AreaId)</label>
+                                                </div>
+                                                <div class="col-md-8 col-no-m">
+                                                    {{ usuario.Area ? usuario.Area.Nombre : "" }}
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-4 col-no-m">
+                                                    <label>@Html.DisplayNameFor(model => peakModel.Cargo)</label>
+                                                </div>
+                                                <div class="col-md-8 col-no-m">
+                                                    {{ usuario.Cargo }}
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-4 col-no-m">
+                                                    <label>@Html.DisplayNameFor(model => peakModel.UsuarioIdPadre)</label>
+                                                </div>
+                                                <div class="col-md-8 col-no-m">
+                                                    {{ usuario.UsuarioPadre ? usuario.UsuarioPadre.Nombre : "" }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-no-m">
+                            <div class="card col-no-m">
+                                <div class="body">
+                                    <div class="row">
+                                        <div class="col-md-12 col-no-m">
+                                            <label class="font-18 col-blue">Period</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-5 col-no-m">
+                                            <label>@Html.DisplayNameFor(model => periodoModel.Descripcion)</label>
+                                        </div>
+
+                                        <div class="col-md-7 col-no-m">
+                                            {{ periodo.Descripcion }}
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-5 col-no-m">
+                                            <label>@Html.DisplayNameFor(model => periodoModel.FechaIni)</label>
+                                        </div>
+
+                                        <div class="col-md-7 col-no-m">
+                                            {{ periodo.FechaIni }}
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-5 col-no-m">
+                                            <label>@Html.DisplayNameFor(model => periodoModel.FechaFin)</label>
+                                        </div>
+
+                                        <div class="col-md-7 col-no-m">
+                                            {{ periodo.FechaFin }}
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-5 col-no-m">
+                                            <label>Status</label>
+                                        </div>
+
+                                        <div class="col-md-7 col-no-m">
+                                            {{ estadoPeriodo }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-no-m p-r-0">
+                            <div class="card col-no-m">
+                                <div class="body">
+                                    <div class="row">
+                                        <div class="col-md-12 col-no-m">
+                                            <label class="font-18 col-blue">Summary</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 col-no-m">
+                                            <label>Peak @Html.DisplayNameFor(model => peakModel.Estado)</label>
+                                        </div>
+                                        <div class="col-md-8 col-no-m">
+                                            {{ estadoPeak }}
+                                        </div>
+                                    </div>
+
+                                    <div class="row" v-if="peak.FechaEnvio">
+                                        <div class="col-md-4 col-no-m">
+                                            <label>@Html.DisplayNameFor(model => peakModel.FechaEnvio)</label>
+                                        </div>
+                                        <div class="col-md-8 col-no-m">
+                                            {{ peak.FechaEnvio }}
+                                        </div>
+                                    </div>
+
+                                    <div class="row" v-if="tipo == 'manage' || (tipo == 'review' && (peak.Estado == 4 || peak.Estado == 5 || peak.Estado == 6 || peak.Estado == 8))">
+                                        <div class="col-md-4 col-no-m">
+                                            <label>Achieved</label>
+                                        </div>
+
+                                        <div class="col-md-8 col-no-m">
+                                            <div class="progress m-b-5">
+                                                <div class="progress-bar bg-green" v-bind:style="{ width: `${completado}%` }">
+                                                    {{ completado }}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" v-if="peak.Estado == 5 || peak.Estado == 6 || peak.Estado == 8">
+                                        <div class="col-md-4 col-no-m">
+                                            <label>Score</label>
+                                        </div>
+
+                                        <div class="col-md-8 col-no-m">
+                                            <div class="progress m-b-0">
+                                                <div class="progress-bar bg-purple" v-bind:style="{ width: `${ calificacionPorcentual }%` }">
+                                                    {{ calificacion.toFixed(2) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-12" v-if="!peak.Id" style="margin-top: 20px;">
+                        <div class="alert alert-warning">
+                            <strong>Alert!</strong> You must confirm the Associate's Information to create the Peak, click <a href="#" class="alert-link" v-on:click.prevent="modalConfirmacion()">here</a> to do this.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <template v-if="peak.Id">
+                <div class="header" style="padding-bottom: 0px">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs tab-nav-right tab-col-purple" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#tabObjetivos" data-toggle="tab" aria-expanded="true" v-on:click="tabSelected(1)">OBJECTIVES</a>
+                        </li>
+                        <li role="presentation" v-for="(revi, index) in revisiones">
+                            <a v-bind:href="`#tabReview_${index}`" data-toggle="tab" aria-expanded="false" v-on:click="tabSelected(2, index)">
+                                <div v-bind:class="{ 'font-bold font-underline': revi.PeriodoRevision.Actual }" class="text-uppercase">{{ revi.PeriodoRevision.Nombre }}</div>
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#tabFinalReview" data-toggle="tab" aria-expanded="false" v-on:click="tabSelected(6)">
+                                <div v-bind:class="{ 'font-bold font-underline': periodo.RevisionFinal && tipo == 'review' }">FINAL REVIEW</div>
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#tabCoreValues" data-toggle="tab" aria-expanded="false" v-on:click="tabSelected(3)">
+                                <div v-bind:class="{ 'font-bold font-underline': periodo.RevisionFinal }">CORE VALUES</div>
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#tabAssessment" data-toggle="tab" aria-expanded="false" v-on:click="tabSelected(4)">
+                                <div v-bind:class="{ 'font-bold font-underline': periodo.RevisionFinal }">ASSESSMENT AND FEEDBACK</div>
+                            </a>
+                        </li>
+                        <li role="presentation" v-if="peak.Estado == 8 || peak.Estado == 6">
+                            <a href="#tabDeveplomentPlan" data-toggle="tab" aria-expanded="false" v-on:click="tabSelected(5)">
+                                <div v-bind:class="{ 'font-bold font-underline': periodo.RevisionFinal }">DEVELOPMENT PLAN</div>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="header-dropdown m-r-0">
+                        <template v-if="tabId == 1">
+                            <template v-if="peak.Estado == 1 && tipo == 'manage'">
+                                <template v-if="objetivos.length < numeroObjetivos">
+                                    <li v-tooltip="'Inherit Objectives'" v-if="usuario.UsuarioPadre">
+                                        <a href="javascript:void(0);" v-on:click="modalHeredar()">
+                                            <i class="material-icons">playlist_add_check</i>
+                                        </a>
+                                    </li>
+                                    <li v-tooltip="'Add Objective'">
+                                        <a href="javascript:void(0);" v-on:click="modalObjetivo(-1)">
+                                            <i class="material-icons">add_circle</i>
+                                        </a>
+                                    </li>
+                                </template>
+                                <template v-else>
+                                    <li v-tooltip="'Send for Approval'">
+                                        <a href="javascript:void(0);" v-on:click="sendForApproval()">
+                                            <i class="material-icons">send</i>
+                                        </a>
+                                    </li>
+                                </template>
+                            </template>
+                            <template v-else-if="peak.Estado == 2">
+                                <template v-if="tipo == 'manage'">
+                                    <li v-tooltip.top-right="'Undo Send for Approval'">
+                                        <a href="javascript:void(0);" v-on:click="undoSendForApproval()">
+                                            <i class="material-icons">undo</i>
+                                        </a>
+                                    </li>
+                                </template>
+                                <template v-else-if="tipo == 'review'">
+                                    <li v-tooltip.top-right="'Send Approval Results'">
+                                        <a href="javascript:void(0);" v-on:click="sendApprovalResults()">
+                                            <i class="material-icons">send</i>
+                                        </a>
+                                    </li>
+                                </template>
+                            </template>
+                            <template v-else-if="peak.Estado == 3 && tipo == 'manage'">
+                                <li v-tooltip.top-right="'Send for Modification Approval'">
+                                    <a href="javascript:void(0);" v-on:click="sendForModificationApproval()">
+                                        <i class="material-icons">send</i>
+                                    </a>
+                                </li>
+                            </template>
+                            <template v-else-if="peak.Estado == 7">
+                                <template v-if="tipo == 'manage'">
+                                    <li v-tooltip.top-right="'Undo Send for Modification Approval'">
+                                        <a href="javascript:void(0);" v-on:click="undoSendForModificationApproval()">
+                                            <i class="material-icons">undo</i>
+                                        </a>
+                                    </li>
+                                </template>
+                                <template v-else-if="tipo == 'review'">
+                                    <li v-tooltip.top-right="'Send Modification Approval Results'">
+                                        <a href="javascript:void(0);" v-on:click="sendModificationApprovalResults()">
+                                            <i class="material-icons">send</i>
+                                        </a>
+                                    </li>
+                                </template>
+                            </template>
+                        </template>
+                        <template v-else-if="tabId == 2">
+                            <li v-tooltip.top-right="`@Html.DisplayNameFor(model => periodoRevisionModel.FechaIni): ${revisionSeleccionada.PeriodoRevision.FechaIni} -- @Html.DisplayNameFor(model => periodoRevisionModel.FechaFin): ${revisionSeleccionada.PeriodoRevision.FechaFin}`">
+                                <i class="material-icons">help_outline</i>
+                            </li>
+
+                            <template v-if="revisionSeleccionada.Cerrada">
+                                <template v-if="tipo == 'review' && revisionSeleccionada.PeriodoRevision.Actual && peak.Estado == 3">
+                                    <li v-tooltip.top-right="'This Review is closed, click to open it'">
+                                        <a href="javascript:void(0);" v-on:click="openReview()">
+                                            <i class="material-icons">lock</i>
+                                        </a>
+                                    </li>
+                                </template>
+                                <template v-else>
+                                    <li v-tooltip.top-right="'This Review is closed'">
+                                        <i class="material-icons">lock</i>
+                                    </li>
+                                </template>
+                            </template>
+                            <template v-else-if="revisionSeleccionada.Comentarios && tipo == 'manage' && peak.Estado == 3 && revisionSeleccionada.PeriodoRevision.Actual">
+                                <li v-tooltip.top-right="'Send for Review'">
+                                    <a href="javascript:void(0);" v-on:click="sendForReview()">
+                                        <i class="material-icons">send</i>
+                                    </a>
+                                </li>
+                            </template>
+
+                            <template v-if="peak.Estado == 4 && revisionSeleccionada.PeriodoRevision.Actual">
+                                <template v-if="tipo == 'manage'">
+                                    <li v-tooltip.top-right="'Undo Send for Review'">
+                                        <a href="javascript:void(0);" v-on:click="undoSendForReview()">
+                                            <i class="material-icons">undo</i>
+                                        </a>
+                                    </li>
+                                </template>
+                                <template v-else-if="tipo == 'review'">
+                                    <li v-tooltip.top-right="'Send Review Result'" v-if="revisionSeleccionada.ComentariosJefe">
+                                        <a href="javascript:void(0);" v-on:click="sendReviewResults()">
+                                            <i class="material-icons">send</i>
+                                        </a>
+                                    </li>
+                                </template>
+                            </template>
+                        </template>
+                        <template v-else-if="tabId == 4">
+                            <template v-if="tipo == 'manage' && periodo.RevisionFinal">
+                                <li v-tooltip.top-right="'Send for Final Review'" v-if="peak.Estado == 3 && peak.ResumenContribuciones">
+                                    <a href="javascript:void(0);" v-on:click="sendForFinalReview()">
+                                        <i class="material-icons">send</i>
+                                    </a>
+                                </li>
+                                <li v-tooltip.top-right="'Undo Send for Final Review'" v-if="peak.Estado == 5">
+                                    <a href="javascript:void(0);" v-on:click="undoSendForFinalReview()">
+                                        <i class="material-icons">undo</i>
+                                    </a>
+                                </li>
+                            </template>
+                        </template>
+                        <template v-else-if="tabId == 5 && peak.Estado == 8 && tipo == 'review' && periodo.RevisionFinal">
+                            <li v-tooltip.top-right="'Add Development Plan'">
+                                <a href="javascript:void(0);" v-on:click="modalPlanDesarrollo(-1)">
+                                    <i class="material-icons">add_circle</i>
+                                </a>
+                            </li>
+                            <li v-tooltip.top-right="'Finish Peak'">
+                                <a href="javascript:void(0);" v-on:click="finish()">
+                                    <i class="material-icons">exit_to_app</i>
+                                </a>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                <div class="body">
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tabObjetivos">
+                            <table class="table table-striped table-hover table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Numero)
+                                        </th>
+                                        <th width="5%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Peso)
+                                        </th>
+                                        <th width="37%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Objetivo)
+                                        </th>
+                                        <th width="10%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.FechaMeta)
+                                        </th>
+                                        <th width="37%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.MedidoPor)
+                                        </th>
+                                        <th colspan="2">
+                                            <template v-if="((peak.Estado == 3 || peak.Estado == 4 || peak.Estado == 7) && tipo == 'manage') || peak.Estado == 5 || peak.Estado == 6">
+                                                @Html.DisplayNameFor(model => peakObjetivoModel.Completado)
+                                            </template>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="objetivos.length == 0">
+                                        <td colspan="7">
+                                            <div class="text-center"><em>This Peak has none objectives</em></div>
+                                        </td>
+                                    </tr>
+                                    <tr v-for="(objetivo, index) in objetivos">
+                                        <td>
+                                            <template v-if="objetivo.PeakObjetivoId">
+                                                <span class="badge" v-tooltip="'Inherited'">{{ objetivo.Numero }}</span>
+                                            </template>
+                                            <template v-else>
+                                                <strong style="padding-left: 7px">{{ objetivo.Numero }}</strong>
+                                            </template>
+                                        </td>
+                                        <td>
+                                            {{ objetivo.Peso }}%
+                                        </td>
+                                        <td>
+                                            <div v-bind:class="{ 'col-blue': (peak.Estado == 3 && objetivo.Estado == 4 && tipo == 'manage'), 'col-red': (peak.Estado == 3 && objetivo.Estado == 3 && tipo == 'manage') }"
+                                                 v-html="replaceIntro(objetivo.Objetivo)"></div>
+                                        </td>
+                                        <td>
+                                            <div v-bind:class="{ 'col-blue': (peak.Estado == 3 && objetivo.Estado == 4 && tipo == 'manage'), 'col-red': (peak.Estado == 3 && objetivo.Estado == 3 && tipo == 'manage') }">
+                                                {{ objetivo.FechaMeta }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div v-bind:class="{ 'col-blue': (peak.Estado == 3 && objetivo.Estado == 4 && tipo == 'manage'), 'col-red': (peak.Estado == 3 && objetivo.Estado == 3 && tipo == 'manage') }"
+                                                 v-html="replaceIntro(objetivo.MedidoPor)"></div>
+                                        </td>
+                                        <td>
+                                            <div class="text-right">
+                                                <template v-if="(peak.Estado == 1 && tipo == 'manage') || (peak.Estado == 2 && tipo == 'review')">
+                                                    <template v-if="objetivo.Estado == 1">
+                                                        <i class='material-icons col-grey' v-tooltip="'Undefined Approval'">remove_circle</i>
+                                                    </template>
+                                                    <template v-else-if="objetivo.Estado == 2">
+                                                        <i class='material-icons col-green' v-tooltip="'Approved'">thumb_up</i>
+                                                    </template>
+                                                    <template v-else-if="objetivo.Estado == 3">
+                                                        <i class='material-icons col-red' v-tooltip="'Disapproved'">thumb_down</i>
+                                                    </template>
+                                                </template>
+                                                <template v-else-if="(peak.Estado == 3 || peak.Estado == 4) && tipo == 'manage'">
+                                                    {{ objetivo.Completado }}%
+                                                </template>
+                                                <template v-else-if="peak.Estado == 7">
+                                                    <template v-if="tipo == 'manage'">
+                                                        {{ objetivo.Completado }}%
+                                                    </template>
+                                                    <template v-else-if="tipo == 'review' && objetivo.Estado == 4">
+                                                        <template v-if="objetivo.AprobacionModificacion == null">
+                                                            <i class='material-icons col-grey' v-tooltip="'Undefined Approval'">remove_circle</i>
+                                                        </template>
+                                                        <template v-else-if="objetivo.AprobacionModificacion">
+                                                            <i class='material-icons col-green' v-tooltip="'Approved'">thumb_up</i>
+                                                        </template>
+                                                        <template v-else>
+                                                            <i class='material-icons col-red' v-tooltip="'Disapproved'">thumb_down</i>
+                                                        </template>
+                                                    </template>
+                                                </template>
+                                                <template v-else-if="peak.Estado == 5 || peak.Estado == 6">
+                                                    {{ objetivo.Completado }}%
+                                                </template>
+                                            </div>
+                                        <td>
+                                            <div class="text-right">
+                                                <template v-if="peak.Estado == 1 && tipo == 'manage'">
+                                                    <li class="dropdown" style="list-style-type:none;">
+                                                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+                                                            <i class="material-icons">more_vert</i>
+                                                        </a>
+                                                        <ul class="dropdown-menu pull-right">
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="waves-effect waves-block" v-on:click.prevent="modalObjetivo(index)"><i class="material-icons">edit</i> Modify</a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="waves-effect waves-block" v-on:click.prevent="eliminarObjetivo(index)"><i class="material-icons">delete</i> Delete</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </template>
+                                                <template v-else-if="peak.Estado == 2 && tipo == 'review'">
+                                                    <a href='javascript:void(0);' v-on:click.prevent="modalAprobacionObjetivo(index)" class='btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float'>
+                                                        <i class='material-icons'>flag</i>
+                                                    </a>
+                                                </template>
+                                                <template v-else-if="(peak.Estado == 3 || peak.Estado == 4 || peak.Estado == 7) && tipo == 'manage'">
+                                                    <li class="dropdown" style="list-style-type:none;">
+                                                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+                                                            <i class="material-icons">more_vert</i>
+                                                        </a>
+                                                        <ul class="dropdown-menu pull-right">
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="waves-effect waves-block" v-on:click.prevent="modalAvance(index)"><i class="material-icons">trending_up</i> Actual Results</a>
+                                                            </li>
+                                                            <li v-if="peak.Estado == 3">
+                                                                <a href="javascript:void(0);" class="waves-effect waves-block" v-on:click.prevent="modalModificacionObjetivo(index)"><i class="material-icons">edit</i> Modify</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </template>
+                                                <template v-else-if="peak.Estado == 7 && tipo == 'review' && objetivo.Estado == 4">
+                                                    <a href='javascript:void(0);' v-on:click.prevent="modalAprobacionModificationObjetivo(index)" class='btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float'>
+                                                        <i class='material-icons'>flag</i>
+                                                    </a>
+                                                </template>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane fade" v-for="(revi, index) in revisiones" v-bind:id="`tabReview_${index}`">
+                            <!-- REVIEW -->
+                            <table class="table table-striped table-hover table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Numero)
+                                        </th>
+                                        <th width="5%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Peso)
+                                        </th>
+                                        <th width="37%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Objetivo)
+                                        </th>
+                                        <th width="10%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.FechaMeta)
+                                        </th>
+                                        <th width="37%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.MedidoPor)
+                                        </th>
+                                        <th colspan="2">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Completado)
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="revi.Objetivos.length == 0">
+                                        <td colspan="7">
+                                            <div class="text-center"><em>This Review has not been sent yet.</em></div>
+                                        </td>
+                                    </tr>
+                                    <tr v-for="(objetivo, index2) in revisiones[index].Objetivos">
+                                        <td>
+                                            <template v-if="objetivo.PeakObjetivoId">
+                                                <span class="badge" v-tooltip="'Inherited'">{{ objetivo.Numero }}</span>
+                                            </template>
+                                            <template v-else>
+                                                <strong style="padding-left: 7px">{{ objetivo.Numero }}</strong>
+                                            </template>
+                                        </td>
+                                        <td>
+                                            {{ objetivo.Peso }}%
+                                        </td>
+                                        <td>
+                                            <div v-html="replaceIntro(objetivo.Objetivo)"></div>
+                                        </td>
+                                        <td>
+                                            {{ objetivo.FechaMeta }}
+                                        </td>
+                                        <td>
+                                            <div v-html="replaceIntro(objetivo.MedidoPor)"></div>
+                                        </td>
+                                        <td>
+                                            <div class="text-right">
+                                                {{ objetivo.Completado }}%
+                                            </div>
+                                        <td>
+                                            <div class="text-right">
+                                                <a href='javascript:void(0);' v-tooltip="objetivo.TieneCambios ? 'Objective changed' : ''" v-on:click.prevent="modalComentariosObjetivo(index2)" class='btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float'>
+                                                    <i class='material-icons'>{{ objetivo.ComentariosJefe ? (objetivo.TieneCambios ? 'rate_review' : 'chat_bubble') : 'chat_bubble_outline' }}</i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="row">
+                                <div class="col-md-6" v-bind:class="tipo == 'manage' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalReviewComments()">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakRevisionModel.Comentarios, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(revi.Comentarios)"></div>
+                                </div>
+
+                                <div class="col-md-6" v-bind:class="tipo == 'review' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalReviewComments()">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakRevisionModel.ComentariosJefe, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(revi.ComentariosJefe)"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane fade" id="tabFinalReview">
+                            <table class="table table-striped table-hover table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Numero)
+                                        </th>
+                                        <th width="5%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Peso)
+                                        </th>
+                                        <th width="37%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Objetivo)
+                                        </th>
+                                        <th width="10%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.FechaMeta)
+                                        </th>
+                                        <th width="37%">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.MedidoPor)
+                                        </th>
+                                        <th colspan="2">
+                                            @Html.DisplayNameFor(model => peakObjetivoModel.Factor)
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="peak.Estado != 5 && peak.Estado != 6">
+                                        <td colspan="7">
+                                            <div class="text-center"><em>Final Review has not been sent yet</em></div>
+                                        </td>
+                                    </tr>
+                                    <tr v-else v-for="(objetivo, index) in objetivos">
+                                        <td>
+                                            <template v-if="objetivo.PeakObjetivoId">
+                                                <span class="badge" v-tooltip="'Inherited'">{{ objetivo.Numero }}</span>
+                                            </template>
+                                            <template v-else>
+                                                <strong style="padding-left: 7px">{{ objetivo.Numero }}</strong>
+                                            </template>
+                                        </td>
+                                        <td>
+                                            {{ objetivo.Peso }}%
+                                        </td>
+                                        <td>
+                                            <div v-html="replaceIntro(objetivo.Objetivo)"></div>
+                                        </td>
+                                        <td>
+                                            {{ objetivo.FechaMeta }}
+                                        </td>
+                                        <td>
+                                            <div v-html="replaceIntro(objetivo.MedidoPor)"></div>
+                                        </td>
+                                        <td>
+                                            {{ objetivo.Factor }}
+                                        <td>
+                                            <div class="text-right">
+                                                <a href='javascript:void(0);' v-on:click.prevent="modalCalificacionObjetivo(index)" class='btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float'>
+                                                    <i class='material-icons'>star</i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="row">
+                                <div class="col-md-12" v-bind:class="tipo == 'review' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalFactorAjuste()">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>stars</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.FactorAjuste, htmlAttributes: new { @class = "form-select-label" }): <span>{{ peak.FactorAjuste }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.JustificacionFactorAjuste, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.JustificacionFactorAjuste)"></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane fade" id="tabCoreValues">
+                            <table class="table table-striped table-hover table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th width="70%">
+                                            Core Value / @Html.DisplayNameFor(model => peakCoreValueModel.CoreValue.Competencia)
+                                        </th>
+                                        <th width="15%">
+                                            @Html.DisplayNameFor(model => peakCoreValueModel.Autoevaluacion)
+                                        </th>
+                                        <th width="15%">
+                                            @Html.DisplayNameFor(model => peakCoreValueModel.Evaluacion)
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(cv, index) in coreValues">
+                                        <td>
+                                            <strong>{{ cv.CoreValue.Nombre }} / <span class="col-blue">{{ cv.CoreValue.Competencia }}</span></strong><br />
+                                            <em>{{ cv.CoreValue.Descripcion }}</em>
+                                        </td>
+                                        <td>
+                                            {{ getSkillName(cv.Autoevaluacion) }}
+                                        </td>
+                                        <td>
+                                            {{ getSkillName(cv.Evaluacion) }}
+                                        </td>
+                                        <td>
+                                            <div class="text-right">
+                                                <a href='javascript:void(0);' v-on:click.prevent="modalCoreValue(index)" class='btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float'>
+                                                    <i class='material-icons'>check</i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="row">
+                                <div class="col-md-12" v-bind:class="tipo == 'review' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalCoreValuesComments()">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.ComentariosCompetencias, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.ComentariosCompetencias)"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane fade" id="tabAssessment">
+                            <div class="row">
+                                <div class="col-md-6 col-no-m">
+                                    <h5 class="col-blue">Associate Self Assessment</h5>
+                                </div>
+
+                                <div class="col-md-6 col-no-m">
+                                    <h5 class="col-blue">Manager Feedback</h5>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6" v-bind:class="tipo == 'manage' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalAssessmentFeedback('ResumenContribuciones')">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.ResumenContribuciones, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.ResumenContribuciones)"></div>
+                                </div>
+
+                                <div class="col-md-6" v-bind:class="tipo == 'review' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalAssessmentFeedback('ResumenContribucionesJefe')">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.ResumenContribucionesJefe, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.ResumenContribucionesJefe)"></div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6" v-bind:class="tipo == 'manage' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalAssessmentFeedback('Fortalezas')">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.Fortalezas, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.Fortalezas)"></div>
+                                </div>
+
+                                <div class="col-md-6" v-bind:class="tipo == 'review' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalAssessmentFeedback('FortalezasJefe')">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.FortalezasJefe, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.FortalezasJefe)"></div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 m-b-0" v-bind:class="tipo == 'manage' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalAssessmentFeedback('ObjetivosFuturo')">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.ObjetivosFuturo, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.ObjetivosFuturo)"></div>
+                                </div>
+
+                                <div class="col-md-6 m-b-0" v-bind:class="tipo == 'review' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalAssessmentFeedback('ObjetivosFuturoJefe')">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.ObjetivosFuturoJefe, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.ObjetivosFuturoJefe)"></div>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <div class="row">
+                                <div class="col-md-10" v-bind:class="tipo == 'review' ? 'hover-bg' : 'no-hover-bg'" v-on:click="modalRendimientoGeneral()">
+                                    <table>
+                                        <tr>
+                                            <td><i class='material-icons'>comment</i></td>
+                                            <td>@Html.LabelFor(model => peakModel.RendimientoGeneral, htmlAttributes: new { @class = "form-select-label" })</td>
+                                        </tr>
+                                    </table>
+                                    <div class="textfield" v-html="replaceIntro(peak.RendimientoGeneral)"></div>
+                                </div>
+
+                                <div class="col-md-2" v-if="tipo == 'review' && peak.Estado == 5">
+                                    <button type="button" class="btn btn-primary waves-effect full-width" v-on:click="finishFinalReview()">Finish Final Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane fade" id="tabDeveplomentPlan">
+                            <table class="table table-striped table-hover table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th width="15%">
+                                            @Html.DisplayNameFor(model => peakPlanDesarrolloModel.Area)
+                                        </th>
+                                        <th width="35%">
+                                            @Html.DisplayNameFor(model => peakPlanDesarrolloModel.Plan)
+                                        </th>
+                                        <th width="10%">
+                                            @Html.DisplayNameFor(model => peakPlanDesarrolloModel.FechaMeta)
+                                        </th>
+                                        <th width="30%">
+                                            @Html.DisplayNameFor(model => peakPlanDesarrolloModel.ResultadoDeseado)
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(pd, index) in planesDesarrollo">
+                                        <td>
+                                            {{ pd.Area }}
+                                        </td>
+                                        <td>
+                                            <div v-html="replaceIntro(pd.Plan)"></div>
+                                        </td>
+                                        <td>
+                                            {{ pd.FechaMeta }}
+                                        </td>
+                                        <td>
+                                            <div v-html="replaceIntro(pd.ResultadoDeseado)"></div>
+                                        </td>
+                                        <td>
+                                            <div class="text-right" v-if="peak.Estado == 8 && tipo == 'review' && periodo.RevisionFinal">
+                                                <a href='javascript:void(0);' v-on:click.prevent="modalPlanDesarrollo(index)" class='btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float'>
+                                                    <i class='material-icons'>edit</i>
+                                                </a>
+                                                <a href='javascript:void(0);' v-on:click.prevent="eliminarPlanDesarrollo(index)" class='bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float'>
+                                                    <i class='material-icons'>delete</i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </template>
+
+        </div>
+    </div>
+
+    <form novalidate="novalidate" id="frmConfirmacion" v-on:submit.prevent="submitConfirmacion($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Associate Information</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+                            <input type="hidden" name="UsuarioIdPadre" v-bind:value="confirmacion.usuarioPadre ? confirmacion.usuarioPadre.id : ''" />
+                            <input type="hidden" name="PeriodoId" v-bind:value="periodo.Id" />
+                            <input type="hidden" name="AreaId" v-bind:value="confirmacion.areaId" />
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" readonly v-bind:value="usuario.Nombre" />
+                                        <label class="form-label">Full Name</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => peakModel.AreaId, htmlAttributes: new { @class = "form-select-label m-b-0" })
+                                    <div class="form-line">
+                                        <select class="ms form-control" v-model="confirmacion.areaId" disabled>
+                                            <option v-for="area in areas" v-bind:value="area.Id">{{ area.Nombre }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" v-model="confirmacion.cargo" name="Cargo" readonly="readonly" />
+                                        @Html.LabelFor(model => peakModel.Cargo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="Cargo" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" v-bind:value="confirmacion.usuarioPadre ? confirmacion.usuarioPadre.nombre : ''" readonly />
+                                        @Html.LabelFor(model => peakModel.UsuarioIdPadre, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12" v-if="!confirmacion.areaId || !confirmacion.cargo">
+                                <div class="alert alert-warning">
+                                    <strong>Warning!</strong> The fields @Html.DisplayNameFor(model => peakModel.AreaId) and @Html.DisplayNameFor(model => peakModel.Cargo) are required. <br />
+                                    This information can only be filled by the system administrator.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="confirmacion.areaId && confirmacion.cargo">Create Peak</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmObjetivo" v-on:submit.prevent="submitObjetivo($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">{{ objetivo.Id ? 'Modify' : 'Add' }} Objective</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="objetivo.Id" />
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+                            <input type="hidden" name="PeakObjetivoId" v-bind:value="objetivo.PeakObjetivoId" />
+
+                            <objetivo-info v-bind:objetivo="objetivo" v-bind:readonly="false" v-bind:tipo="1">
+                            </objetivo-info>
+
+                            <div class="col-md-12" v-show="objetivo.ComentariosRechazo">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="objetivo.ComentariosRechazo" rows="4" readonly></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.ComentariosRechazo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmAprobacionObjetivo" v-on:submit.prevent="submitAprobacionObjetivo($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Objective Approval</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="objetivo.Id" />
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+
+                            <objetivo-info v-bind:objetivo="objetivo" v-bind:readonly="true">
+                            </objetivo-info>
+
+                            <div class="col-md-2 m-b-15">
+                                <input type="radio" v-model="aprobacion.estado" id="peakObjetivoModel_Aprobado" value="2" class="with-gap" />
+                                @Html.Label("Approved", htmlAttributes: new { @for = "peakObjetivoModel_Aprobado" })
+                            </div>
+
+                            <div class="col-md-2 m-b-15">
+                                <input type="radio" v-model="aprobacion.estado" id="peakObjetivoModel_Desaprobado" value="3" class="with-gap" />
+                                @Html.Label("Disapproved", htmlAttributes: new { @for = "peakObjetivoModel_Desaprobado" })
+                            </div>
+
+                            <input type="hidden" name="Estado" v-bind:value="aprobacion.estado" />
+
+                            <div class="col-md-12" v-show="aprobacion.estado == 3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="aprobacion.comentariosRechazo" name="ComentariosRechazo" rows="4"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.ComentariosRechazo) field is required."></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.ComentariosRechazo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ComentariosRechazo" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-bind:disabled="aprobacion.estado == 1">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmAvance" v-on:submit.prevent="submitAvance($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Objective</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="objetivo.Id" />
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+
+                            <objetivo-info v-bind:objetivo="objetivo" v-bind:readonly="true">
+                            </objetivo-info>
+
+                            <div class="col-md-12 m-b-30">
+                                @Html.LabelFor(model => peakObjetivoModel.Completado, htmlAttributes: new { @class = "form-label" }) {{ avance.completado }}%
+                                <div id="nouislider_completado"></div>
+                                <input type="hidden" name="Completado" v-bind:value="avance.completado" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="avance.resultadosActuales" name="ResultadosActuales" rows="4"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.ResultadosActuales) field is required."></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.ResultadosActuales, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ResultadosActuales" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="avance.comentarios" name="Comentarios" rows="4"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.Comentarios) field is required."></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.Comentarios, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="Comentarios" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmModificacionObjetivo" v-on:submit.prevent="submitModificacionObjetivo($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Modify Objective</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="objetivo.Id" />
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+
+                            <objetivo-info v-bind:objetivo="objetivo" v-bind:readonly="false" v-bind:tipo="2">
+                            </objetivo-info>
+
+                            <div class="col-md-12" v-show="objetivo.ComentariosRechazo">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="objetivo.ComentariosRechazo" rows="4" readonly></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.ComentariosRechazo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="modificacion.motivoModificacion" name="MotivoModificacion" rows="4"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.MotivoModificacion) field is required."></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.MotivoModificacion, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="MotivoModificacion" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmAprobacionModificacionObjetivo" v-on:submit.prevent="submitAprobacionModificacionObjetivo($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Objective Approval</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="objetivo.Id" />
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+
+                            <objetivo-info v-bind:objetivo="objetivo" v-bind:readonly="true" v-bind:tipo="2">
+                            </objetivo-info>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="objetivo.MotivoModificacion" rows="4" readonly></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.MotivoModificacion, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="MotivoModificacion" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 m-b-15">
+                                <input type="radio" v-model="aprobacion.estado" id="peakObjetivoModel2_Aprobado" value="2" class="with-gap" />
+                                @Html.Label("Approved", htmlAttributes: new { @for = "peakObjetivoModel2_Aprobado" })
+                            </div>
+
+                            <div class="col-md-2 m-b-15">
+                                <input type="radio" v-model="aprobacion.estado" id="peakObjetivoModel2_Desaprobado" value="3" class="with-gap" />
+                                @Html.Label("Disapproved", htmlAttributes: new { @for = "peakObjetivoModel2_Desaprobado" })
+                            </div>
+
+                            <input type="hidden" name="AprobacionModificacion" v-bind:value="aprobacion.estado == 2" />
+
+                            <div class="col-md-12" v-show="aprobacion.estado == 3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="aprobacion.comentariosRechazo" name="ComentariosRechazo" rows="4"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.ComentariosRechazo) field is required."></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.ComentariosRechazo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ComentariosRechazo" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-bind:disabled="aprobacion.estado == 1">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="modal fade" role="dialog" id="modalHeredar">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Inherit Objectives</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped table-hover table-condensed">
+                        <thead>
+                            <tr>
+                                <th width="10%">
+                                    @Html.DisplayNameFor(model => peakObjetivoModel.Peso)
+                                </th>
+                                <th width="40%">
+                                    @Html.DisplayNameFor(model => peakObjetivoModel.Objetivo)
+                                </th>
+                                <th width="10%">
+                                    @Html.DisplayNameFor(model => peakObjetivoModel.FechaMeta)
+                                </th>
+                                <th width="40%">
+                                    @Html.DisplayNameFor(model => peakObjetivoModel.MedidoPor)
+                                </th>
+                                <th>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(objetivo, index) in heredar.objetivos">
+                                <td>
+                                    {{ objetivo.Peso }}%
+                                </td>
+                                <td>
+                                    <div v-html="replaceIntro(objetivo.Objetivo)"></div>
+                                </td>
+                                <td>
+                                    {{ objetivo.FechaMeta }}
+                                </td>
+                                <td>
+                                    <div v-html="replaceIntro(objetivo.MedidoPor)"></div>
+                                </td>
+                                <td>
+                                    <input type="checkbox" v-model="objetivo.Heredar" v-bind:id="`chkHeredarObjetivo_${index}`" class="check-box" />
+                                    <label v-bind:for="`chkHeredarObjetivo_${index}`" class="fix-checkbox"></label>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <hr class="m-b-0 m-t--10" />
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary waves-effect" v-on:click="submitHeredar()">Inherit</button>
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form novalidate="novalidate" id="frmComentariosRevision" v-on:submit.prevent="submitComentariosRevision($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Review Comments</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+                            <input type="hidden" name="PeriodoRevisionId" v-bind:value="revisionSeleccionada.PeriodoRevision.Id" />
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="revision.comentarios" name="Comentarios" rows="6" v-bind:disabled="tipo == 'review' || !revisionSeleccionada.PeriodoRevision.Actual || revisionSeleccionada.Cerrada || (tipo == 'manage' && peak.Estado != 3)"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakRevisionModel.Comentarios) field is required."></textarea>
+                                        @Html.LabelFor(model => peakRevisionModel.Comentarios, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="Comentarios" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="revision.comentariosJefe" name="ComentariosJefe" rows="6" v-bind:disabled="tipo == 'manage' || !revisionSeleccionada.PeriodoRevision.Actual || (tipo == 'review' && peak.Estado != 4)"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakRevisionModel.ComentariosJefe) field is required."></textarea>
+                                        @Html.LabelFor(model => peakRevisionModel.ComentariosJefe, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ComentariosJefe" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="revisionSeleccionada.PeriodoRevision.Actual && !revisionSeleccionada.Cerrada && ((tipo == 'manage' && peak.Estado == 3) || (tipo == 'review' && peak.Estado == 4))">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmComentariosObjetivo" v-on:submit.prevent="submitComentariosObjetivo($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Objective</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="PeakObjetivoId" v-bind:value="objetivo.Id" />
+                            <input type="hidden" name="PeriodoRevisionId" v-bind:value="revisionSeleccionada.PeriodoRevision.Id" />
+
+                            <objetivo-info v-bind:objetivo="objetivo" v-bind:readonly="true" v-bind:tipo="3">
+                            </objetivo-info>
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-bind:value="objetivo.ResultadosActuales" rows="4" readonly></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.ResultadosActuales, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ResultadosActuales" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-bind:value="objetivo.Comentarios" rows="4" readonly></textarea>
+                                        @Html.LabelFor(model => peakObjetivoModel.Comentarios, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="Comentarios" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="objetivo.ComentariosJefe" name="ComentariosJefe" rows="4" v-bind:readonly="tipo == 'manage' || !revisionSeleccionada.PeriodoRevision.Actual || (tipo == 'review' && peak.Estado != 4)"
+                                                  data-val="true"
+                                                  data-val-required="The @Html.DisplayNameFor(model => peakObjetivoRevisionModel.ComentariosJefe) field is required."></textarea>
+                                        @Html.LabelFor(model => peakObjetivoRevisionModel.ComentariosJefe, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ComentariosJefe" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="peak.Estado == 4 && tipo == 'review' && revisionSeleccionada.PeriodoRevision.Actual">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmCoreValue" v-on:submit.prevent="submitCoreValue($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Core Value</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            <strong>{{ cvSeleccionado.CoreValue.Nombre }}</strong><br />
+                            <em>{{ cvSeleccionado.CoreValue.Descripcion }}</em>
+                        </p>
+                        <p>
+                            <div class="col-blue font-bold">{{ cvSeleccionado.CoreValue.Competencia }}</div>
+                            <em>{{ cvSeleccionado.CoreValue.CompetenciaDescripcion }}</em>
+                        </p>
+                        <br />
+                        <div class="row clearfix">
+                            <input type="hidden" name="CoreValueId" v-bind:value="cvSeleccionado.CoreValue.Id" />
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+
+                            <div class="col-md-4">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control font-italic" v-bind:value="cvSeleccionado.CoreValue.HabilidadAlta" rows="12" readonly></textarea>
+                                        @Html.LabelFor(model => peakCoreValueModel.CoreValue.HabilidadAlta, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control font-italic" v-bind:value="cvSeleccionado.CoreValue.HabilidadMedia" rows="12" readonly></textarea>
+                                        @Html.LabelFor(model => peakCoreValueModel.CoreValue.HabilidadMedia, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control font-italic" v-bind:value="cvSeleccionado.CoreValue.HabilidadBaja" rows="12" readonly></textarea>
+                                        @Html.LabelFor(model => peakCoreValueModel.CoreValue.HabilidadBaja, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <template v-show="peak.Estado != 1 && peak.Estado != 2">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.LabelFor(model => peakCoreValueModel.Autoevaluacion, htmlAttributes: new { @class = "form-select-label" })
+                                            <select v-model="cvSeleccionado.Autoevaluacion" class="ms form-control" name="Autoevaluacion" v-bind:disabled="tipo == 'review' || !periodo.RevisionFinal || (tipo == 'manage' && peak.Estado != 3)"
+                                                    data-val="true"
+                                                    data-val-required="The @Html.DisplayNameFor(model => peakCoreValueModel.Autoevaluacion) field is required.">
+                                                <option></option>
+                                                <option v-for="skill in skills" v-bind:value="skill.Value">{{ skill.Name }}</option>
+                                            </select>
+                                        </div>
+                                        <span class="field-validation-valid" data-valmsg-for="Autoevaluacion" data-valmsg-replace="true"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.LabelFor(model => peakCoreValueModel.Evaluacion, htmlAttributes: new { @class = "form-select-label" })
+                                            <select v-model="cvSeleccionado.Evaluacion" class="ms form-control" name="Evaluacion" v-bind:disabled="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                                    data-val="true"
+                                                    data-val-required="The @Html.DisplayNameFor(model => peakCoreValueModel.Evaluacion) field is required.">
+                                                <option></option>
+                                                <option v-for="skill in skills" v-bind:value="skill.Value">{{ skill.Name }}</option>
+                                            </select>
+                                        </div>
+                                        <span class="field-validation-valid" data-valmsg-for="Evaluacion" data-valmsg-replace="true"></span>
+                                    </div>
+                                </div>
+                            </template>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" v-if="periodo.RevisionFinal && ((tipo == 'manage' && peak.Estado == 3) || (tipo == 'review' && peak.Estado == 5))" class="btn btn-primary waves-effect">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmCoreValuesComentarios" v-on:submit.prevent="submitCoreValuesComentarios($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">@Html.DisplayNameFor(model => peakModel.ComentariosCompetencias)</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="peak.Id" />
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.ComentariosCompetencias" name="ComentariosCompetencias" rows="8" v-bind:readonly="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ComentariosCompetencias" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="tipo == 'review' && periodo.RevisionFinal && peak.Estado == 5">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmAutoevaluacion" v-on:submit.prevent="submitAutoevaluacion($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Assesment and Feedback</h4>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="Id" v-bind:value="peak.Id" />
+
+                        <div class="row m-b-20 m-t--15">
+                            <div class="col-md-6">
+                                <h5 class="col-blue">Associate Self Assessment</h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="col-blue">Manager Feedback</h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.ResumenContribuciones" name="ResumenContribuciones" rows="6" v-bind:disabled="tipo == 'review' || !periodo.RevisionFinal || (tipo == 'manage' && peak.Estado != 3)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakModel.ResumenContribuciones, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ResumenContribuciones" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.ResumenContribucionesJefe" name="ResumenContribucionesJefe" rows="6" v-bind:disabled="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakModel.ResumenContribucionesJefe, htmlAttributes: new { @class = "form-label m-t--15" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ResumenContribucionesJefe" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.Fortalezas" name="Fortalezas" rows="6" v-bind:disabled="tipo == 'review' || !periodo.RevisionFinal || (tipo == 'manage' && peak.Estado != 3)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakModel.Fortalezas, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="Fortalezas" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.FortalezasJefe" name="FortalezasJefe" rows="6" v-bind:disabled="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakModel.FortalezasJefe, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="FortalezasJefe" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.ObjetivosFuturo" name="ObjetivosFuturo" rows="6" v-bind:disabled="tipo == 'review' || !periodo.RevisionFinal || (tipo == 'manage' && peak.Estado != 3)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakModel.ObjetivosFuturo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ObjetivosFuturo" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.ObjetivosFuturoJefe" name="ObjetivosFuturoJefe" rows="6" v-bind:disabled="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakModel.ObjetivosFuturoJefe, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ObjetivosFuturoJefe" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="periodo.RevisionFinal && ((tipo == 'manage' && peak.Estado == 3) || (tipo == 'review' && peak.Estado == 5))">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmCalificacionObjetivo" v-on:submit.prevent="submitCalificacionObjetivo($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Objective</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="objetivo.Id" />
+
+                            <objetivo-info v-bind:objetivo="objetivo" v-bind:readonly="true" v-bind:tipo="3">
+                            </objetivo-info>
+
+                            <div class="col-md-12">
+                                <div class="row clearfix">
+
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <textarea type="text" class="form-control" v-bind:value="objetivo.ResultadosActuales" rows="4" readonly></textarea>
+                                                @Html.LabelFor(model => peakObjetivoModel.ResultadosActuales, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                            <span class="field-validation-valid" data-valmsg-for="ResultadosActuales" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <textarea type="text" class="form-control" v-bind:value="objetivo.Comentarios" rows="4" readonly></textarea>
+                                                @Html.LabelFor(model => peakObjetivoModel.Comentarios, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                            <span class="field-validation-valid" data-valmsg-for="Comentarios" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="row clearfix">
+
+                                    <div class="col-md-6">
+                                        <div class="row clearfix">
+                                            <div class="col-md-12 m-b-30">
+                                                @Html.LabelFor(model => peakObjetivoModel.Calificacion, htmlAttributes: new { @class = "form-label" }) {{ objetivo.Calificacion }}
+                                                <div id="nouislider_rating"></div>
+                                                <input type="hidden" name="Calificacion" v-bind:value="objetivo.Calificacion" />
+                                            </div>
+                                        </div>
+
+                                        <div class="row clearfix">
+                                            <div class="col-md-6">
+                                                <div class="form-group form-float">
+                                                    <div class="form-line">
+                                                        <input type="text" class="form-control" v-model="objetivo.Factor" name="Factor" readonly
+                                                               data-val="true"
+                                                               data-val-range="The field @Html.DisplayNameFor(model => peakObjetivoModel.Factor) must be between 0 and 1.5."
+                                                               data-val-range-max="1.5"
+                                                               data-val-range-min="0"
+                                                               data-val-number="The field @Html.DisplayNameFor(model => peakObjetivoModel.Factor) must be a number."
+                                                               data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.Factor) field is required.">
+                                                        @Html.LabelFor(model => peakObjetivoModel.Factor, htmlAttributes: new { @class = "form-label" })
+                                                    </div>
+                                                    <span class="field-validation-valid" data-valmsg-for="Factor" data-valmsg-replace="true"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <textarea type="text" class="form-control" v-model="objetivo.ComentariosJefe" name="ComentariosJefe" rows="4" v-bind:readonly="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                                          data-val="true"
+                                                          data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.ComentariosJefe) field is required."></textarea>
+                                                @Html.LabelFor(model => peakObjetivoRevisionModel.ComentariosJefe, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                            <span class="field-validation-valid" data-valmsg-for="ComentariosJefe" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="periodo.RevisionFinal && tipo == 'review' && peak.Estado == 5">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmFactorAjuste" v-on:submit.prevent="submitFactorAjuste($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Adjusted Factor</h4>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="Id" v-bind:value="peak.Id" />
+
+                        <div class="row">
+
+                            <div class="col-md-3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" v-model="peakTemp.FactorAjuste" name="FactorAjuste" v-bind:readonly="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                               data-val="true"
+                                               data-val-range="The field @Html.DisplayNameFor(model => peakModel.FactorAjuste) must be between 0 and 1.5."
+                                               data-val-range-max="1.5"
+                                               data-val-range-min="0"
+                                               data-val-number="The field @Html.DisplayNameFor(model => peakModel.FactorAjuste) must be a number."
+                                               data-val-required="The @Html.DisplayNameFor(model => peakModel.FactorAjuste) field is required.">
+                                        @Html.LabelFor(model => peakModel.FactorAjuste, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="FactorAjuste" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.JustificacionFactorAjuste" name="JustificacionFactorAjuste" rows="6" v-bind:readonly="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"></textarea>
+                                        @Html.LabelFor(model => peakModel.JustificacionFactorAjuste, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="JustificacionFactorAjuste" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="periodo.RevisionFinal && tipo == 'review' && peak.Estado == 5">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmRendimientoGeneral" v-on:submit.prevent="submitRendimientoGeneral($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">@Html.DisplayNameFor(model => peakModel.RendimientoGeneral)</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="peak.Id" />
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="peakTemp.RendimientoGeneral" name="RendimientoGeneral" rows="4" v-bind:readonly="tipo == 'manage' || !periodo.RevisionFinal || (tipo == 'review' && peak.Estado != 5)"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="RendimientoGeneral" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect" v-if="tipo == 'review' && periodo.RevisionFinal && peak.Estado == 5">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form novalidate="novalidate" id="frmPlanDesarrollo" v-on:submit.prevent="submitPlanDesarrollo($event)">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">{{ planDesarrollo.Id ? 'Modify' : 'Create' }} Development Plan</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row clearfix">
+                            <input type="hidden" name="Id" v-bind:value="planDesarrollo.Id" />
+                            <input type="hidden" name="PeakId" v-bind:value="peak.Id" />
+
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" v-model="planDesarrollo.Area" name="Area"
+                                               data-val="true"
+                                               data-val-required="The @Html.DisplayNameFor(model => peakPlanDesarrolloModel.Area) field is required.">
+                                        @Html.LabelFor(model => peakPlanDesarrolloModel.Area, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="Area" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group form-float">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                        <div class="form-line">
+                                            <input type="text" class="form-control" v-model="planDesarrollo.FechaMeta" name="FechaMeta"
+                                                   data-val="true"
+                                                   data-val-date="The field @Html.DisplayNameFor(model => peakPlanDesarrolloModel.FechaMeta) must be a date."
+                                                   data-val-required="The @Html.DisplayNameFor(model => peakPlanDesarrolloModel.FechaMeta) field is required." />
+                                            @Html.LabelFor(model => peakPlanDesarrolloModel.FechaMeta, htmlAttributes: new { @class = "form-label" })
+                                        </div>
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="FechaMeta" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="planDesarrollo.Plan" name="Plan" rows="4"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakPlanDesarrolloModel.Plan, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="Plan" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea type="text" class="form-control" v-model="planDesarrollo.ResultadoDeseado" name="ResultadoDeseado" rows="4"
+                                                  data-val="true"
+                                                  data-val-required="This field is required."></textarea>
+                                        @Html.LabelFor(model => peakPlanDesarrolloModel.ResultadoDeseado, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    <span class="field-validation-valid" data-valmsg-for="ResultadoDeseado" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<template id="componentObjetivoInfo">
+    <div>
+        <div class="col-md-12">
+            <div class="row">
+
+                <div class="col-md-1">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <input type="text" class="form-control" v-bind:value="objetivo.Numero" v-bind:name="readonly ? '' : 'Numero'" readonly />
+                            @Html.LabelFor(model => peakObjetivoModel.Numero, htmlAttributes: new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group form-float">
+                        <div class="input-group">
+                            <span class="input-group-addon">%</span>
+                            <div class="form-line">
+                                <input type="text" class="form-control" v-model="objetivo.Peso" v-bind:name="readonly || tipo == 2 ? '' : 'Peso'" v-bind:readonly="readonly || tipo == 2"
+                                       data-val="true"
+                                       data-val-range="The field @Html.DisplayNameFor(model => peakObjetivoModel.Peso) must be between 1 and 99."
+                                       data-val-range-max="99"
+                                       data-val-range-min="1"
+                                       data-val-number="The field @Html.DisplayNameFor(model => peakObjetivoModel.Peso) must be a number."
+                                       data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.Peso) field is required.">
+                                @Html.LabelFor(model => peakObjetivoModel.Peso, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                        </div>
+                        <span class="field-validation-valid" data-valmsg-for="Peso" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group form-float">
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                            <div class="form-line">
+                                <input type="text" class="form-control" v-model="objetivo.FechaMeta" v-bind:name="readonly ? '' : 'FechaMeta'" v-bind:class="{ 'no-click': readonly || objetivo.PeakObjetivoId }"
+                                       data-val="true"
+                                       data-val-date="The field @Html.DisplayNameFor(model => peakObjetivoModel.FechaMeta) must be a date."
+                                       data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.FechaMeta) field is required." />
+                                @Html.LabelFor(model => peakObjetivoModel.FechaMeta, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                        </div>
+                        <span class="field-validation-valid" data-valmsg-for="FechaMeta" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <input type="checkbox" v-model="objetivo.Heredable" id="peakObjetivoModel_Heredable" v-bind:disabled="readonly || tipo == 2" class="check-box" />
+                    <label for="peakObjetivoModel_Heredable" v-bind:class="readonly || tipo == 2 ? 'no-click' : ''">@Html.DisplayNameFor(model => peakObjetivoModel.Heredable)</label>
+                    <input type="hidden" v-bind:name="readonly || tipo == 2 ? '' : 'Heredable'" v-bind:value="objetivo.Heredable.toString()" />
+                </div>
+
+                <div class="col-md-2">
+                    <input type="checkbox" v-bind:checked="objetivo.PeakObjetivoId" id="peakObjetivoModel_Heredado" disabled class="check-box" />
+                    <label for="peakObjetivoModel_Heredado" class="no-click">Inherited</label>
+                </div>
+
+                <template v-if="objetivo.PeakObjetivoId">
+                    <div class="col-md-3" v-if="tipo == 1">
+                        <button type="button" class="btn btn-default waves-effect" v-on:click="removeInheritedReference()">Remove Inherited Reference</button>
+                    </div>
+                    <div class="col-md-3" v-if="tipo == 2">
+                        <input type="checkbox" v-model="objetivo.SolicitudEliminacionHeredado" id="peakObjetivoModel_SolicitudEliminacionHeredado" v-bind:disabled="readonly" class="check-box" />
+                        <label for="peakObjetivoModel_SolicitudEliminacionHeredado" v-bind:class="readonly ? 'no-click' : ''">@Html.DisplayNameFor(model => peakObjetivoModel.SolicitudEliminacionHeredado)</label>
+                        <input type="hidden" v-bind:name="readonly ? '' : 'SolicitudEliminacionHeredado'" v-bind:value="objetivo.SolicitudEliminacionHeredado ? 'true' : 'false'" />
+                    </div>
+                </template>
+
+                <div class="col-md-2" v-if="tipo == 3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <input type="text" class="form-control" v-bind:value="objetivo.Completado + '%'" readonly />
+                            @Html.LabelFor(model => peakObjetivoModel.Completado, htmlAttributes: new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="row">
+
+                <div class="col-md-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <textarea type="text" class="form-control" v-model="objetivo.Objetivo" v-bind:name="readonly ? '' : 'Objetivo'" rows="10" v-bind:readonly="readonly || objetivo.PeakObjetivoId"
+                                      data-val="true"
+                                      data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.Objetivo) field is required."></textarea>
+                            @Html.LabelFor(model => peakObjetivoModel.Objetivo, htmlAttributes: new { @class = "form-label" })
+                        </div>
+                        <span class="field-validation-valid" data-valmsg-for="Objetivo" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <textarea type="text" class="form-control" v-model="objetivo.MedidoPor" v-bind:name="readonly ? '' : 'MedidoPor'" rows="10" v-bind:readonly="readonly"
+                                      data-val="true"
+                                      data-val-required="The @Html.DisplayNameFor(model => peakObjetivoModel.MedidoPor) field is required."></textarea>
+                            @Html.LabelFor(model => peakObjetivoModel.MedidoPor, htmlAttributes: new { @class = "form-label" })
+                        </div>
+                        <span class="field-validation-valid" data-valmsg-for="MedidoPor" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,84 @@
+﻿@model MMS.Models.Departamento
+
+@{
+    ViewBag.Title = "State";
+    ViewBag.Subtitle = "Delete";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="~/Scripts/Catalogos/Ubicaciones/Departamentos.js"></script>
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            $.MMS.Departamentos("delete");
+        });
+    </script>
+}
+
+<div class="row clearfix">
+    <div class="col-md-12">
+        <div class="card" id="cardForm">
+            <div class="header bg-red">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+            </div>
+            <div class="body">
+                @Html.ValidationSummary(true, "", new { @class = "hide" })
+                @Html.HiddenFor(model => model.DepartamentoID)
+
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.DepartamentoID, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.DepartamentoID, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                            @Html.ValidationMessageFor(model => model.DepartamentoID, "", new { @class = "" })
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.DepartamentoDesc, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.DepartamentoDesc, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                            @Html.ValidationMessageFor(model => model.DepartamentoDesc, "", new { @class = "" })
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.PaisID, htmlAttributes: new { @class = "form-select-label" })
+                            @Html.DropDownListFor(model => model.PaisID, null, new { @class = "ms full-width" })
+                            @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "" })
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @using (Html.BeginForm())
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="submit" value="Delete" class="btn btn-danger waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                }
+            </div>
+        </div>
+    </div>
+</div>

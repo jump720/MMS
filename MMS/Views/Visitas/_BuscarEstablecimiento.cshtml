@@ -1,0 +1,116 @@
+﻿@model IEnumerable<MMS.Models.EstablecimientosViewModel>
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    string controllerNameWeb = ViewContext.RouteData.Values["controller"].ToString() + "Web";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+
+<script src="~/Scripts/_LayoutTT.js"></script>
+
+@Scripts.Render("~/bundles/jsDataTables")
+@Scripts.Render("~/bundles/jqueryval")
+<script src="~/Scripts/PerfectStore/BuscarEstablecimiento.js"></script>
+
+<script type="text/javascript">
+    $.MMS.BuscarEstablecimiento.init = function () {
+        $.MMS.BuscarEstablecimiento(`@controllerName`, `@controllerNameWeb`);
+    };
+</script>
+
+
+
+
+<div class="modal-header">
+    <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Search Establishment</h4>
+</div>
+
+<div class="modal-body">
+    <table id="tableDetalle" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Fecha)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.NombreEstablecimiento)
+                </th>
+                @*<th>
+                        @Html.DisplayNameFor(model => model.Pais)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Departamento)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Ciudad)
+                    </th>*@
+                <th>
+                    Location
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Direccion)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.UsuarioId)
+                </th>
+                <th style="width:65px"></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+            <tr>
+                <th>
+                    @*<div class="form-group">
+                            <div class="form-line">
+                                <input type="text" id="txtFecha" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Fecha)" />
+                            </div>
+                        </div>*@
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtModalNombreEstablecimiento" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.NombreEstablecimiento)" />
+                        </div>
+                    </div>
+                </th>
+
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtModalUbicacion" class="form-control" style="width: 100%;" placeholder="Search Location" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtModalDireccion" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Direccion)" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" id="txtModalUsuarioId" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.UsuarioId)" />
+                        </div>
+                    </div>
+                </th>
+
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<hr class="m-b-0 m-t--10" />
+
+<div class="modal-footer">
+    <a href="/Visitas/Create" class="btn btn-primary waves-effect">Skip</a>
+    @*<button type="submit" class="btn btn-primary waves-effect">Skip</button>*@
+    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+</div>

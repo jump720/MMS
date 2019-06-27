@@ -1,0 +1,95 @@
+﻿@model IEnumerable<MMS.Models.VentasxCliente>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Ranking de Vendas";
+    ViewBag.Subtitle = "Lista";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+
+
+
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            return `(${row.ClienteID}) - ${row.ClienteRazonSocial}`
+                        }
+                    },                    
+                    { data: "VentasxClienteAno" },
+                    { data: "VentasxClienteMes" },                
+                    {
+                        data: "VentasxClienteVenta",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(2)}</div>`;
+                        }
+                    }
+                ]);
+
+        });
+
+       
+    </script>
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>                       
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.ClienteID)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.VentasxClienteAno)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.VentasxClienteMes)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.VentasxClienteVenta)
+                            </th>
+                          
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

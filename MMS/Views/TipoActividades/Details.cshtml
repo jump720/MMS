@@ -1,0 +1,26 @@
+﻿@model MMS.Models.TipoActividad
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>TipoActividad</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.TipoActividadDesc)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TipoActividadDesc)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.TipoActividadID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

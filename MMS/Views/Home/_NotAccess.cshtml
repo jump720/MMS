@@ -1,0 +1,27 @@
+﻿
+@{
+    ViewBag.Title = "Acceso Denegado";
+    Layout = null;
+}
+
+@*<div id="_Modal" class="modal bottom-sheet">*@
+<div class="modal-content">
+    <div class="card horizontal Medium">
+        <div class="card-image valign-wrapper">
+            <img src="~/Content/Images/AccessDenied.png">
+        </div>
+        <div class="card-stacked">
+            <div class="card-content">
+                <span class="card-title red-text">Acceso Denegado</span>
+
+                <p><b>Usuario Actual:</b> @ViewBag.UsuarioId</p>
+                <p><b>Objeto:</b> @ViewBag.ObjetoId</p>
+                <p>Ingrese como un usuario diferente o Comuniquese con el administrador.</p>
+            </div>
+            <div class="card-action">
+                <a href="javascript:void()" class="red-text modal-action modal-close">Cerrar</a>
+            </div>
+        </div>
+    </div>
+</div>
+@*</div>*@

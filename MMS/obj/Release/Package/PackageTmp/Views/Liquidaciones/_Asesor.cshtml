@@ -1,0 +1,144 @@
+﻿@model List<MMS.Models.LiquidacionItem>
+
+@{
+    var asesor = (MMS.Models.Asesor)ViewBag.Asesor;
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".txtBusqueda").keyup(function (event) {
+            tableItems.api()
+                .columns(parseInt($(this).data("column")))
+                .search(this.value)
+                .draw();
+        });
+
+        tableItems = $("#tableItems").dataTable({
+            scrollY: '55vh',
+            scrollCollapse: true,
+            paging: false
+        });
+
+        setTimeout(function () {
+            tableItems.fnAdjustColumnSizing();
+        }, 5);
+
+    });
+</script>
+
+<style>
+    .txtBusqueda {
+        width: 100%;
+    }
+</style>
+
+<div class="modal-header">
+    <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    @if (asesor == null)
+    {
+        <h4 class="modal-title">Seller : <em>NONE - @ViewBag.Total</em> </h4>
+    }
+    else
+    {
+        <h4 class="modal-title">Seller : <em>@asesor.Cedula - @asesor.Nombre - @ViewBag.Total</em> </h4>
+    }
+</div>
+
+<div class="modal-body">
+    <table id="tableItems" class="table table-bordered table-hover table-condensed table-striped table-va-middle">
+        <thead>
+            <tr>
+                <th width="10%">
+                    @Html.DisplayNameFor(model => model[0].Mes) <br /> @Html.DisplayNameFor(model => model[0].Ano)
+                </th>
+                <th width="20%">
+                    @Html.DisplayNameFor(model => model[0].ColeccionPIVItem.ColeccionPIVId)
+                </th>
+                <th width="10%">
+                    Item
+                </th>
+                <th width="50%">
+                    ATG's Item
+                </th>
+                <th style="text-align:right;">
+                    @Html.DisplayNameFor(model => model[0].Cantidad)
+                </th>
+                <th style="text-align:right;">
+                    @Html.DisplayNameFor(model => model[0].ValorTotal)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => model[i].Mes) - @Html.DisplayFor(model => model[i].Ano)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => model[i].ColeccionPIVItem.ColeccionPIV.Nombre)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => model[i].ColeccionPIVItem.Codigo)
+                    </td>
+                    <td>
+                        (@Html.DisplayFor(model => model[i].ColeccionPIVItem.Item.Marca.Nombre)) @Html.DisplayFor(model => model[i].ColeccionPIVItem.Item.Codigo) - @Html.DisplayFor(model => model[i].ColeccionPIVItem.Item.Descripcion)
+                    </td>
+                    <td style="text-align:right;">
+                        @Html.DisplayFor(model => model[i].Cantidad)
+                    </td>
+                    <td style="text-align:right;white-space: nowrap;">
+                        @Model[i].ValorTotal.ToString("C")
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" class="form-control txtBusqueda" data-column="0" placeholder="Search @Html.DisplayNameFor(model => model[0].Mes) - @Html.DisplayNameFor(model => model[0].Ano)" value="" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" class="form-control txtBusqueda" data-column="1" placeholder="Search @Html.DisplayNameFor(model => model[0].ColeccionPIVItem.ColeccionPIVId)" value="" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" class="form-control txtBusqueda" data-column="2" placeholder="Search Item" value="" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" class="form-control txtBusqueda" data-column="3" placeholder="Search Apex's Item'" value="" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" class="form-control txtBusqueda" data-column="4" placeholder="Search @Html.DisplayNameFor(model => model[0].Cantidad)" value="" />
+                        </div>
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" class="form-control txtBusqueda" data-column="5" placeholder="Search @Html.DisplayNameFor(model => model[0].ValorTotal)" value="" />
+                        </div>
+                    </div>
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br />

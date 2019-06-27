@@ -1,0 +1,242 @@
+﻿@model IEnumerable<MMS.Models.DisponibilidadViewModel>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Availability";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @*@Scripts.Render("~/bundles/jsDataTablesExport")*@
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        //var select2Analista;
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+
+
+            templateItems = function (data) {
+
+                return '<div class="select2-result-repository clearfix" style="width: 100%">' +
+                    `<div><b>${data.Codigo} - ${data.Descripcion}</b></div>` +
+                    "<div>" +
+                    "</div>" +
+                    '</div>';
+            };
+
+
+            select2ItemsOptions = {
+                placeholder: "Search Item",
+                theme: "bootstrap",
+                data: [],
+                ajax: {
+                    type: "GET",
+                    url: function (params) {
+                        return "/api/Plantillas/BuscarItem?q=" + encodeURIComponent(params.term)
+                    },
+                    delay: 300,
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    text: item.Descripcion,
+                                    id: item.Codigo,
+                                    data: item
+                                }
+                            }),
+                            pagination: { more: (params.page * 30) < data.total_count }
+                        };
+                    }
+                },
+                minimumInputLength: 1,
+                templateResult: function (repo) {
+
+                    if (repo.loading)
+                        return repo.text;
+
+                    return templateItems(repo.data);
+                },
+                templateSelection: function (repo) {
+
+                    if (!repo.id)
+                        return repo.text;
+
+                    return templateItems(repo.data);
+                },
+                escapeMarkup: function (m) { return m; }
+            };
+
+
+            $("#selectBuscarMaterial").select2(select2ItemsOptions);
+
+            $("#selectBuscarSLoc").select2({
+                placeholder: "Search Store Location",
+                theme: "bootstrap"
+            });
+
+            $('#selectBuscarSLoc').val("3000").change();
+
+            dtPQRS = dataTablesIndex("tableDT", "/api/Informes/Disponibilidad", "/Informes/Disponibilidad",
+                [
+
+                    { data: "Material" },
+                    { data: "MaterialDescription" },
+                    { data: "AvailableQty" }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["selectBuscarSLoc", "txtBuscarMaterial"],
+                    fnServerParams: function () {
+                        return [
+                            { name: "_sloc", value: $('#selectBuscarSLoc').val() },
+                            { name: "_material", value: $('#txtBuscarMaterial').val() },
+                        ]
+                    },
+                    fnSetFilterControls: function (values) {
+                        if (values.length > 0) {
+                            var sloc = values[1];
+                            if (sloc != "")
+                                $('#selectBuscarSLoc').val(sloc).change();
+                            else
+                                $('#selectBuscarSLoc').val("3000").change();
+                        } else
+                            $('#selectBuscarSLoc').val("3000").change();
+
+
+
+                    }
+                }
+                );
+
+            //$("#selectBuscarMaterial").on("select2:select", function (e) {
+            //    //$("#txtBuscarMaterial").val($(e.currentTarget).val());
+
+            //    ArrayToString($(e.currentTarget).val(), "txtBuscarMaterial");
+            //    dtPQRS.fnDraw();
+            //});
+
+            //$("#selectBuscarMaterial").on("select2:unselect", function (e) {
+            //    ArrayToString($(e.currentTarget).val(), "txtBuscarMaterial");
+            //    dtPQRS.fnDraw();
+            //});
+
+        });
+
+
+
+
+
+        function ArrayToString(arr, htmlObj) {
+            //var arr = $(o).val();
+            var result = "";
+            if (arr != null) {
+                arr.forEach(function (element) {
+                    result = result + "'" + element + "',"
+                });
+            }
+            //$("#txtBuscarAnalista").val(RemoveLastString(result, ","));
+            $("#" + htmlObj).val(RemoveLastString(result, ","));
+
+            dt.fnDraw();
+        }
+
+        function RemoveLastString(text, remove) {
+            if (text.endsWith(remove)) {
+                text = text.slice(0, text.length - remove.length);
+            }
+            return text;
+        }
+
+        function DescargaArchivo() {
+            var sloc = $("#selectBuscarSLoc").val();
+            window.open("./DescargaDisponibilidad?sloc=" + sloc, "_blank");
+        }
+
+    </script>
+}
+
+
+
+<div class="row">
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a href="javascript:void(0)"  onclick="DescargaArchivo();" >
+                            <i class="material-icons">file_download</i>
+                        </a>
+                    </li>
+                   
+                </ul>
+            </div>
+            <div class="body">
+                <div class="row">
+
+                    @*Filters*@
+                    <div class="col-md-6">
+                        <select id="selectBuscarSLoc" class="ms full-width" style="width:100% !important;">
+                            <option value="2001">2001</option>
+                            <option value="3000" selected>3000</option>
+                            <option value="3002">3002</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        @*<select id="selectBuscarMaterial" class="ms full-width" style="width:100% !important;" multiple></select>*@
+                        @*<label for="txtBuscarMaterial" class="form-label">Search Material</label>*@
+                        <input id="txtBuscarMaterial" type="text" class="form-control" placeholder="Search Material" />
+
+                    </div>
+
+                    @*Filters*@
+
+                    <div class="col-md-12">
+                        <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Material)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.MaterialDescription)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.AvailableQty)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot>
+
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

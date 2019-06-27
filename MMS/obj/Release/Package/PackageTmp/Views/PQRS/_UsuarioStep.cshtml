@@ -1,0 +1,181 @@
+﻿@model MMS.Models.PQRSUsuarioStepViewModel
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@Scripts.Render("~/bundles/jsDataTables")
+@Scripts.Render("~/bundles/jqueryval")
+
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.Money').inputmask("numeric", {
+            radixPoint: ",",
+            groupSeparator: ".",
+            digits: 0,
+            autoGroup: true,
+            autoUnmask: true
+        });
+    });
+</script>
+
+<div class="modal-header">
+    <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Step: @Model.Usuarios[0].PQRSRecord.FlujoPQRSNombre Reason: @Model.Usuarios[0].PQRSRecord.MotivoPQRSNombre Type Step: @Model.Usuarios[0].PQRSRecord.FlujoPQRSTipoPaso.ToString()</h4>
+    <br />
+    <div class="form-group form-float" style="margin-bottom: 0px !important;">
+        <div class="form-line">
+            @Html.TextAreaFor(model => model.Usuarios[0].PQRSRecord.FlujoPQRSDescripcion, new { @class = "form-control", @rows = "3", @readonly = "readonly", @style = "resize:none" })
+            @Html.LabelFor(model => model.Usuarios[0].PQRSRecord.FlujoPQRSDescripcion, htmlAttributes: new { @class = "form-label" })
+        </div>
+    </div>
+</div>
+
+<div class="modal-body">
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#users_tab" data-toggle="tab">
+                        <i class="material-icons">account_circle</i> Users
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#check_tab" data-toggle="tab">
+                        <i class="material-icons">playlist_add_check</i> Check List
+                    </a>
+                </li>
+                @if (Model.Usuarios[0].PQRSRecord.Order > 3)
+                {
+                    <li role="presentation">
+                        <a href="#conditions_tab" data-toggle="tab">
+                            <i class="material-icons">filter_list</i> Conditions
+                        </a>
+                    </li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="users_tab">
+                    <table class="table table-condensed table-hover table-striped table-va-middle" id="tableDocs">
+                        <thead>
+                            <tr>
+                                <th>@Html.DisplayNameFor(model => model.Usuarios[0].UsuarioId)</th>
+                                <th>@Html.DisplayNameFor(model => model.Usuarios[0].EstadoUsuarioFlujoPQRS)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Usuarios)
+            {
+                                <tr>
+                                    <td>@Html.DisplayFor(modelItem => item.Usuario.UsuarioNombre)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.EstadoUsuarioFlujoPQRS)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="check_tab">
+                    <table class="table table-condensed table-hover table-striped table-va-middle" id="_tablechecks">
+                        <thead>
+                            <tr>
+                                <th>@Html.DisplayNameFor(model => model.Tareas[0].Descripcion)</th>
+                                <th>@Html.DisplayNameFor(model => model.Tareas[0].Requerido)</th>
+                                <th>@Html.DisplayNameFor(model => model.Tareas[0].Terminado)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in Model.Tareas)
+                            {
+                                <tr>
+                                    <td>@Html.DisplayFor(modelItem => t.Descripcion)</td>
+                                    <td>
+                                        @if (t.Requerido)
+                                        {
+                                        <input type="checkbox" disabled checked />
+                                        }
+                                        else
+                                        {
+                                        <input type="checkbox" disabled />
+                                        }
+                                        <label class="m-b--10" />
+                                    </td>
+                                    <td>
+                                        @if (t.Terminado)
+                                        {
+                                        <input type="checkbox" disabled checked />
+                                        }
+                                        else
+                                        {
+                                        <input type="checkbox" disabled />
+                                        }
+                                        <label class="m-b--10" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="conditions_tab">
+                    <table class="table table-condensed table-hover table-striped table-va-middle" id="_tableconds">
+                        <thead>
+                            <tr>
+                                <th>@Html.DisplayNameFor(model => model.Condiciones[0].Descripcion)</th>
+                                <th>@Html.DisplayNameFor(model => model.Condiciones[0].TipoCondicion)</th>
+                                <th>@Html.DisplayNameFor(model => model.Condiciones[0].CondicionesValor)</th>
+                                <th>@Html.DisplayNameFor(model => model.Condiciones[0].Valor)</th>
+                                <th>@Html.DisplayNameFor(model => model.Condiciones[0].SiNo)</th>
+                                <th>@Html.DisplayNameFor(model => model.Condiciones[0].RespValor)</th>
+                                <th>@Html.DisplayNameFor(model => model.Condiciones[0].RespSiNo)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model.Condiciones)
+                            {
+                                <tr>
+                                    <td>@Html.DisplayFor(modelItem => c.Descripcion)</td>
+                                    <td>@Html.DisplayFor(modelItem => c.TipoCondicion)</td>
+                                    <td>@Html.DisplayFor(modelItem => c.CondicionesValor)</td>
+                                    <td class="Money">@Html.DisplayFor(modelItem => c.Valor)</td>
+                                    <td>
+                                        @if (c.SiNo)
+                                        {
+                                            <input type="checkbox" disabled checked />
+                                        }
+                                        else
+                                        {
+                                            <input type="checkbox" disabled />
+                                        }
+                                        <label class="m-b--10" />
+                                    </td>
+                                    <td class="Money">@Html.DisplayFor(modelItem => c.RespValor)</td>
+                                    <td>
+                                        @if (c.RespSiNo)
+                                        {
+                                            <input type="checkbox" disabled checked />
+                                        }
+                                        else
+                                        {
+                                            <input type="checkbox" disabled />
+                                        }
+                                        <label class="m-b--10" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="m-b-0 m-t--10" />
+<div class="modal-footer">
+    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+</div>
+
+
+

@@ -1,0 +1,34 @@
+﻿@using MMS.Models;
+@model IEnumerable<Aplicacion>
+@{
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+    ViewBag.Title = "DASHBOARD";
+    ViewBag.Subtitle = "Apps";
+}
+
+<div class="block-header">
+    <h2>APPLICATIONS</h2>
+</div>
+
+<div class="row clearfix">
+    
+    @foreach (var app in Model)
+    {
+        <div class="col-md-3 col-sm-6 col-xs-12 ">
+            <div class="info-box-2">
+                <a href="http://@(app.Link).@ViewBag.DominioWeb@app.Inicio">
+                    <div class="icon">
+                        <img class="m-t-5" src="~/Content/dist/images/apps/@(app.Link).ico" height="70"/>
+                    </div>
+                </a>
+                <a href="http://@(app.Link).@ViewBag.DominioWeb@app.Inicio">
+                    <div class="content">
+                        <div class="text" style="font-size:15px;">@app.Nombre</div>
+                        <div class="font-20 text-uppercase col-grey">@app.Link</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+
+</div>

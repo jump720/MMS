@@ -1,0 +1,161 @@
+﻿@model MMS.Models.ActividadCierreViewModel
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+
+@Styles.Render("~/bundles/cssSelect2")
+@section Styles
+{
+    <link href="/Content/dist/plugins/nouislider/nouislider.min.css" rel="stylesheet" />
+}
+
+
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jsSelect2")
+@Scripts.Render("~/bundles/jsVue")
+<script src="~/Scripts/Transacciones/Actividades/ActividadCierre.js"></script>
+<script src="/Content/dist/plugins/nouislider/nouislider.js"></script>
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+<script src="/Content/dist/plugins/momentjs/moment.js"></script>
+<script src="~/Content/dist/plugins/sweetalert/swalExtend.js"></script>
+
+
+<script type="text/javascript">
+    $.MMS.ActividadCierre.init = function () {
+          var files = [ @foreach (var file in Model.Archivos)
+            {
+
+                <text>
+                { order: @file.Order, FileName: @Html.Raw(Json.Encode(file.FileName)), New: false },
+                </text>
+            }
+        ];
+
+        $.MMS.ActividadCierre("edit", files);
+    };
+</script>
+
+
+@using (Html.BeginForm("ActividadCierre", controllerName, FormMethod.Post, new { id = "formActividadCierre", enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+<div class="modal-header">
+    <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Cierre de la actividad (Actividad @Model.ActividadId: <em>@Model.ActividadTitulo</em>)</h4>
+ 
+</div>
+
+    <div class="modal-body">
+        <div class="row clearfix">
+            @Html.HiddenFor(model => model.ActividadId)
+            @Html.HiddenFor(model => model.ActividadTitulo)
+            @Html.HiddenFor(model => model.ActividadEstado)
+            @Html.HiddenFor(model => model.ClienteID)
+
+            <div class="col-md-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.CumplimientoTotal, new { htmlAttributes = new { @class = "form-control text-right" } })
+                        @Html.LabelFor(model => model.CumplimientoTotal, htmlAttributes: new { @class = "form-label" })
+                        @Html.ValidationMessageFor(model => model.CumplimientoTotal, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="row clearfix">
+                    <div class="col-md-12 m-b-30">
+
+                        @Html.LabelFor(model => model.CumplimientoPorcentaje, htmlAttributes: new { @class = "form-label" })
+
+                        <div id="nouislider_rating"></div>
+                        <div class="m-t-20 font-12"><b>Value: </b><span class="js-nouislider-value"></span></div>
+                        @Html.HiddenFor(model => model.CumplimientoPorcentaje)
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.DropDownList("EstadoCierre", null, "- Estado cierre -", new { @class = "ms form-control" })
+                        @Html.ValidationMessageFor(model => model.EstadoCierre, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+             <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.DropDownList("MetaCierre", null, "- Seleccione -", new { @class = "ms form-control" })
+                        @Html.ValidationMessageFor(model => model.EstadoCierre, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.Resultado, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.LabelFor(model => model.Resultado, htmlAttributes: new { @class = "form-label" })
+                        @Html.ValidationMessageFor(model => model.Resultado, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div id="ListFiles">
+                    <a href="javascript:void(0)" class="btn btn-default waves-effect btnAdd" v-on:click.prevent="addNewFile($event)">Add File</a>
+                    <div class="row clearfix">
+                        <template v-if="files.length == 0">
+                            <div class="col-md-12" style="padding-top: 12px;">
+                                <em>This template has no Items.</em>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="col-md-12" v-for="(f, idx) in files" style="padding-top: 12px;">
+
+                                <div class="col-md-10" v-if="f.New"><input type="file" v-bind:name="'Files[' + idx + ']'" v-on:change.prevent="SizeFile(idx,$event)" /></div>
+                                <div class="col-md-2" v-if="f.New"><p v-bind:id="'Size' + idx"></p></div>
+
+                                <div class="col-md-10" v-if="!f.New">
+                                    <input type="hidden" v-bind:name="'Archivos[' + idx + '].Order'" v-bind:value="f.order" />
+                                    <input type="file" v-bind:name="'Files[' + idx + ']'" v-on:change.prevent="SizeFile(idx,$event)" style="display:none;" />
+                                    <i class="material-icons">insert_drive_file</i>
+                                    <a v-bind:href="'../DescargarArchivo?d=' + @Model.ActividadId + '&o=' + f.order" target="_blank"> {{f.FileName}} </a>
+                                </div>
+                                @*<div class="col-md-2" v-if="!f.New"><a v-on:click.prevent="remove(idx)" class='bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnDelete'><i class='material-icons'>delete</i></a></div>*@
+                            </div>
+                        </template>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="m-b-0 m-t--10" />
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary waves-effect">Cerrar actividad</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancelar</button>
+    </div>
+
+    @*<div id="frmFiles">
+        <div class="modal fade" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="">Archivos adjuntos : <small id="tSize">0.00</small> <small> /50 mb</small> </h4>
+                    </div>
+                    <div class="modal-body" data-spy="scroll" data-target="#ListFiles">
+                        
+                    </div>
+                    <hr class="m-b-0 m-t--10" />
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+}
+

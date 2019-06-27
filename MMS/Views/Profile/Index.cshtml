@@ -1,0 +1,525 @@
+@using MMS.Models;
+@model UsuarioHV
+
+@{
+    ViewBag.Title = "User Profile";
+    ViewBag.Subtitle = "Information";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    <link href="/Content/dist/plugins/cropper/cropper.min.css" rel="stylesheet" />
+    <link href="/Content/dist/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet" />
+    <link href="/Content/dist/plugins/morrisjs/morris.css" rel="stylesheet" />
+
+    <style>
+        .avatar-body {
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .avatar-upload {
+            overflow: hidden;
+        }
+
+        .avatar-wrapper {
+            height: 364px;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,.25);
+            background-color: #fcfcfc;
+            overflow: hidden;
+        }
+
+            .avatar-wrapper img {
+                display: block;
+                height: auto;
+                max-width: 100%;
+            }
+
+        .avatar-preview {
+            float: left;
+            margin-top: 15px;
+            margin-right: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+            .avatar-preview:hover {
+                border-color: #ccf;
+                box-shadow: 0 0 5px rgba(0,0,0,.15);
+            }
+
+            .avatar-preview img {
+                width: 100%;
+            }
+
+        .preview-lg {
+            height: 200px;
+            width: 200px;
+            margin-top: 15px;
+        }
+
+        .preview-md {
+            height: 130px;
+            width: 130px;
+        }
+
+        .preview-sm {
+            height: 45px;
+            width: 45px;
+            margin-right: 0px;
+        }
+    </style>
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="/Content/dist/plugins/cropper/cropper.min.js"></script>
+    <script src="/Content/dist/plugins/momentjs/moment.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+    <script src="/Content/dist/plugins/raphael/raphael.min.js"></script>
+    <script src="/Content/dist/plugins/morrisjs/morris.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var cropperUrl;
+            var cropperActive = false;
+            var cropperImg;
+
+            $("#FechaNacimiento").val("@Html.Raw(Model != null && Model.FechaNacimiento.HasValue ? Model.FechaNacimiento.Value.ToString("yyyy-MM-dd") : "")")
+            $("#FechaIngreso").val("@Html.Raw(Model != null && Model.FechaIngreso.HasValue ? Model.FechaIngreso.Value.ToString("yyyy-MM-dd") : "")")
+
+            $('#FechaNacimiento, #FechaIngreso').bootstrapMaterialDatePicker({
+                format: 'YYYY-MM-DD',
+                weekStart: 1,
+                time: false,
+                clearButton: true
+            }).change(function () {
+                $(this).valid();
+                updateMaterialTextFields("#frmCambiarInformacionPerfil");
+            });
+
+            $("#linkProfilePicture").click(function (e) {
+                e.preventDefault();
+
+                $("#fileInput").val("");
+                $(".avatar-preview").html('<img src="' + $("#imgProfilePicture").attr('src') + '">');
+                $("#modalCambiarFotoPerfil").modal();
+            });
+
+            $("#fileInput").on('change', function (e) {
+                var files = $(this).prop('files');
+                var file;
+
+                if (files.length > 0) {
+                    file = files[0];
+
+                    if (isImageFile(file)) {
+                        if (cropperUrl)
+                            URL.revokeObjectURL(cropperUrl); // Revoke the old one
+
+                        cropperUrl = URL.createObjectURL(file);
+                        startCropper();
+                    }
+                }
+            });
+
+            startCropper = function () {
+                if (cropperActive)
+                    cropperImg.cropper('replace', cropperUrl);
+                else {
+                    cropperImg = $('<img src="' + cropperUrl + '">');
+                    $(".avatar-wrapper").empty().html(cropperImg);
+                    cropperImg.cropper({
+                        aspectRatio: 1,
+                        preview: ".avatar-preview",
+                        viewMode: 1
+                    });
+
+                    cropperActive = true;
+                }
+
+                $("#modalCambiarFotoPerfil").one('hidden.bs.modal', function () {
+                    $(".avatar-preview").empty();
+                    if (cropperActive) {
+                        cropperImg.cropper('destroy');
+                        cropperImg.remove();
+                        cropperActive = false;
+                    }
+                });
+            }
+
+            $("#btnAceptar").click(function (e) {
+                e.preventDefault();
+
+                if (!cropperActive) {
+                    msgAlert("No image provided.");
+                    return;
+                }
+
+                sLoading("");
+                $.ajax({
+                    type: "POST",
+                    url: "/api/Profile/CambiarFoto",
+                    data: '"' + cropperImg.cropper('getCroppedCanvas').toDataURL() + '"',
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data) {
+                            $("#btnAceptar").prop("disabled", true);
+                            msgSuccess("Profile Picture changed.");
+                            location.reload();
+                        }
+                        else
+                            msgError("Error saving Profile Picture.");
+
+                    },
+                    complete: hLoading,
+                    error: handleError
+                });
+            });
+
+            $("#btnEliminarFotoPerfil").click(function (e) {
+                e.preventDefault();
+
+                swal({
+                    title: "Delete Profile Picture",
+                    text: "Are you sure you want to delete your Profile Picture?",
+                    type: "warning",
+                    html: true,
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    showLoaderOnConfirm: true,
+                }, function () {
+                    $.post(`/api/Profile/EliminarFoto/`)
+                        .done(function (result) {
+                            if (result) {
+                                msgSuccess("Profile Picture deleted.");
+                                location.reload();
+                            }
+                            else
+                                msgError("Error deleting Profile Picture.");
+                        })
+                        .fail(handleError)
+                        .always(function () {
+                            swal.close();
+                        })
+                });
+            });
+
+            $("#frmCambiarInformacionPerfil").submit(function (e) {
+                e.preventDefault();
+
+                if (!$(this).valid())
+                    return;
+
+                sLoading();
+                $.post("/api/Profile/CambiarInformacion", $(e.target).serialize())
+                    .done(function (result) {
+                        if (result)
+                            msgSuccess("Profile Information saved.");
+                        else
+                            msgError("Error saving Profile Information.");
+                    })
+                    .fail(handleError)
+                    .always(hLoading);
+            });
+
+            var chartsData = null;
+            var getChartData = function (fnDone) {
+                $.get(`/api/Profile/PeakPerformance`)
+                    .done(function (result) {
+                        chartsData = result.map(peak => ({
+                            Periodo: peak.Periodo,
+                            Score: peak.Score.toFixed(2),
+                            Completado: peak.Completado
+                        }));
+                        fnDone();
+                    })
+                    .fail(handleError);
+            };
+            var makeScoreChart = function () {
+                if (!chartsData.length)
+                    return;
+
+                setTimeout(function () { 
+                    Morris.Line({
+                    element: 'peakScore_chart',
+                    data: chartsData,
+                    xkey: 'Periodo',
+                    ykeys: ['Score'],
+                    labels: ['Score'],
+                    lineColors: ['purple'],
+                    lineWidth: 3,
+                    ymax: 1.5
+                });
+                }, 100);
+            };
+            var makeAchievedChart = function () {
+                if (!chartsData.length)
+                    return;
+
+                setTimeout(function () { 
+                    Morris.Line({
+                        element: 'peakAchieved_chart',
+                        data: chartsData,
+                        xkey: 'Periodo',
+                        ykeys: ['Completado'],
+                        labels: ['Achieved'],
+                        lineColors: ['green'],
+                        lineWidth: 3,
+                        ymax: 100
+                    });
+                }, 100);
+            };
+
+            $("#linkTabPerformanceScore").one('click', function (e) {
+                if (chartsData == null)
+                    getChartData(makeScoreChart);
+                else
+                    makeScoreChart();
+            });
+
+            $("#linkTabPerformanceAchieved").one('click', function (e) {
+                if (chartsData == null)
+                    getChartData(makeAchievedChart);
+                else
+                    makeAchievedChart();
+            });
+        });
+
+    </script>
+}
+
+<div class="row">
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+            </div>
+            <div class="body">
+
+                <div class="text-center">
+                    <a href="#" id="linkProfilePicture">
+                        <img id="imgProfilePicture" height="200" src="/Profile/Picture" style="border-width: 1px;border-color: #ded;border-style: solid; padding: 6px;" />
+                    </a>
+                    @if ((bool)ViewBag.HasProfilePicture)
+                    {
+                        <br />
+                        <button type="button" class="btn btn-sm btn-default waves-effect" id="btnEliminarFotoPerfil" style="width: 200px;">
+                            Delete Profile Picture
+                        </button>
+                    }
+
+                    <br /><br />
+                    <span class="font-18">@ViewBag.Nombre</span><br />
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col-md-4 font-bold m-b-0">
+                        <p>Code</p>
+                        <p>Email</p>
+                        <p class="m-b-0">Manager</p>
+                    </div>
+                    <div class="col-md-8 m-b-0">
+                        <p>@ViewBag.Codigo</p>
+                        <p>@ViewBag.Email</p>
+                        <p class="m-b-0">@ViewBag.Manager</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @using (Html.BeginForm("CambiarInformacion", "api/Profile", FormMethod.Post, new { id = "frmCambiarInformacionPerfil" }))
+    {
+        <div class="col-md-8">
+            <div class="card" id="cardForm">
+                <div class="header m-b-10" style="padding-bottom: 0px">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs tab-nav-right tab-col-purple" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#tabAdditionalInfo" data-toggle="tab" aria-expanded="true">ADDITIONAL INFORMATION</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#tabPerformanceScore" data-toggle="tab" aria-expanded="true" id="linkTabPerformanceScore">PEAK PERFORMANCE SCORE</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#tabPerformanceAchieved" data-toggle="tab" aria-expanded="true" id="linkTabPerformanceAchieved">PEAK PERFORMANCE ACHIEVED</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active in" id="tabAdditionalInfo">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            @Html.EditorFor(model => model.Identificacion, new { htmlAttributes = new { @class = "form-control" } })
+                                            @Html.LabelFor(model => model.Identificacion, htmlAttributes: new { @class = "form-label" })
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Identificacion, "", new { @class = "" })
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.FechaNacimiento, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.LabelFor(model => model.FechaNacimiento, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.FechaNacimiento, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.LabelFor(model => model.NivelEducativo, htmlAttributes: new { @class = "form-select-label" })
+                                            @Html.DropDownListFor(model => model.NivelEducativo, null, "", new { @class = "ms form-control" })
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.NivelEducativo, "", new { @class = "" })
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.LabelFor(model => model.AreaId, htmlAttributes: new { @class = "form-select-label" })
+                                            @Html.DropDownListFor(model => model.AreaId, null, "", new { @class = "ms form-control", @disabled = "disabled" })
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.AreaId, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            @Html.EditorFor(model => model.Cargo, new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                                            @Html.LabelFor(model => model.Cargo, htmlAttributes: new { @class = "form-label" })
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Cargo, "", new { @class = "" })
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">date_range</i></span>
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.FechaIngreso, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.LabelFor(model => model.FechaIngreso, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.FechaIngreso, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="material-icons">phone_android</i></span>
+                                            <div class="form-line">
+                                                @Html.EditorFor(model => model.Celular, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.LabelFor(model => model.Celular, htmlAttributes: new { @class = "form-label" })
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Celular, "", new { @class = "" })
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            @Html.EditorFor(model => model.Contacto, new { htmlAttributes = new { @class = "form-control" } })
+                                            @Html.LabelFor(model => model.Contacto, htmlAttributes: new { @class = "form-label" })
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.Contacto, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <hr class="m-b-0 m-t--20" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 m-b-0">
+                                    <button type="submit" class="btn btn-primary waves-effect">Save</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane" id="tabPerformanceScore">
+                            <div id="peakScore_chart" class="graph"></div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane" id="tabPerformanceAchieved">
+                            <div id="peakAchieved_chart" class="graph"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+<div class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static" id="modalCambiarFotoPerfil">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Change Profile Picture</h4>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-body">
+                    <!-- Upload image and data -->
+                    <div class="avatar-upload">
+                        <input type="file" class="avatar-input" id="fileInput" accept="image/*">
+                    </div>
+                    <!-- Crop and preview -->
+                    <div class="row m-b-10">
+                        <div class="col-md-9">
+                            <div class="avatar-wrapper"></div>
+                        </div>
+                        <div class="col-md-3 p-r-0">
+                            <div class="avatar-preview preview-lg"></div>
+                            <div class="avatar-preview preview-md"></div>
+                            <div class="avatar-preview preview-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="m-b-0 m-t--10" />
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary waves-effect" id="btnAceptar">Save</button>
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

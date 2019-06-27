@@ -1,0 +1,110 @@
+﻿@model MMS.Models.CategoriaCDE
+
+@{
+    ViewBag.Title = "Club of Excellence Categories";
+    ViewBag.Subtitle = "View";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    <style>
+        #selected-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+    </style>
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#cardForm input[type=text]").prop("readonly", true);
+            $("#cardForm input[type=checkbox]").prop("disabled", true);
+
+            $('#ValorMinimo, #ValorMaximo').inputmask("numeric", {
+                radixPoint: ",",
+                groupSeparator: ".",
+                autoGroup: true,
+                autoUnmask: true
+            });
+
+            @if (Model != null && Model.Icon != null)
+            {<text>
+            $("#selected-icon").attr("src", "/Content/dist/images/levels/@(Model.Icon).png");
+            </text>}
+        });
+    </script>
+}
+
+<div class="row clearfix">
+    <div class="col-md-8">
+        <div class="card" id="cardForm">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+                <img id="selected-icon" width="50" />
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Nombre, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.LabelFor(model => model.Nombre, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.ValorMinimo, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.ValorMinimo, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.ValorMaximo, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.ValorMaximo, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <span class="input-group-addon">%</span>
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Porcentaje, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.Porcentaje, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @Html.ActionLink("Modify", "Edit", new { id = Model.Id }, new { @class = "btn btn-success waves-effect " + ViewData[$"has_{ViewContext.RouteData.Values["controller"].ToString()}Edit"] })
+                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+        </div>
+    </div>
+</div>

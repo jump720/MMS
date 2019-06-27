@@ -1,0 +1,76 @@
+﻿
+@model MMS.Models.Correos
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+@Scripts.Render("~/bundles/jqueryval")
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+<script src="~/Scripts/Seguridad/Correos.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $.MMS.Correos.init = function () {
+
+        $.MMS.Correos("edit", @Html.Raw(Json.Encode(Model)));
+    };
+</script>
+
+
+@using (Html.BeginForm("Edit", "api/" + controllerName, FormMethod.Post, new { id = "frmCorreos" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Modify E-Mail</h4>
+    </div>
+    <div class="modal-body">
+
+        @Html.HiddenFor(model => model.Id)
+
+        <div class="col-md-6">
+            <div class="form-group form-float">
+                <div class="form-line">
+                    @Html.EditorFor(model => model.Nombre, new { htmlAttributes = new { @class = "form-control " } })
+                    @Html.LabelFor(model => model.Nombre, htmlAttributes: new { @class = "form-label" })
+                    @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "" })
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group form-float">
+                <div class="form-line">
+                    @Html.EditorFor(model => model.Mail, new { htmlAttributes = new { @class = "form-control " } })
+                    @Html.LabelFor(model => model.Mail, htmlAttributes: new { @class = "form-label" })
+                    @Html.ValidationMessageFor(model => model.Mail, "", new { @class = "" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6">
+            <div class="form-group form-float">
+                <div class="form-line">
+                    @Html.EditorFor(model => model.Grupo, new { htmlAttributes = new { @class = "form-control " } })
+                    @Html.LabelFor(model => model.Grupo, htmlAttributes: new { @class = "form-label" })
+                    @Html.ValidationMessageFor(model => model.Grupo, "", new { @class = "" })
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group form-float">
+                @Html.EditorFor(model => model.Active)
+                @Html.LabelFor(model => model.Active, htmlAttributes: new { @class = "fix-checkbox" })
+            </div>
+        </div>
+
+    </div>
+    <hr class="m-b-0 m-t--10" />
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+
+}

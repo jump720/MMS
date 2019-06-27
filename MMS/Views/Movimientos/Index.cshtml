@@ -1,0 +1,98 @@
+﻿@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Movimentos";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "MovimientoId" },
+                    { data: "TipoMovimientoDesc" },
+                    {
+                        data: "MovimientoFechaCrea",
+                        render: function (data) {
+                            var fecha = new Date(data.replace("-", "/").substring(0, 10));
+                            var day = (fecha.getDate().toString().length == 1) ? '0' + fecha.getDate().toString() : fecha.getDate().toString();
+                            var mes = fecha.getMonth() + 1;
+                            var mes = (mes.toString().length == 1) ? '0' + mes.toString() : mes;
+                            var data = day + '/' + mes + '/' + fecha.getFullYear();
+                            return '<span>' + data + '</span>';
+                        }
+                    },
+                    { data: "OrdenId" },
+                    { data: "UsuarioNombre" },
+                    {
+                        data: "MovimientoId",
+                        render: function (value) {
+                            return (
+                                `<a href='/@controllerName/Details?MovimientoId=${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>` +
+                                `<a href='/@controllerName/Edit?MovimientoId=${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`
+                                );
+                        }
+                    }
+                ]);
+        });
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Create" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Create"]" onclick="redirtWithReturnSearch(this, event);">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                Nro
+                            </th>
+                            <th>
+                                Tipo Movimiento
+                            </th>
+                            <th>
+                                Fecha
+                            </th>
+                            <th>
+                                Nro. Orden
+                            </th>
+                            <th>
+                                Usuario
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

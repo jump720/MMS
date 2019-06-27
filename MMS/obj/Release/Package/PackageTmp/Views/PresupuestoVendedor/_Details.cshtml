@@ -1,0 +1,89 @@
+﻿
+@model MMS.Models.PresupuestoVendedor
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+@Scripts.Render("~/bundles/jqueryval")
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+<script src="~/Scripts/Catalogos/PresupuestoVendedor.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $.MMS.Presupuesto.init = function () {
+        $.MMS.Presupuesto("details", @Html.Raw(Json.Encode(Model)));
+    };
+</script>
+
+
+
+
+
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Visualizar</h4>
+    </div>
+    <div class="modal-body" id="bodyForm">
+
+        <div class="row clearfix">
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.Label("Ano", new { @class = "form-select-label" })
+                        @Html.DropDownList("PresupuestoVendedorAno", null, "- Year -", new { @class = "ms form-control" })
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.LabelFor(model => model.CentroCostoID, htmlAttributes: new { @class = "form-select-label" })
+                        @Html.DropDownList("CentroCostoID", null, "- Cost Center -", new { @class = "ms form-control" })
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.LabelFor(model => model.PlantaID, htmlAttributes: new { @class = "form-select-label" })
+                        @Html.DropDownList("PlantaID", null, "- Cost Center -", new { @class = "ms form-control" })
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.LabelFor(model => model.CanalID, htmlAttributes: new { @class = "form-select-label" })
+                        @Html.DropDownList("CanalID", null, "- Cost Center -", new { @class = "ms form-control" })
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.PresupuestoValor, new { htmlAttributes = new { @class = "form-control text-right" } })
+                        @Html.LabelFor(model => model.PresupuestoValor, htmlAttributes: new { @class = "form-label" })
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.PresupuestoGasto, new { htmlAttributes = new { @class = "form-control text-right" } })
+                        @Html.LabelFor(model => model.PresupuestoGasto, htmlAttributes: new { @class = "form-label" })
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <hr class="m-b-0 m-t--10" />
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+
+

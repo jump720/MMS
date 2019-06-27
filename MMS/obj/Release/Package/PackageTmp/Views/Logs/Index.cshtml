@@ -1,0 +1,232 @@
+﻿@model IEnumerable<MMS.Models.Log>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Logs";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+    <link rel="stylesheet" href="/Content/dist/plugins/json-viewer/jquery.json-viewer.css">
+
+    <style type="text/css">
+        #json-renderer {
+            overflow: scroll;
+            max-height: 80vh;
+        }
+    </style>
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="/Content/dist/plugins/json-viewer/jquery.json-viewer.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            $("#selectBuscarEventos").select2({
+                placeholder: "Search @Html.DisplayNameFor(model => model.EventoId)",
+                allowClear: true,
+                theme: "bootstrap",
+                ajax: {
+                    url: function (params) {
+                        return '/api/@controllerName/BuscarEventos?q=' + encodeURIComponent(params.term);
+                    },
+                    delay: 300,
+                    type: 'GET',
+                    minimumInputLength: 1,
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    text: item.Descripcion,
+                                    id: item.Id
+                                }
+                            })
+                        };
+                    }
+                }
+            })
+
+            dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { mData: "Fecha" },
+                    { mData: "Usuario" },
+                    { mData: "Evento" },
+                    { mData: "Key" },
+                    { mData: "Cliente" },
+                    {
+                        mData: "Id",
+                        mRender: function (data, mode, full) {
+                            if (full.HasData)
+                                return '<a onclick="viewData(' + data + ', event)" class="btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float" data-toggle="tooltip" data-placement="top" title="View Data"><i class="material-icons">remove_red_eye</i></a>';
+                            else
+                                return '';
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["txtBuscarFecha", "txtBuscarUsuario", "selectBuscarEventos", "txtBuscarKey", "txtBuscarCliente"],
+                    fnServerParams: function () {
+                        return [
+                            { name: "_fecha", value: $('#txtBuscarFecha').val() },
+                            { name: "_usuario", value: $('#txtBuscarUsuario').val() },
+                            { name: "_evento", value: $('#selectBuscarEventos').val() },
+                            { name: "_key", value: $('#txtBuscarKey').val() },
+                            { name: "_cliente", value: $('#txtBuscarCliente').val() },
+                        ];
+                    },
+                    fnSetFilterControls: function (values) {
+                        var eventoId = values[3];
+
+                        if (!eventoId)
+                            return;
+
+                        $.get("/api/@controllerName/EventoDescripcion/" + eventoId, function (result) {
+                            if (result)
+                                $('#selectBuscarEventos').append(`<option value='${eventoId}'>${result}</option>`).val(values[3]).change();
+                        })
+                    }
+                }
+            );
+        });
+
+        function viewData(id, event) {
+            event.preventDefault();
+
+            $.ajax({
+                type: "GET",
+                url: "/api/@controllerName/ViewData?id=" + id,
+                dataType: "json",
+                beforeSend: function () {
+                    sLoading("");
+                },
+                success: function (data) {
+                    if (data) {
+                        $('#json-renderer').jsonViewer(JSON.parse(data));
+                        $("#modalAuditoriaData").modal();
+                    }
+                    else
+                        msgError("Data not found.");
+                },
+                complete: function () {
+                    hLoading();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    msgError(errorThrown);
+                }
+            });
+
+            return false;
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Eventos" onclick="ajaxModal(event, this.href, 3)" data-toggle="tooltip" data-placement="bottom" title="Configure Events" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Eventos"]">
+                                <i class="material-icons" style="color:black !important">list</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle table-responsive">
+                    <thead>
+                        <tr>
+                            <th width="20%">
+                                @Html.DisplayNameFor(model => model.Fecha)
+                            </th>
+                            <th width="10%">
+                                @Html.DisplayNameFor(model => model.Usuario)
+                            </th>
+                            <th width="30%">
+                                @Html.DisplayNameFor(model => model.EventoId)
+                            </th>
+                            <th width="10%">
+                                @Html.DisplayNameFor(model => model.Key)
+                            </th>
+                            <th width="20%">
+                                @Html.DisplayNameFor(model => model.Cliente)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Data)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarFecha" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Fecha)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarUsuario" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Usuario)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <select id="selectBuscarEventos" class="ms full-width"></select>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarKey" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Key)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarCliente" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Cliente)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAuditoriaData" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">@Html.DisplayNameFor(model => model.Data)</h4>
+            </div>
+            <div class="modal-body">
+                <pre id="json-renderer"></pre>
+            </div>
+        </div>
+    </div>
+</div>

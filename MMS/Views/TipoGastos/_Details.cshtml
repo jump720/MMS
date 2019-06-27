@@ -1,0 +1,48 @@
+﻿
+
+@model MMS.Models.TipoGasto
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@Scripts.Render("~/bundles/jqueryval")
+<script src="~/Scripts/Catalogos/TipoGastos.js"></script>
+
+<script type="text/javascript">
+    $.MMS.TipoGastos.init = function () {
+        $.MMS.TipoGastos("details");
+    };
+</script>
+
+
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">View Spent Type</h4>
+    </div>
+
+    <div class="modal-body" id="bodyForm">
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.TipoGastoID, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.LabelFor(model => model.TipoGastoID, htmlAttributes: new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.TipoGastoDesc, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.LabelFor(model => model.TipoGastoDesc, htmlAttributes: new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="m-b-0 m-t--10" />
+
+    <div class="modal-footer">        
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>

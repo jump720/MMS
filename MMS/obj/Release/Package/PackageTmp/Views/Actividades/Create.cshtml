@@ -1,0 +1,529 @@
+﻿@model MMS.Models.Actividad
+
+@{
+    ViewBag.Title = "Criar Atividade";
+    ViewBag.Subtitle = "Create";
+}
+
+@*jQuery validate*@
+<script src="http://code.jquery.com/ui/1.11.3/jquery-ui.js" type="text/javascript"></script>
+<script src="~/Scripts/Validate/jquery.validate.js" type="text/javascript"></script>
+
+@*jQuery number*@
+<script src="~/Scripts/jquery.number/jquery.number.js" type="text/javascript"></script>
+
+@*DropZone*@
+<link href="~/Scripts/dropzone/dropzone.css" rel="stylesheet" />
+<script src="~/Scripts/dropzone/dropzone.js"></script>
+
+
+
+<script src="~/Scripts/Transacciones/Actividades.js"></script>
+<script type="text/javascript">
+    var Clientes = @Html.Raw(Json.Encode(@ViewBag.ClienteID));
+    var TrnMode = 1;
+    var TipoActiColo = @Html.Raw(Json.Encode(@ViewBag.TipoActiColo));
+    var TipoActiEva = @Html.Raw(Json.Encode(@ViewBag.TipoActiEva));
+    var TipoActiMix = @Html.Raw(Json.Encode(@ViewBag.TipoActiMix));
+
+    //Para cargar los valores del Select al input
+    $(document).ready(function () {
+        function displayVals() {
+            var multipleValues = $("#MarcaID").val() || [];
+            $("#Marcas").val(multipleValues.join(","));
+        }
+
+        $("#MarcaID").change(displayVals);
+        displayVals();
+    });
+
+</script>
+
+
+
+@using (Html.BeginForm("Create", "Actividades", FormMethod.Post, new { id = "formActiv" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    @*@ViewBag.Error*@
+    <span id="Error" class="red-text text-darken-2">@ViewBag.Error</span>
+    @Html.ValidationSummary(true, "", new { @class = "red-text text-accent-4" })
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+
+                <nav>
+                    <div class="nav-wrapper">
+                        <div class="col s12" style="margin-left: 25px;">
+                            <a href="~/Actividades/index" class="breadcrumb">Atividades</a>
+                            <a class="breadcrumb">Criar</a>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="row">
+                    <div class="col s12">
+                        <ul class="blue-text tabs">
+                            <li class="tab col s3"><a class="blue-text active" href="#Contenido1">Informações Básicas</a></li>
+                            <li class="tab col s3"><a class="blue-text" onclick="GetpptoVendedor()" href="#Complementario">Informações Completas</a></li>
+                        </ul>
+                    </div>
+
+
+                    <div id="Contenido1" class="card-content">
+
+                        <div class="row" style="margin-top: 35px;">
+                            <div class="col s12">
+                                <div class="row">
+                                    <div class="input-field col s2 ">
+                                        @Html.LabelFor(model => model.ActividadFecha, htmlAttributes: new { @class = "" })
+                                        @Html.TextBoxFor(model => model.ActividadFecha, new { @class = "Validate", @readonly = "readonly", @Value = DateTime.Today.ToString("u").Substring(0, 10) })
+                                        @Html.ValidationMessageFor(model => model.ActividadFecha, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <div class="input-field col s2 ">
+                                        @Html.LabelFor(model => model.UsuarioIdElabora, htmlAttributes: new { @class = "control-label col-md-2" })
+                                        @Html.TextBoxFor(model => model.UsuarioIdElabora, new { @class = "Validate", @readonly = "readonly", @Value = ViewBag.UsuarioId })
+                                        @Html.ValidationMessageFor(model => model.UsuarioIdElabora, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <div class="input-field col s2 right">
+                                        @Html.LabelFor(model => model.ActividadFechaHasta, new { @class = "control-label col-md-2" })
+                                        @Html.TextBoxFor(model => model.ActividadFechaHasta, new { @class = "Validate datepicker" })
+                                        @Html.ValidationMessageFor(model => model.ActividadFechaHasta, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="input-field col s2 right">
+                                        @Html.LabelFor(model => model.ActividadFechaDesde, new { @class = "control-label col-md-2" })
+                                        @Html.TextBoxFor(model => model.ActividadFechaDesde, new { @class = "Validate datepicker", Value = DateTime.Today.AddDays(2).ToString("u").Substring(0, 10) })
+                                        @Html.ValidationMessageFor(model => model.ActividadFechaDesde, "", new { @class = "text-danger" })
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="input-field col s4 ">
+                                        @Html.DropDownList("TipoActividadID", null, "Selecione uma Atividade")
+                                        @Html.ValidationMessageFor(model => model.TipoActividadID, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-field col s2 Left ">
+                                        @Html.LabelFor(model => model.ClienteID, htmlAttributes: new { @class = "" })
+                                        @Html.TextBoxFor(model => model.ClienteID, new { @class = "Validate tooltipped", @data_position = "top", @data_delay = "50", @data_tooltip = "Duplo clique para buscar clientes" })
+                                        @Html.ValidationMessageFor(model => model.ClienteID, "", new { @class = "text-danger" })
+                                        @*<select id="ClienteID" name="ClienteID" onchange="GetCiudad()">
+                    <option value="" disabled selected>Seleccione una Opción </option>
+                    @foreach (var Cliente in ViewBag.ClienteID)
+                    {
+                        <option value="@Cliente.ClienteID">@Cliente.ClienteRazonSocial</option>
+                    }
+                </select>
+                <label for="ClienteID">Cliente</label>*@
+
+                                        @*@Html.TextBoxFor(model => model.ClienteID, new { @class = "Validate " })
+                Html.LabelFor(model => model.ClienteID)
+                @Html.ValidationMessageFor(model => model.ClienteID, "", new { @class = "text-danger" })*@
+                                    </div>
+                                    <div class="input-field col s6 ">
+                                        <input class="texttip form-control input-sm" id="ClienteNombre" name="" placeholder="Nome do Cliente" readonly="readonly" type="text" />
+                                    </div>
+                                    <div class="input-field col s2 ">
+                                        <input class="texttip form-control input-sm" id="CiudadID" name="CiudadID" placeholder="Cidade" readonly="readonly" type="text" />
+                                    </div>
+                                    <div class="input-field col s2">
+                                        <input class="texttip form-control input-sm" id="SellInID" name="SellInID" placeholder="SellIn" value="0" readonly="readonly" type="text" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="input-field col s4 Left ">
+                                        @Html.LabelFor(model => model.ActividadMetaV, htmlAttributes: new { @class = "" })
+                                        @Html.TextBoxFor(model => model.ActividadMetaV, new { @class = "Validate " })
+                                        @Html.ValidationMessageFor(model => model.ActividadMetaV, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="input-field col s4 Left">
+                                        @Html.Label("Meta de Crescimento (R$)")
+                                        @Html.TextBoxFor(model => model.ActividadMetaE, new { @class = "Validate " })
+                                        @Html.ValidationMessageFor(model => model.ActividadMetaE, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="hide">
+                                        @Html.LabelFor(model => model.GastoId, htmlAttributes: new { @class = "control-label col-md-2" })
+                                        @Html.EditorFor(model => model.GastoId, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.ValidationMessageFor(model => model.GastoId, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-field col s4 Left">
+                                        @Html.DropDownList("CanalID", null, "Selecione uma opção")
+                                        @Html.LabelFor(model => model.CanalID)
+                                        @Html.ValidationMessageFor(model => model.CanalID, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="input-field col s4 Left">
+                                        @Html.LabelFor(model => model.Marcas, new { @class = "active" })
+                                        <select id="MarcaID" name="MarcaID" multiple="multiple">
+                                            <option value="" disabled selected>Seleciona as Marcas</option>
+                                            @foreach (var Marca in ViewBag.MarcaID)
+                                            {
+                                                <option value="@Marca.Value">@Marca.Text</option>
+                                            }
+                                        </select>
+                                        @*@Html.DropDownList("MarcaID", null, new { @multiple = "multiple" })*@
+                                    </div>
+                                    <div class="input-field col s4 Left">
+                                        @Html.Label("Meta de Crescimento (%)")
+                                        <input class="form-control" type="text" id="Vigencia" name="Vigencia">
+                                    </div>
+                                    <div class="hide">
+                                        @Html.TextBoxFor(model => model.Marcas, new { @class = "Validate " })
+                                        @Html.ValidationMessageFor(model => model.Marcas, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-field col s6">
+                                        @Html.TextAreaFor(model => model.ActividadLugarEnvioPOP, new { @class = "materialize-textarea" }@*, new { @class = "materialize-textarea" }*@)
+                                        @Html.ValidationMessageFor(model => model.ActividadLugarEnvioPOP, "", new { @class = "text-danger" })
+                                        @Html.LabelFor(model => model.ActividadLugarEnvioPOP, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    </div>
+                                    <div class="input-field col s6">
+                                        @Html.TextAreaFor(model => model.ActividadObjetivo, new { @class = "materialize-textarea" })
+                                        @Html.ValidationMessageFor(model => model.ActividadObjetivo, "", new { @class = "text-danger" })
+                                        @Html.LabelFor(model => model.ActividadObjetivo, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-field col s6">
+                                        @Html.TextAreaFor(model => model.ActividadDesc, new { @class = "materialize-textarea" })
+                                        @Html.ValidationMessageFor(model => model.ActividadDesc, "", new { @class = "text-danger" })
+                                        @Html.LabelFor(model => model.ActividadDesc, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    </div>
+                                @* UPLOAD DE ARQUIVOS HERE *@
+                                    <div class="input-field col s6">
+                                        @Html.TextAreaFor(model => model.ArquivosBloob, new { @class = "materialize-textarea" })
+                                        @Html.ValidationMessageFor(model => model.ArquivosBloob, "", new { @class = "text-danger" })
+                                        @Html.LabelFor(model => model.ArquivosBloob, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Complementario" class="col s12">
+                        <div id="Contenido1" class="card-content">
+
+
+                            <div class="row" style="margin-top: 35px;">
+                                <div class="col s12">
+                                    <div class="row">
+                                        <div class="input-field col s3 ">
+                                            <label for="Vendedor_name">Vendedor</label>
+                                            <input class="texttip form-control input-sm" id="Vendedor_name" name="Vendedor_name" placeholder="Nombre Vendedor" readonly="readonly" type="text" />
+                                        </div>
+                                        @*<div class="input-field col s3 ">
+                                                <label for="Presupuesto_Mes">Presupuesto Q</label>
+                                                <input class="texttip form-control input-sm" id="Presupuesto_Mes" name="Presupuesto_Mes" placeholder="Presupuesto Mes" readonly="readonly" type="text" />
+                                            </div>
+                                            <div class="input-field col s3 ">
+                                                <label for="Presupuesto_Mes_Ejecutado">Presupuesto Ejecutado</label>
+                                                <input class="texttip form-control input-sm" id="Presupuesto_Mes_Ejecutado" name="Presupuesto_Mes_Ejecutado" placeholder="Presupuesto Mes Ejecutado" readonly="readonly" type="text" />
+                                            </div>
+                                            <div class="input-field col s3 ">
+                                                <label for="Presupuesto_Disp">Presupuesto Disponible</label>
+                                                <input class="texttip form-control input-sm" id="Presupuesto_Disp" name="Presupuesto_Disp" placeholder="Presupuesto Disponible" readonly="readonly" type="text" />
+                                            </div>*@
+                                        <table id="TablaPresupuestos" class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        Centro de Custo
+                                                    </th>
+                                                    <th>
+                                                        Budget Q
+                                                    </th>
+                                                    <th>
+                                                        Budget Executado
+                                                    </th>
+                                                    <th>
+                                                        Budget Disponível
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top: 35px;">
+                                <div class="col s12">
+                                    <div class="row">
+                                        <div class="input-field col s3 ">
+                                            <label for="Cliente_name">Cliente</label>
+                                            <input class="texttip form-control input-sm" id="Cliente_name" name="Cliente_name" placeholder="Nombre Cliente" readonly="readonly" type="text" />
+                                        </div>
+                                        <div class="input-field col s3 ">
+                                            <label for="VentaP1" id="LabelVentaP1">Venda Mês Anterior</label>
+                                            <input class="texttip form-control input-sm" id="VentaP1" name="VentaP1" placeholder="Venta" readonly="readonly" type="text" />
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 ">
+            <div class="card">
+                <div class="card-content">
+                    <table id="TablaItems" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="hide">
+                                    Línea
+                                </th>
+                                <th>
+                                    Código Material
+                                </th>
+                                <th>
+                                    Descrição
+                                </th>
+                                <th>
+                                    Quantidade
+                                </th>
+                                <th>
+                                    Valor Unitário 
+                                    <!-- Ver pra colocar valor unitário-->
+                                </th>
+                                <th>
+                                    Prazo de Entrega
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="width: 80px;">
+                                    <button style="transform: scaleY(0.6) scaleX(0.6)" id="BtnEliminarItemActividad" type="button" class="btn-floating btn-large waves-effect waves-light red" aria-hidden="true" onclick='DeleteRowActividades(this);'><i class="material-icons">delete</i></button>
+                                </td>
+                                <td class="hide">
+                                    <input class="texttip form-control input-sm" id="ActividadItemId0" name="ActividadItemId0" placeholder="Id" type="text" value="1" readonly="readonly" />
+                                </td>
+                                <td>
+                                    <input class="texttip form-control input-sm tooltipped" id="ActividadItemProducto0"
+                                           name="ActividadItemProducto0" placeholder="Producto" type="text"
+                                           ondblclick="promptProductos(0);"
+                                           data-position='top' data-delay='50' data-tooltip='Double Click para buscar produtos'
+                                           onchange="consultaProducto(this);" autocomplete="off" />
+                                </td>
+                                <td>
+                                    <input class="texttip form-control input-sm" id="ActividadItemDesc0" name="ActividadItemDesc0" placeholder="Descrição" readonly='readonly' />
+                                </td>
+                                <td>
+                                    <input class="texttip form-control input-sm" id="ActividadItemCantidad0" name="ActividadItemCantidad0" placeholder="Quantidade" type="text"
+                                           onkeyup='calculaTotal();' onblur="calculaTotal(0)" />
+                                </td>
+                                <td>
+                                    <input class="texttip form-control input-sm" id="ActividadItemPrecio0" name="ActividadItemPrecio0" placeholder="Preço" type="text"
+                                           onkeyup='calculaTotal();' onblur="calculaTotal(0)" />
+                                </td>
+
+                                <td>
+                                    <input class="texttip form-control input-sm" id="ActividadItemTTL0" name="ActividadItemTTL0" placeholder="Total" type="text" readonly='readonly' onchange="calculaTotal(0);" onblur="calculaTotal(0);" />
+                                </td>
+                                @*<td>
+             <select id="ActividadItemCC0" name="ActividadItemCC0" onchange="calculaTotal(0);" class="initialized"></select>
+         </td>
+        <td>
+             <input class="texttip form-control input-sm" id="ActividadItemType0" name="ActividadItemType0" placeholder="Type" type="text" readonly='readonly' />
+         </td>*@
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-action">
+
+                    <div class="row left-align valign">
+                        <div class="col s8">
+                            <div class="hide">
+                                <input type="text" value="1" id="ActividadUltimoItem" name="ActividadUltimoItem" />
+                                @*@Html.TextBoxFor(model => model.ActividadUltimoItem, new { Value = "0" })*@
+                            </div>
+
+                            <button type="button" class="btn-floating btn-large waves-effect waves-light green" aria-hidden="true" onclick='AddRowItems(@Json.Encode(ViewBag.tipomovimiento));return false;'><i class="material-icons">add</i></button>
+                            <span class="black-text" style="margin-left: 20px;">
+                                Adicionar Linhas. (Ctrl+Espaço)
+                            </span>
+                        </div>
+                        <div class="col s2">
+                            <div class="right-align black-text valign" style="margin-left: 20px;margin-top: 15px;" valign="middle">
+                                Total Mercado: $<br>
+                                Total Vendas: $<br>
+                                Total Outros: $<br>
+                                Total: $
+                            </div>
+                        </div>
+                        <div class="col s2">
+                            <div class="right-align black-text valign" style="margin-left: 20px;margin-top: 15px;" valign="middle">
+                                <h8 id="GrandTTLMarketField"> 0</h8><br>
+                                <h8 id="GrandTTLSaleField"> 0</h8><br>
+                                <h8 id="GrandTTLOtherField"> 0</h8><br>
+                                <h8 id="GrandTTLField"> 0</h8>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*<div class="row">
+        <div class="col s8 ">
+            <div class="card">
+                <div class="card-content" >*@
+
+    @*<table id="TablaAnexos" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="hide">
+                        Línea
+                    </th>
+                    <th>
+                        Archivo
+                    </th>
+                    <th>
+                        Fecha
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 80px;">
+                        <button style="transform: scaleY(0.6) scaleX(0.6)" id="BtnEliminarItemActividad" type="button" class="btn-floating btn-large waves-effect waves-light red" aria-hidden="true" onclick='DeleteRowActividades(this);'><i class="material-icons">delete</i></button>
+                    </td>
+                    <td class="hide">
+                        <input class="texttip form-control input-sm" id="ActividadAnexosId0" name="ActividadAnexosId0" placeholder="Id" type="text" value="1" readonly="readonly" />
+                    </td>
+
+                    <td class="input-field col s8">
+
+                        <i class="material-icons prefix">attach_file</i>
+                        <input class="texttip form-control input-sm" id="ActividadAnexosDesc0" name="ActividadAnexosDesc0" placeholder="Nombre del archivo" readonly="readonly" type="text" />
+                    </td>
+                    <td>
+                        <input class="texttip form-control input-sm" id="ActividadAnexosFecha0" name="ActividadAnexosFecha0" placeholder="DD/MM/AAAA" readonly="readonly" type="text" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>*@
+
+    @*<div class="row left-align valign">
+                            <div class="col s10">
+                                <div class="hide">
+                                    @Html.TextBoxFor(model => model.ActividadKeyFiles, new { Value = "0" })
+                                </div>
+                                <button type="button" id="tablaanexosdrop"
+                                        class="btn-floating btn-large waves-effect waves-light green"
+                                        aria-hidden="true">
+                                    <i class="material-icons">add</i>
+                                </button>
+                                <span class="black-text" style="margin-left: 20px;">
+                                    Cargar Archivos. (Puedes Arrastrar tus archivos aqui)
+                                </span>
+                                <button id="enviardrop">Sube Cesamo</button>
+                            </div>
+
+                            <div id="previews" class="dropzone needsclick dz-clickable"></div>
+
+                        </div>
+                    </div>
+
+                    <div class="card-action">
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>*@
+    @*<div class="row">
+            <div class="col s8 ">
+                <div class="card">
+                    <div class="card-content">
+
+                        <table id="TablaAutorizadores" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="input-field col s6">
+                                        Usuario autorizador
+                                    </th>
+                                    <th class="input-field col s4">
+                                        Fecha Autorización
+                                    </th>
+                                    <th class="input-field col s2">
+                                        Autoriza?
+                                    </th>
+                                </tr>
+                            </thead>
+
+
+                            <tbody>
+                                <tr>
+
+                                    <td class="input-field col s6">
+                                        <div>
+                                            <i class="material-icons prefix">account_circle</i>
+                                            <input class="texttip form-control input-sm" id="conceptoliqui" name="conceptoliqui" readonly="readonly" placeholder="Usuario Autorizador" type="text" />
+                                        </div>
+                                    </td>
+
+                                    <td class="input-field col s4">
+                                        <div>
+                                            <input class="texttip form-control input-sm" id="descripcionconcepto" name="descripcionconcepto" readonly="readonly" placeholder="DD/MM/AAAA" type="text" />
+                                        </div>
+                                    </td>
+                                    <td class="input-field col s2">
+                                        <input id="conceptosCuecod" name="conceptosCuecod" placeholder="Cantidad" readonly="readonly" type="checkbox" checked="checked" />
+                                    </td>
+                                </tr>
+                            </tbody>
+
+
+                            <tfoot>
+                                <tr style="display:none">
+                                    <td colspan="9">
+                                        <a id="AddConceptos" class="btn btn-default btn-block btn-sm" onclick="AddRowConceptos(@Json.Encode(ViewBag.tipomovimiento));return false;">Agregar Fila</a>
+                                    </td>
+                                </tr>
+                            </tfoot>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+
+    <div class="toc-wrapper pin-top">
+        <div class="col s12 ">
+            <div class="card">
+                <div class="card-content">
+
+                    <div class="form-group">
+                        <div class="col-md-offset-2 col-md-10">
+                            <input type="submit" value="Guardar" onclick="ResetValidation()" class="btn waves-effect light-blue accent-4" />
+                            @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn waves-effect grey" })
+                            @*@Html.ActionLink("Eliminar", "Index", null, new { @class = "btn waves-effect red" })*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

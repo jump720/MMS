@@ -1,0 +1,134 @@
+﻿@model MMS.Models.Item
+
+@{
+    ViewBag.Title = "Items";
+    ViewBag.Subtitle = "Modify";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/Catalogos/Items.js"></script>
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            $.MMS.Items("edit");
+        });
+    </script>
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+                    @Html.HiddenFor(model => model.Id)
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.Codigo, new { htmlAttributes = new { @class = "form-control " } })
+                                        @Html.LabelFor(model => model.Codigo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Codigo, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.Categoria, new { htmlAttributes = new { @class = "form-control " } })
+                                        @Html.LabelFor(model => model.Categoria, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Categoria, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.Grupo, new { htmlAttributes = new { @class = "form-control " } })
+                                        @Html.LabelFor(model => model.Grupo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Grupo, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.Descripcion, new { htmlAttributes = new { @class = "form-control " } })
+                                        @Html.LabelFor(model => model.Descripcion, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Descripcion, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.PrecioSugerido, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.PrecioSugerido, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.PrecioSugerido, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.UnidadEmpaque, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.UnidadEmpaque, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.UnidadEmpaque, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="marcaContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.MarcaId, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.MarcaId, null, "", new { @class = "ms full-width" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.MarcaId, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+}

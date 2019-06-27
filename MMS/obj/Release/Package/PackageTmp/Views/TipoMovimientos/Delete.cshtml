@@ -1,0 +1,35 @@
+﻿@model MMS.Models.TipoMovimiento
+
+@{
+    ViewBag.Title = "Delete";
+    Layout = null;
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div id="_Modal" class="modal modal-fixed-footer" style="height:30%;">
+        @if (Model != null)
+        {
+            <div class="modal-content">
+                @*@Html.ActionLink("close", "Index", null, new { @class = "btn-floating red material-icons right" })*@
+                <p>¿Estás seguro que quieres eliminar el Tipo de Movimiento <strong><u>@Html.DisplayFor(model => model.TipoMovimientoDesc)</u></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:void(0)" class="btn modal-action modal-close waves-effect grey" style="margin-left:5px;">Cancelar</a>
+                <div class="col s12 l9 pull-l1">
+                    <input type="submit" value="Eliminar" class="btn waves-effect red lighten-1" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="modal-content">
+                <h4>@ViewBag.Error</h4>
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:void(0)" class="btn modal-action modal-close waves-effect grey" style="margin-left:5px;">Aceptar</a>
+            </div>
+        }
+    </div>
+}

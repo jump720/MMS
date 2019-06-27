@@ -1,0 +1,268 @@
+﻿@model MMS.Models.FlujoPQRSConfigViewModel
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jsDataTables")
+@Scripts.Render("~/bundles/jsVue")
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+<script src="~/Scripts/WCSS/ConfigStep.js"></script>
+
+
+<script type="text/javascript">
+    $.MMS.ConfigStep.init = function () {
+        //var checks = [];
+
+        var checks = [ @foreach (var t in Model.Tareas)
+        {<text>
+            {
+                Id: @t.Id,
+                MotivoPQRSId: @t.MotivoPQRSId,
+                FlujoPQRSId: @t.FlujoPQRSId,
+                Descripcion: @Html.Raw(Json.Encode(t.Descripcion)),
+                Requerido: @Html.Raw(Json.Encode(t.Requerido)),
+            },
+
+        </text>
+        }];
+        //var conds = [];
+
+        var conds = [ @foreach (var t in Model.Condiciones)
+        {<text>
+            {
+                Id: @t.Id,
+                MotivoPQRSId: @t.MotivoPQRSId,
+                FlujoPQRSId: @t.FlujoPQRSId,
+                Descripcion: @Html.Raw(Json.Encode(t.Descripcion)),
+                TipoCondicion: @Html.Raw(Json.Encode(t.TipoCondicion)),
+                CondicionesValor: @Html.Raw(Json.Encode(t.CondicionesValor)),
+                Valor: @Html.Raw(Json.Encode(t.Valor)),
+                SiNo: @Html.Raw(Json.Encode(t.SiNo)),
+            },
+
+        </text>
+        }];
+        $.MMS.ConfigStep("edit",@Html.Raw(Json.Encode(Model.Flujo)), checks, conds);
+    };
+</script>
+
+@using (Html.BeginForm("ConfigStep", "api/" + controllerName, FormMethod.Post, new { id = "formConfig" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h2 class="modal-title">Configuration (Tasks and Conditions)</h2>
+        <h5 class="" style="margin-top: 1px !important;margin-bottom: 1px !important;">Step Name : <em>@Model.Flujo.Nombre</em></h5>
+        <h5 class="" style="margin-top: 1px !important;margin-bottom: 1px !important;">Type : <em>@Model.Flujo.TipoPaso</em></h5>
+        <h5 class="" style="margin-top: 1px !important;margin-bottom: 1px !important;">Send Mails recipients: <em>@Model.Flujo.EnviaCorreoDestinatarios</em></h5>
+        @Html.HiddenFor(model => model.Flujo.Id)
+        @Html.HiddenFor(model => model.Flujo.MotivoPQRSId)
+        @Html.HiddenFor(model => model.Flujo.Order)
+        @Html.HiddenFor(model => model.Flujo.TipoPaso)
+        @Html.HiddenFor(model => model.Flujo.EnviaCorreoDestinatarios)
+        @Html.HiddenFor(model => model.Flujo.Descripcion)
+        @Html.HiddenFor(model => model.Flujo.Nombre)
+    </div>
+
+    <div class="modal-body">
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a href="#check_tab" data-toggle="tab">
+                            <i class="material-icons">playlist_add_check</i> Check List
+                        </a>
+                    </li>
+                    @if (Model.Flujo.Order > 3)
+                    {
+                    <li role="presentation">
+                        <a href="#conditions_tab" data-toggle="tab">
+                            <i class="material-icons">filter_list</i> Conditions
+                        </a>
+                    </li>
+                    }
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="check_tab">
+                        <table class="table table-condensed table-hover table-striped table-va-middle" id="_tablechecks">
+                            <thead>
+                                <tr>
+                                    <th>@Html.DisplayNameFor(model => model.Tareas[0].Descripcion)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Tareas[0].Requerido)</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if="checks.length == 0">
+                                    <tr class="align-center">
+                                        <td colspan="3"><em>This template has no item.</em></td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr v-for="(check, index) in checks">
+
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Tareas[' + index + '].Id'" class="form-control" v-model="check.Id" />
+                                            <input type="hidden" v-bind:name="'Tareas[' + index + '].MotivoPQRSId'" class="form-control" v-model="check.MotivoPQRSId" />
+                                            <input type="hidden" v-bind:name="'Tareas[' + index + '].FlujoPQRSId'" class="form-control" v-model="check.FlujoPQRSId" />
+                                            @*<div class="input-group" style="margin-bottom: 0px;">
+                                                    <div class="form-line">
+                                                        <input type="text" v-bind:name="'Tareas[' + index + '].Descripcion'" v-bind:class="'form-control text-box single-line Descripcion-' + index" placeholder="Description" v-model="check.Descripcion" v-bind:data-index="index" />
+                                                    </div>
+                                                </div>
+                                                <span class="field-validation-valid " v-bind:data-valmsg-for="`Tareas[${index}].Descripcion`" data-valmsg-replace="true"></span>*@
+
+                                            <div class="form-group m-b-0">
+                                                <div class="form-line">
+                                                    <input type="text" v-bind:name="`Tareas[${index}].Descripcion`" v-bind:class="'form-control TareasDescripcion-' + index" v-model="check.Descripcion" placeholder="@Html.DisplayNameFor(model => model.Tareas[0].Descripcion)">
+                                                </div>
+                                                <span class="field-validation-valid " v-bind:data-valmsg-for="`Tareas[${index}].Descripcion`" data-valmsg-replace="true"></span>
+                                            </div>
+
+                                        </td>
+                                        <td>
+
+                                            <input v-if="check.Requerido == true" type="checkbox" v-bind:name="'Tareas[' + index + '].Requerido'" v-bind:id="'Tareas[' + index + '].Requerido'" class="form-control check-box" v-bind:value="check.Requerido" v-model="check.Requerido" />
+                                            <input v-if="check.Requerido == false" type="checkbox" v-bind:name="'Tareas[' + index + '].Requerido'" v-bind:id="'Tareas[' + index + '].Requerido'" class="form-control check-box" v-bind:value="check.Requerido" v-model="check.Requerido" />
+                                            <label v-bind:for="'Tareas[' + index + '].Requerido'" class="fix-checkbox"></label>
+                                        </td>
+                                        <td>
+                                            <a v-on:click.prevent="remove(index);" class='bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnDelete '><i class='material-icons'>delete</i></a>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot>
+                                <tr class="align-center">
+                                    <td colspan="3">
+                                        <a href="javascript:void(0)" class="btn btn-default waves-effect" v-on:click.prevent="addNewCheck($event); ">Add Item</a>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="conditions_tab">
+                        <table class="table table-condensed table-hover table-striped table-va-middle" id="_tableConditions">
+                            <thead>
+                                <tr>
+                                    <th>@Html.DisplayNameFor(model => model.Condiciones[0].Descripcion)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Condiciones[0].TipoCondicion)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Condiciones[0].CondicionesValor)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Condiciones[0].Valor)</th>
+                                    <th>@Html.DisplayNameFor(model => model.Condiciones[0].SiNo)</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if="conds.length == 0">
+                                    <tr class="align-center">
+                                        <td colspan="6"><em>This template has no conditions.</em></td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr v-for="(cond, index) in conds">
+
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Id'" class="form-control" v-model="cond.Id" />
+                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].MotivoPQRSId'" class="form-control" v-model="cond.MotivoPQRSId" />
+                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].FlujoPQRSId'" class="form-control" v-model="cond.FlujoPQRSId" />
+                                            @*<input type="text" v-bind:name="'Condiciones[' + index + '].Descripcion'" class="form-control" placeholder="Description" v-model="cond.Descripcion"  />*@
+                                            <div class="form-group m-b-0">
+                                                <div class="form-line">
+                                                    <input type="text" v-bind:name="`Condiciones[${index}].Descripcion`" v-bind:class="'form-control CondicionesDescripcion-' + index" v-model="cond.Descripcion" placeholder="@Html.DisplayNameFor(model => model.Condiciones[0].Descripcion)">
+                                                </div>
+                                                <span class="field-validation-valid " v-bind:data-valmsg-for="`Condiciones[${index}].Descripcion`" data-valmsg-replace="true"></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select v-bind:name="'Condiciones[' + index + '].TipoCondicion'" v-model="cond.TipoCondicion"
+                                                    v-bind:id="'Condiciones_' + index + '_TipoCondicion'" v-bind:class="'CondicionesTipoCondicion-' + index" v-bind:data-index="index">
+                                                <option value="1">YesNo</option>
+                                                <option value="2">Value</option>
+                                            </select>
+                                            <span class="field-validation-valid " v-bind:data-valmsg-for="`Condiciones[${index}].TipoCondicion`" data-valmsg-replace="true"></span>
+                                        </td>
+                                        <td>
+                                            <template v-if="cond.TipoCondicion == '2'">
+                                                <select v-bind:name="'Condiciones[' + index + '].CondicionesValor'" v-model="cond.CondicionesValor"
+                                                        v-bind:id="'Condiciones_' + index + '_CondicionesValor'" v-bind:class="'SelectCondicionesValor-' + index" v-bind:data-index="index">
+                                                    <option value="1">Equal</option>
+                                                    <option value="2">Less Than</option>
+                                                    <option value="3">Less or Equal Than</option>
+                                                    <option value="4">Higher Than</option>
+                                                    <option value="5">Higher or Equal Than</option>
+                                                </select>
+                                            </template>
+                                            <template v-else>
+                                                @*<input type="hidden" v-bind:name="'Condiciones[' + index + '].CondicionesValor'" class="form-control" v-model="cond.CondicionesValor" />*@
+                                                <select v-model="cond.CondicionesValor" v-bind:class="'SelectCondicionesValor-' + index" v-bind:data-index="index" v-bind:name="'Condiciones[' + index + '].CondicionesValor'"
+                                                        v-bind:id="'Condiciones_' + index + '_CondicionesValor'" disabled>
+                                                    <option value="1">Equal</option>
+                                                    <option value="2">Less Than</option>
+                                                    <option value="3">Less or Equal Than</option>
+                                                    <option value="4">Higher Than</option>
+                                                    <option value="5">Higher or Equal Than</option>
+                                                </select>
+                                            </template>
+                                        </td>
+                                        <td>
+                                            <template v-if="cond.TipoCondicion == '2'">
+                                                <input type="text" v-bind:name="'Condiciones[' + index + '].Valor'" v-bind:class="'form-control text-right ValorCondiciones-' + index" v-model="cond.Valor" v-bind:data-index="index" />
+                                            </template>
+                                            <template v-else>
+                                                <input type="text" v-bind:name="'Condiciones[' + index + '].Valor'" v-bind:class="'form-control text-right ValorCondiciones-' + index" v-model="cond.Valor" disabled />
+                                            </template>
+                                        </td>
+                                        <td v-if="cond.TipoCondicion == '1'">
+                                            @*<template v-if="cond.TipoCondicion == '1'">*@
+                                            
+                                            <input v-if="cond.SiNo == true" type="checkbox" v-bind:name="'Condiciones[' + index + '].SiNo'" v-bind:id="'Condiciones[' + index + '].SiNo'" class="form-control check-box" v-bind:value="cond.SiNo" v-model="cond.SiNo" />
+                                            <input v-if="cond.SiNo == false" type="checkbox" v-bind:name="'Condiciones[' + index + '].SiNo'" v-bind:id="'Condiciones[' + index + '].SiNo'" class="form-control check-box" v-bind:value="cond.SiNo" v-model="cond.SiNo" />
+                                            <label v-bind:for="'Condiciones[' + index + '].SiNo'" class="fix-checkbox"></label>
+                                            
+                                            @*</template>*@
+                                            @*<template v-else>
+                                                    <input v-if="cond.SiNo == true" type="checkbox" v-bind:name="'Condiciones[' + index + '].SiNo'" v-bind:id="'Condiciones[' + index + '].SiNo'" class="form-control check-box" v-bind:value="cond.SiNo" v-model="cond.SiNo" disabled />
+                                                    <input v-if="cond.SiNo == false" type="checkbox" v-bind:name="'Condiciones[' + index + '].SiNo'" v-bind:id="'Condiciones[' + index + '].SiNo'" class="form-control check-box" v-bind:value="cond.SiNo" v-model="cond.SiNo" disabled/>
+                                                    <label v-bind:for="'Condiciones[' + index + '].SiNo'" class="fix-checkbox"></label>
+                                                </template>*@
+                                        </td>
+                                        <td v-if="cond.TipoCondicion == '2'">
+                                            <input v-if="cond.SiNo == true" type="checkbox" v-bind:name="'Condiciones[' + index + '].SiNo'" v-bind:id="'Condiciones[' + index + '].SiNo'" class="form-control check-box" v-bind:value="cond.SiNo" v-model="cond.SiNo" disabled/>
+                                            <input v-if="cond.SiNo == false" type="checkbox" v-bind:name="'Condiciones[' + index + '].SiNo'" v-bind:id="'Condiciones[' + index + '].SiNo'" class="form-control check-box" v-bind:value="cond.SiNo" v-model="cond.SiNo" disabled/>
+                                            <label v-bind:for="'Condiciones[' + index + '].SiNo'" class="fix-checkbox"></label>
+                                        </td>
+                                        <td>
+                                            <a v-on:click.prevent="remove(index)" class='bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnDelete '><i class='material-icons'>delete</i></a>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot>
+                                <tr class="align-center">
+                                    <td colspan="6">
+                                        <a href="javascript:void(0)" class="btn btn-default waves-effect" v-on:click.prevent="addNewCond($event); " onmouseout="selectCond();">Add Condition</a>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                <hr class="m-b-0 m-t--10" />
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary waves-effect">Save</button>
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                </div>
+}

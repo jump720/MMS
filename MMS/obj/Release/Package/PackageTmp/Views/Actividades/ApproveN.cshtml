@@ -1,0 +1,141 @@
+﻿@model IEnumerable<MMS.Models.ActividadAutorizacion>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Aprobar actividades";
+    ViewBag.Subtitle = "Panel de aprobación";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Approve", "/@controllerName/Approve",
+                [
+                    { data: "ActividadAutorizacionAutoriza" },
+                    { data: "ActividadId" },
+                    { data: "ActividadTitulo" },
+                    { data: "ActividadFecha" },
+                    { data: "ClienteID" },
+                    { data: "UsuarioIdElabora" },
+                    {
+                        data: "Total",
+                        render: function (value) {
+                            return value.formatMoney(0);
+                        }
+                    },
+                    { data: "ActividadAutorizacionFecha" },
+                    //{ data: "ActividadAutorizacionMotivo" },
+
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+
+                            var result = `<a href='/@controllerName/Details/${row.ActividadId}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="Ver detalle"><i class='material-icons'>remove_red_eye</i></a>`;
+
+
+                            result += `<a href='/@controllerName/ConfirmarApprove?ActividadId=${row.ActividadId}&tipoAutorizacionId=3' onclick="ApproveActividadModal(event,this.href);"  class='btn-table bg-red  btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}ConfirmarApprove"]' data-toggle="tooltip" data-placement="top" title="Rechazar actividad"><i class='material-icons'>clear</i></a>`;
+                            result += `<a href='/@controllerName/ConfirmarApprove?ActividadId=${row.ActividadId}&tipoAutorizacionId=2' onclick="ApproveActividadModal(event,this.href);"  class='btn-table bg-green  btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}ConfirmarApprove"]' data-toggle="tooltip" data-placement="top" title="Aprobar actividad"><i class='material-icons'>done</i></a>`;
+
+                            return result;
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+
+                });
+
+        });
+
+
+        function ApproveActividadModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    //$.MMS.ConfirmarApprove.init();
+                },
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+
+   
+
+
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                       
+                      
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle table-responsive">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.ActividadAutorizacionAutoriza)
+                            </th>
+                            <th class="all">
+                                @Html.DisplayNameFor(model => model.ActividadId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Actividad.ActividadTitulo)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Actividad.ActividadFecha)
+                            </th>
+                            <th>
+                                @*@Html.DisplayNameFor(model => model.Actividad.cliente.ClienteRazonSocial)*@
+                                Cliente
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Actividad.UsuarioIdElabora)
+                            </th>
+                            <th>
+                                Total
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.ActividadAutorizacionFecha)
+                            </th>
+                            @*<th>
+                                    @Html.DisplayNameFor(model => model.ActividadAutorizacionMotivo)
+                                </th>*@
+                            <th style="width:106px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

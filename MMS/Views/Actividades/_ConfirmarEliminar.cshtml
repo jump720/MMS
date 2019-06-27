@@ -1,0 +1,27 @@
+﻿@*@{
+        ViewBag.Title = "Reset Contraseña";
+        Layout = null;
+    }*@
+
+
+
+
+<div id="_ConfirmarEliminar" class="modal bottom-sheet">
+    <div class="modal-content">
+        <h4>Esta seguro de eliminar el registro?</h4>
+
+        <div class="row">
+            <div class="input-field col s6">
+                <h5>Esta acción no puede ser reversada</h5>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <input id="btnConfirmar" type="button" value="Confirmar" class="btn waves-effect red accent-4" onclick="ConfirmaDeleteActividad(@ViewBag.indice)" />
+        <input id="btncancelar" type="button" value="Cancelar" class="btn waves-effect grey" onclick="$('#_ConfirmarEliminar').closeModal();" />
+    </div>
+</div>
+

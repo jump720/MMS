@@ -1,0 +1,68 @@
+﻿@model MMS.Models.Actividad
+@{Layout = null; }
+
+@*DropZone*@
+<link href="http://www.dropzonejs.com/css/dropzone.css?v=1473248119" rel="stylesheet" />
+<script src="~/Scripts/dropzone/dropzone.js"></script>
+
+<script type="text/javascript">
+
+    window.onload = function (e) {
+
+        new Dropzone("div#tablaanexosdrop", { url: "../Actividades/UploadAction" });
+    }
+    Dropzone.autoDiscover = false;
+    Dropzone.options.tablaanexosdrop = {
+        url: "../Actividades/UploadAction",
+        maxFileSize: 4,
+        parallelUploads: 10,
+        uploadMultiple: true,
+        autoProcessQueue: false,
+        addRemoveLinks: true,
+        //previewsContainer: "#previews",
+        init: function () {
+            var submitButton = document.querySelector("#enviardrop")
+            myDropzone = this; // closure
+
+            submitButton.addEventListener("click", function () {
+                myDropzone.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            myDropzone.on("addedfile", function (file) {
+                if (!file.type.match(/image.*/)) {
+                    if (file.type.match(/application.zip/)) {
+                        myDropzone.emit("thumbnail", file, "path/to/img");
+                    } else {
+                        myDropzone.emit("thumbnail", file, "path/to/img");
+                    }
+                }
+            });
+            myDropzone.on("complete", function (file) {
+                myDropzone.removeFile(file);
+            });
+
+        }
+
+
+    };
+</script>
+
+<div  class="dropzone needsclick dz-clickable"  >
+    @*<form action="~/ACtividades/UploadAction" class="dropzone needsclick dz-clickable" id="demo-upload">*@
+
+        <div class="dz-message needsclick" id="tablaanexosdrop">
+            Drop files here or click to upload.<br>
+            <span class="note needsclick">(This is just a demo dropzone. Selected files are <strong>not</strong> actually uploaded.)</span>    
+
+        </div>
+
+    @*</form>*@
+</div>
+
+
+<button id="enviardrop" onclick="tablaanexosdrop.processQueue()">Sube Cesamo</button>
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

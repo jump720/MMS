@@ -1,0 +1,99 @@
+﻿@model MMS.Models.NivelesAprobacion
+
+@{
+    ViewBag.Title = "Niveles de Aprobación";
+    ViewBag.Subtitle = "Delete";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="~/Scripts/Transacciones/NivelesAprobacion.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $.MMS.NivelesAprobacion("delete", "@Html.Raw(Model == null ? "" : Model.UsuarioId)");
+        });
+    </script>
+}
+
+<div class="row clearfix">
+    <div class="col-md-10">
+        <div class="card" id="cardForm">
+            <div class="header bg-red">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+            </div>
+            <div class="body">
+                @Html.ValidationSummary(true, "", new { @class = "hide" })
+                @Html.HiddenFor(model => model.Id)
+
+                <div class="row">
+                    <div class="col-md-8 m-b-0">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Descripcion, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.LabelFor(model => model.Descripcion, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.Descripcion, "", new { @class = "" })
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 m-b-0">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Orden, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.LabelFor(model => model.Orden, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.Orden, "", new { @class = "" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.CanalID, htmlAttributes: new { @class = "form-select-label" })
+                            @Html.DropDownListFor(model => model.CanalID, null, "-- Canal --", new { @class = "ms full-width" })
+                            @Html.ValidationMessageFor(model => model.CanalID, "", new { @class = "" })
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.PlantaID, htmlAttributes: new { @class = "form-select-label" })
+                            @Html.DropDownListFor(model => model.PlantaID, null, "-- Planta --", new { @class = "ms full-width" })
+                            @Html.ValidationMessageFor(model => model.PlantaID, "", new { @class = "" })
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.UsuarioId, htmlAttributes: new { @class = "form-select-label" })
+                            @Html.DropDownListFor(model => model.UsuarioId, null, new { @class = "ms full-width" })
+                            @Html.ValidationMessageFor(model => model.UsuarioId, "", new { @class = "" })
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @using (Html.BeginForm())
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="submit" value="Delete" class="btn btn-danger waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,183 @@
+﻿@model MMS.Models.Movimiento
+
+@{
+    ViewBag.Title = "Movimentos";
+    ViewBag.Subtitle = "Create";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    <script src="~/Scripts/jquery.number/jquery.number.js" type="text/javascript"></script>
+    <script src="~/Scripts/Transacciones/Movimientos.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        /*
+         * Insert = 1,
+         * Update = 2,
+         * Delete = 3,
+         * Display = 4
+         */
+        var Estados = @Html.Raw(Json.Encode(@ViewBag.MovimientoEstado));
+        var TipoMov = @Html.Raw(Json.Encode(@ViewBag.TipoMovConfig));
+        var TrnMode = 1;
+    </script>
+}
+
+@using (Html.BeginForm("Create", "Movimientos", FormMethod.Post, new { id = "formMov" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    <span id="Error" class="red-text text-darken-2">@ViewBag.Error </span>
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+
+                    <form class="col s12">
+                        <div class="row clearfix">
+                            <div class="col-md-3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.MovimientoId, new { htmlAttributes = new { @class = "form-control validate", @readonly = "readonly" } })
+                                        @Html.LabelFor(model => model.MovimientoId, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.MovimientoId, "", new { @class = "" })
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 m-t--15">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.TipoMovimientoID, htmlAttributes: new { @class = "form-select-label m-b-0" })
+                                    @Html.DropDownListFor(model => model.TipoMovimientoID, null, new { @class = "ms form-control m-t--5 mat" })
+                                    @Html.ValidationMessageFor(model => model.TipoMovimientoID, "", new { @class = "" })
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.MovimientoFechaCrea, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", @Value = DateTime.Today.ToString("u").Substring(0, 10) } })
+                                        @Html.LabelFor(model => model.MovimientoFechaCrea, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.MovimientoFechaCrea, "", new { @class = "" })
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.MovimientoFechaMod, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", @Value = DateTime.Today.ToString("u").Substring(0, 10) } })
+                                        @Html.LabelFor(model => model.MovimientoFechaMod, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.MovimientoFechaMod, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row clearfix">
+                            <div class="col-md-3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.UsuarioIdModifica, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", @Value = ViewBag.UsuarioIdModifica } })
+                                        @Html.LabelFor(model => model.UsuarioIdModifica, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.UsuarioIdModifica, "", new { @class = "" })
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input type="text" id="TotCant" class="form-control" disabled="disabled" />
+                                        <label class="form-label">Total Cant.</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input type="text" id="TotVrl" class="form-control" disabled="disabled" />
+                                        <label class="form-label">Total Vlr</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row clearfix">
+                            <div class="col-md-12 m-b-0">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.TextAreaFor(model => model.MovimientoNota, new { @class = "form-control", @rows = "3" })
+                                        @Html.LabelFor(model => model.MovimientoNota, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.MovimientoNota, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row clearfix">
+                            <div class="col-md-12 m-b-0">
+                                <input type="text" id="nroTableMovProductos" name="nroTableMovProductos" style="display: none" value="0" />
+                                <h5>Productos</h5>
+                                <table id="TableMovProductos" class="table table-condensed table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Producto</th>
+                                            <th>Desc</th>
+                                            <th>Valor</th>
+                                            <th>Cantidad</th>
+                                            <th>Estado</th>
+                                            <th>Mov. Entrada</th>
+                                            <th>Mov. Dispo.</th>
+                                            <th>Linea</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr style="">
+                                            <td colspan="9">
+                                                <a id="AddRow" class="waves-effect  btn grey lighten-5" style="width: 100%;color:black" onclick="addRowTableMov()">Agregar Fila (Ctrl + Space)</a>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Guardar" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)", @id = "btnCancelMov" })
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="productosModal" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>

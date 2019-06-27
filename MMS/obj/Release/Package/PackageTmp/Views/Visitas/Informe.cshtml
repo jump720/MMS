@@ -1,0 +1,95 @@
+﻿@model IEnumerable<MMS.Models.Visita>
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Report";
+    ViewBag.Subtitle = "Visits";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+
+   
+}
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+
+  
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a href="#VisitasMes" data-toggle="tab">
+                            @*<i class="material-icons">comment</i>*@ Monthly Visits
+                        </a>
+                    </li>
+                    @*<li role="presentation">
+                        <a href="#VisitasMes" data-toggle="tab">
+                            Type of Industry
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#TipoVisitas" data-toggle="tab">
+                            Type of Visits
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#Charts" data-toggle="tab">
+                             Charts
+                        </a>
+                    </li>*@
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="VisitasMes">
+                        <div class="row clearfix">
+                            <div class="col-md-12">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    @*<div role="tabpanel" class="tab-pane fade" id="TipoVisitas">
+                        <div class="row clearfix">
+                            <div class="col-md-12">
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="TipoIndustria">
+                        <div class="row clearfix">
+                            <div class="col-md-12">
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="Charts">
+                        <div class="row clearfix">
+                            <div class="col-md-12">
+                            </div>
+                        </div>
+                    </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

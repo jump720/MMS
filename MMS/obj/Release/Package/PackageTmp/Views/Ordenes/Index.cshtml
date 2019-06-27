@@ -1,0 +1,158 @@
+﻿@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Ordenes";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+
+    <script type="text/javascript">
+        var estados = @Html.Raw(Json.Encode(@ViewBag.EstadoOrden));
+        var rolid = @Html.Raw(Json.Encode(@ViewBag.rolid));
+
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "OrdenId" },
+                    {
+                        data: "OrdenFecha",
+                        render: function (data) {
+                            var fecha = new Date(data.replace("-", "/").substring(0, 10));
+                            var day = (fecha.getDate().toString().length == 1) ? '0' + fecha.getDate().toString() : fecha.getDate().toString();
+                            var mes = fecha.getMonth() + 1;
+                            var mes = (mes.toString().length == 1) ? '0' + mes.toString() : mes;
+                            var data = day + '/' + mes + '/' + fecha.getFullYear();
+                            return '<span>' + data + '</span>';
+                        }
+                    },
+                     {
+                         data: "OrdenFechaDespacho",
+                         render: function (data) {
+                             var fecha = new Date(data.replace("-", "/").substring(0, 10));
+                             var day = (fecha.getDate().toString().length == 1) ? '0' + fecha.getDate().toString() : fecha.getDate().toString();
+                             var mes = fecha.getMonth() + 1;
+                             var mes = (mes.toString().length == 1) ? '0' + mes.toString() : mes;
+                             var data = day + '/' + mes + '/' + fecha.getFullYear();
+                             return '<span>' + data + '</span>';
+                         }
+                     },
+                    {
+                        data: "OrdenEstado",
+                        render: function (data) {
+                            if (data >= 1 && data <= 6) return estados.filter(x => x.Value == data)[0].Text;
+                            else return data;
+                        }
+                    },
+                    { data: "ActividadId" },
+                    { data: "ClienteRazonSocial" },
+                    { data: "OrdenNroGuia" },
+                    { data: "UsuarioNombre" },
+                    {
+                        data: "OrdenId",
+                        render: function (data, npi, row) {
+                            var result = '';
+
+                            if (row.OrdenEstado == 1 || row.OrdenEstado == 2) {
+                                result += `<a href="/Ordenes/Edit?id=${data}" onclick="redirtWithReturnSearch(this, event)" class="btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]" data-toggle="tooltip" data-placement="top" title="Editar"><i class='material-icons'>mode_edit</i></a>`;
+
+                                if (rolid == 1) {
+                                    result += `<a href="/Ordenes/Delete?id=${data}" onclick="redirtWithReturnSearch(this, event)" class="btn-table btn-danger btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Delete"]" data-toggle="tooltip" data-placement="top" title="Eliminar"><i class='material-icons'>delete</i></a>`;
+                                }
+                                if ((row.OrdenNroGuia != "" && row.OrdenNroGuia != null) && row.OrdenEstado == 2) {
+                                    result += `<a href="javascript:void(0)" class="btn-table btn-success btn-sm btn-sm-circle waves-circle waves-effect waves-float" data-toggle="tooltip" data-placement="top" title="Despachar Orden" onclick="CambiaEstado(${data}, ${(row.OrdenEstado + 1)});"> <i class="material-icons">queue</i> </a>`;
+                                } else if (row.OrdenEstado == 1) {
+                                    result += `<a href="javascript:void(0)" class="btn-table btn-success btn-sm btn-sm-circle waves-circle waves-effect waves-float" data-toggle="tooltip" data-placement="top" title="Poner orden por despachar" onclick="CambiaEstado(${data}, ${(row.OrdenEstado + 1)});"><i class="material-icons" onclick="">queue</i> </a>`;
+                                }
+                            }
+
+                            result += `<a href="/Ordenes/Details?id=${data}" class="btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float" data-toggle="tooltip" data-placement="top" title="Detalle"><i class="material-icons" onclick="">description</i></a>`;
+                            return result;
+                        }
+                    }
+                ]);
+        });
+
+        function CambiaEstado(ordenid, estado) {
+            $.ajax({
+                url: "../ordenes/CambiaEstadoOrden",
+                type: "GET",
+                data: { OrdenId: ordenid, estado: estado },
+                dataType: 'text',
+                success: function (result) {
+                    if (result) {
+                        msgSuccess("Se cambio de estado la orden " + ordenid + " correctamente")
+                        setTimeout(() => location.reload(), 2000)
+                    } else {
+                        msgError("Error al cambiar de estado");
+                    }
+                },
+                beforeSend: function () {
+                    sLoading();
+                },
+                complete: function () {
+                    hLoading();
+                },
+                error: function (xhr, status) {
+                    msgError(status);
+                    hLoading();
+                }
+            });
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                Orden
+                            </th>
+                            <th>
+                                Fecha
+                            </th>
+                            <th>
+                                Fecha Desp.
+                            </th>
+                            <th>
+                                Estado
+                            </th>
+                            <th>
+                                Actividad
+                            </th>
+                            <th>
+                                Cliente
+                            </th>
+                            <th>
+                                Guia
+                            </th>
+                            <th>
+                                Usuario Elabora
+                            </th>
+                            <th class="all"></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

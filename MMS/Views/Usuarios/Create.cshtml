@@ -1,0 +1,280 @@
+﻿@model MMS.Models.UsuariosViewModel
+@{
+    ViewBag.Title = "User";
+    ViewBag.Subtitle = "Create";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="~/Scripts/Seguridad/Usuarios.js" type="text/javascript"></script>
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    @*<script src="~/Scripts/jquery.number/jquery.number.js" type="text/javascript"></script>*@
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            tableObjetos = $("#tableRoles").dataTable({
+                scrollY: '55vh',
+                scrollCollapse: true,
+                searching: false,
+                paging: false
+            });
+            tablePlantas = $("#tablePlantas").dataTable({
+                scrollY: '55vh',
+                scrollCollapse: true,
+                searching: false,
+                paging: false
+            });
+            tableCanales = $("#tableCanales").dataTable({
+                scrollY: '55vh',
+                scrollCollapse: true,
+                searching: false,
+                paging: false
+            });
+
+
+            $.MMS.Usuarios("create");
+        });
+
+
+
+
+    </script>
+}
+
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+
+                    <div class="row clearfix">
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioId, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioId, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Usuario.UsuarioId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioNombre, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioNombre, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Usuario.UsuarioNombre, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioCorreo, new { htmlAttributes = new { @class = "form-control", @type = "email" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioCorreo, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Usuario.UsuarioCorreo, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.Usuariopassword, new { htmlAttributes = new { @class = "form-control", @type = "password" } })
+                                    @Html.LabelFor(model => model.Usuario.Usuariopassword, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Usuario.Usuariopassword, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.DropDownList("Usuario_UsuarioPadreId", null, "Select Manager...", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.Usuario.UsuarioPadreId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Usuario.UsuarioMontoAut, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.Usuario.UsuarioMontoAut, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Usuario.UsuarioMontoAut, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            @Html.EditorFor(model => model.Usuario.Usuarioactivo)
+                            @Html.LabelFor(model => model.Usuario.Usuarioactivo, htmlAttributes: new { @class = "fix-checkbox" })
+                        </div>
+                        <div class="col-md-6">
+                            @Html.EditorFor(model => model.Usuario.UsuarioAprobadorPrincipal, new { htmlAttributes = new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" } })
+                            @Html.ValidationMessageFor(model => model.Usuario.UsuarioPadreId, "", new { @class = "" })
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.DropDownList("UsuarioHV_AreaId", null, "Select Area...", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.UsuarioHV.AreaId, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.UsuarioHV.Cargo, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.UsuarioHV.Cargo, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.UsuarioHV.Cargo, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#Roles_tab" data-toggle="tab">
+                                <i class="material-icons">view_module</i> Roles
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#Plantas_tab" data-toggle="tab">
+                                <i class="material-icons">apps</i> Plantas
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#Canales_tab" data-toggle="tab">
+                                <i class="material-icons">apps</i> Canales
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade in active" id="Roles_tab">
+                            <div class="col-md-12">
+                                <table class="table table-condensed table-hover table-striped table-va-middle" id="tableRoles">
+                                    <thead>
+                                        <tr>
+                                            <th>@Html.DisplayNameFor(model => model.Roles[0].RolId)</th>
+                                            <th>@Html.DisplayNameFor(model => model.Roles[0].Seleccionado)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < Model.Roles.Count; i++)
+                                        {
+                                            <tr>
+
+                                                <td>
+                                                    @*@Html.EditorFor(model => model.Objetos[i].ObjetoId, new { htmlAttributes = new { @class = "form-control", @readonly= "readonly" } })*@
+                                                    @Html.HiddenFor(model => model.Roles[i].RolId)
+                                                    @Html.HiddenFor(model => model.Roles[i].RolNombre)
+                                                    @Model.Roles[i].RolNombre
+                                                </td>
+                                                <td>
+                                                    @Html.EditorFor(model => model.Roles[i].Seleccionado, new { htmlAttributes = new { @class = "form-control" } })
+                                                    @Html.LabelFor(model => model.Roles[i].Seleccionado, " ", htmlAttributes: new { @class = "fix-checkbox" })
+                                                </td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade " id="Plantas_tab">
+                            <div class="col-md-12">
+                                <table class="table table-condensed table-hover table-striped table-va-middle" id="tablePlantas">
+                                    <thead>
+                                        <tr>
+                                            <th>@Html.DisplayNameFor(model => model.Plantas[0].PlantaId)</th>
+                                            <th>@Html.DisplayNameFor(model => model.Plantas[0].Seleccionado)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int pi = 0; pi < Model.Plantas.Count; pi++)
+                                        {
+                                            <tr>
+
+                                                <td>
+                                                    @*@Html.EditorFor(model => model.Objetos[i].ObjetoId, new { htmlAttributes = new { @class = "form-control", @readonly= "readonly" } })*@
+                                                    @Html.HiddenFor(model => model.Plantas[pi].PlantaId)
+                                                    @Html.HiddenFor(model => model.Plantas[pi].PlantaNombre)
+                                                    @Model.Plantas[pi].PlantaNombre
+                                                </td>
+                                                <td>
+                                                    @Html.EditorFor(model => model.Plantas[pi].Seleccionado, new { htmlAttributes = new { @class = "form-control" } })
+                                                    @Html.LabelFor(model => model.Plantas[pi].Seleccionado, " ", htmlAttributes: new { @class = "fix-checkbox" })
+                                                </td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade " id="Canales_tab">
+                            <div class="col-md-12">
+                                <table class="table table-condensed table-hover table-striped table-va-middle" id="tableCanales">
+                                    <thead>
+                                        <tr>
+                                            <th>@Html.DisplayNameFor(model => model.Canales[0].CanalId)</th>
+                                            <th>@Html.DisplayNameFor(model => model.Canales[0].Seleccionado)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int ci = 0; ci < Model.Canales.Count; ci++)
+                                        {
+                                            <tr>
+
+                                                <td>
+                                                    @*@Html.EditorFor(model => model.Objetos[i].ObjetoId, new { htmlAttributes = new { @class = "form-control", @readonly= "readonly" } })*@
+                                                    @Html.HiddenFor(model => model.Canales[ci].CanalId)
+                                                    @Html.HiddenFor(model => model.Canales[ci].CanalNombre)
+                                                    @Model.Canales[ci].CanalNombre
+                                                </td>
+                                                <td>
+                                                    @Html.EditorFor(model => model.Canales[ci].Seleccionado, new { htmlAttributes = new { @class = "form-control" } })
+                                                    @Html.LabelFor(model => model.Canales[ci].Seleccionado, " ", htmlAttributes: new { @class = "fix-checkbox" })
+                                                </td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

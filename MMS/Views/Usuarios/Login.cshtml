@@ -1,0 +1,137 @@
+﻿@model MMS.Models.Login
+@{
+    ViewBag.Title = "MMS";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>@ViewBag.Title - Login</title>
+
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    @*<link href="~/Content/css/Login.css" rel="stylesheet" />*@
+    <!--Import materialize.css-->
+    @*@Styles.Render("~/Content/Materialize")*@
+    <script src="/Content/dist/plugins/jquery/jquery.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+    <link href="/Content/dist/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/Content/dist/plugins/node-waves/waves.min.css" rel="stylesheet" />
+    <link href="/Content/dist/plugins/animate-css/animate.min.css" rel="stylesheet" />
+    <link href="~/Content/dist/plugins/sweetalert/sweetalert.css" rel="stylesheet" />
+
+    @*<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>*@
+
+
+
+
+    <!--Import jQuery before materialize.js-->
+    @*@Scripts.Render("~/bundles/Materialize")*@
+
+    <link href="/Content/dist/css/style.min.css" rel="stylesheet">
+    <link href="~/Content/dist/css/style.reset.css" rel="stylesheet">
+    <link href="/Content/dist/css/themes/theme-blue.min.css" rel="stylesheet" />
+
+    <!--Loading.css -->
+    @*<link href="~/Content/css/loading.css" rel="stylesheet" />*@
+    <script src="~/Scripts/Seguridad/Login.js" type="text/javascript"></script>
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        function showRememberUserModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.RememberUser.init();
+                },
+                fnHidden: function () {
+                    // dt.api().draw('page');
+                }
+            });
+        }
+    </script>
+</head>
+<body oncontextmenu="return false;" class="login-page ls-closed" style="background-image: url(../../Content/images/Fondo.png) !important;">
+    <div class="login-box">
+
+
+        @*<img class="responsive-img" src="~/Content/Images/MMS2.png" style="height:280px" />*@
+        <div class="section"></div>
+
+        @*<h5 class="blue-text text-darken-2">Por favor, ingrese su usuario</h5>*@
+
+        <div class="section"></div>
+        @using (Html.BeginForm(new { ReturnUrl = ViewBag.ReturnUrl }))
+            {
+            <span id="" class="red-text text-darken-2">@ViewBag.Error</span>
+            @Html.ValidationSummary(true)
+
+
+            <div class="card">
+                <div class="body">
+                    <div class="sign_in">
+                        <div class="msg">Sign in to start your session</div>
+
+
+
+                        <div class="input-group">
+
+                            <span class="input-group-addon">
+                                <i class="material-icons">person</i>
+                            </span>
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Usuario, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off", @placeholder = "Username" } })
+                                @Html.ValidationMessageFor(model => model.Usuario, "", new { @class = "" })
+                            </div>
+                        </div>
+
+
+
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="material-icons">lock</i>
+                            </span>
+                            <div class="form-line">
+                                @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off", @type = "password", @placeholder = "Password" } })
+                                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                        <div class='row'>
+                            <div class="col-md-12">
+                                <button type='submit' id="ingresar" class="btn btn-block btn-lg btn-primary waves-effect">Log In</button>
+
+                            </div>
+                            <div class="col-md-12">
+                                <a href="/Usuarios/RememberUser" onclick="showRememberUserModal(event, this.href)">Forgot user or password?</a>
+                            </div>
+                        </div>
+                    </div>
+
+                   
+                </div>
+            </div>
+        }
+        @*<a href="#!">Crear Cuenta</a>*@
+
+
+
+
+
+    </div>
+
+    <script src="/Content/dist/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="/Content/dist/plugins/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="/Content/dist/plugins/node-waves/waves.min.js"></script>
+    <script src="~/Content/dist/plugins/jquery-loading-overlay/loadingoverlay.min.js"></script>
+    <script src="~/Content/dist/plugins/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="~/Content/dist/plugins/sweetalert/sweetalert.min.js"></script>
+    <script src="/Content/dist/js/admin.js"></script>
+    <script src="~/Scripts/_LayoutTT.js"></script>
+
+</body>
+</html>

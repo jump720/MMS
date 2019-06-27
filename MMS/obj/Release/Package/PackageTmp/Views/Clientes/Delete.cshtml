@@ -1,0 +1,169 @@
+﻿@model MMS.Models.Cliente
+
+@{
+    ViewBag.Title = "Clientes";
+    ViewBag.Subtitle = "Delete";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="~/Scripts/Catalogos/Clientes.js"></script>
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            $.MMS.Clientes("delete");
+        });
+    </script>
+}
+
+<div class="row clearfix">
+    <div class="col-md-12">
+        <div class="card" id="cardForm">
+            <div class="header bg-red">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+            </div>
+            <div class="body">
+                @Html.ValidationSummary(true, "", new { @class = "hide" })
+                @Html.HiddenFor(model => model.ClienteID)
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.ClienteID, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.ClienteID, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.ClienteNit, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.ClienteNit, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.ClienteRazonSocial, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                    @Html.LabelFor(model => model.ClienteRazonSocial, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="vendedorContainer">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.LabelFor(model => model.VendedorId, htmlAttributes: new { @class = "form-select-label" })
+                                    @Html.DropDownListFor(model => model.VendedorId, null, "", new { @class = "ms full-width" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="paisContainer">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.LabelFor(model => model.PaisID, htmlAttributes: new { @class = "form-select-label" })
+                                    @Html.DropDownListFor(model => model.PaisID, null, "", new { @class = "ms full-width" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="dptoContainer">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.LabelFor(model => model.DepartamentoID, htmlAttributes: new { @class = "form-select-label" })
+                                    @Html.DropDownListFor(model => model.DepartamentoID, null, "", new { @class = "ms full-width" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="ciudadContainer">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.LabelFor(model => model.CiudadID, htmlAttributes: new { @class = "form-select-label" })
+                                    @Html.DropDownListFor(model => model.CiudadID, null, "", new { @class = "ms full-width" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="canalContainer">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.LabelFor(model => model.CanalID, htmlAttributes: new { @class = "form-select-label" })
+                                    @Html.DropDownListFor(model => model.CanalID, null, "", new { @class = "ms full-width" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="pivContainer">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @Html.LabelFor(model => model.ColeccionPIVId, htmlAttributes: new { @class = "form-select-label" })
+                                    @Html.DropDownListFor(model => model.ColeccionPIVId, null, "", new { @class = "ms full-width" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group form-float">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    @if (Model == null)
+                                    {
+                                        @Html.TextBoxFor(model => model.ClienteAprobacion, new { @type = "checkbox" })
+                                    }
+                                    else
+                                    {
+                                        if (Model.ClienteAprobacion == true)
+                                        {
+                                            @Html.TextBoxFor(model => model.ClienteAprobacion, new { @type = "checkbox", @value = Model.ClienteAprobacion, @checked = "checked" })
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(model => model.ClienteAprobacion, new { @type = "checkbox", @value = Model.ClienteAprobacion })
+                                        }
+                                    }
+                                    @Html.LabelFor(model => model.ClienteAprobacion, new { @class = "", @for = "ClienteAprobacion" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @using (Html.BeginForm())
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="submit" value="Delete" class="btn btn-danger waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                }
+            </div>
+        </div>
+    </div>
+</div>

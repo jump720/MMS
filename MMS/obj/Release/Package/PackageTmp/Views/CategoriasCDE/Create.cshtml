@@ -1,0 +1,164 @@
+﻿@model MMS.Models.CategoriaCDE
+
+@{
+    ViewBag.Title = "Club of Excellence Categories";
+    ViewBag.Subtitle = "Create";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    <style>
+        #select-icon img {
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #selected-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+    </style>
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            checkValidationSummaryErrors();
+
+            $("#ValorMaximo").rules("add", {
+                min: function () {
+                    return parseFloat($("#ValorMinimo").val().replaceAll(",", "."));
+                },
+                messages: {
+                    min: "Max. Value can't be lower than Min. Value"
+                }
+            });
+
+            $("#select-icon").hide();
+
+            $("#select-icon img").click(function () {
+                $("#selected-icon").attr("src", $(this).attr("src"));
+                $("#select-icon").hide();
+                $("#Icon").val($(this).data("icon"));
+            });
+
+            $('#ValorMinimo, #ValorMaximo').inputmask("numeric", {
+                radixPoint: ",",
+                groupSeparator: ".",
+                autoGroup: true,
+                autoUnmask: true
+            });
+
+            @if (Model != null && Model.Icon != null)
+            {<text>
+            $("#selected-icon").attr("src", "/Content/dist/images/levels/@(Model.Icon).png");
+            </text>}
+
+            $("#Nombre").focus();
+        });
+
+        function SelectIcon() {
+            if ($("#select-icon").is(":visible"))
+                $("#select-icon").hide();
+            else
+                $("#select-icon").show();
+        }
+    </script>
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-8">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                    <img id="selected-icon" width="50" />
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+                    @Html.HiddenFor(model => model.Icon)
+
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Nombre, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Nombre, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ValorMinimo, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.ValorMinimo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.ValorMinimo, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="material-icons">attach_money</i></span>
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ValorMaximo, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.ValorMaximo, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.ValorMaximo, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <span class="input-group-addon">%</span>
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.Porcentaje, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.Porcentaje, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Porcentaje, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <a class="btn btn-default waves-effect" onclick="SelectIcon()">Select Icon</a>
+                        </div>                        
+                       
+                        <div class="col-md-12" id="select-icon">
+                            <img src="~/Content/dist/images/levels/01.png" data-icon="01" />
+                            <img src="~/Content/dist/images/levels/02.png" data-icon="02" />
+                            <img src="~/Content/dist/images/levels/03.png" data-icon="03" />
+                            <img src="~/Content/dist/images/levels/04.png" data-icon="04" />
+                            <img src="~/Content/dist/images/levels/05.png" data-icon="05" />
+                        </div>
+                    </div>
+
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+}

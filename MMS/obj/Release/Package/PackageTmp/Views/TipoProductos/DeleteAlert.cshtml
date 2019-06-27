@@ -1,0 +1,19 @@
+﻿@model MMS.Models.TipoProducto
+
+@{
+    ViewBag.Title = "DeleteAlert";
+    Layout = null;
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div id="_Modal" class="modal modal-fixed-footer" style="height:30%;">
+        <div class="modal-content">
+            <p>No puedes eliminar el Tipo de Producto <strong><u>@Html.DisplayFor(model => model.TipoProductoDesc)</u></strong> porque tiene referencia con otras tablas!</p>
+        </div>
+        <div class="modal-footer">
+            <a href="javascript:void(0)" class="btn modal-action modal-close waves-effect grey" style="margin-left:5px;">Aceptar</a>
+        </div>
+    </div>
+}

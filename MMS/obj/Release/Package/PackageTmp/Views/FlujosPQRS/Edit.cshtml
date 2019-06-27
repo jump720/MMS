@@ -1,0 +1,214 @@
+﻿@model MMS.Models.FlujoPQRSViewModel
+@{
+
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Flow";
+    ViewBag.Subtitle = "Edit";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+
+
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    @*@Scripts.Render("~/bundles/jsVue")*@
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script src="~/Scripts/WCSS/FlujosPQRS.js"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.16/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.4.2/Sortable.min.js"></script>
+    <script src="https://npmcdn.com/vue-sortable@latest"></script>
+
+    <script type="text/javascript">
+        $(function () {
+
+
+            var steps = [
+                @foreach (var f in Model.Flujo.Where(f => f.Id != 1 && f.Id != 2 && f.Id != 3))
+
+
+                {<text>
+                       {
+                           MotivoPQRSId: @f.MotivoPQRSId,
+                           Id: @f.Id,
+                           Order: @f.Order,
+                           Nombre: @Html.Raw(Json.Encode(f.Nombre)),
+                           TipoPaso: `@f.TipoPaso`,
+                           EnviaCorreoDestinatarios: @Html.Raw(Json.Encode(f.EnviaCorreoDestinatarios)),
+                       },
+
+                   </text>
+                }
+            ];
+
+
+
+            $.MMS.FlujosPQRS("edit",@Model.Flujo.FirstOrDefault().MotivoPQRSId, steps);
+
+
+
+        });
+
+
+        function showStepModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+
+                    $.MMS.FlujosPQRSStep.init();
+                },
+                fnHidden: function () {
+                    SaveSteps("create",@Model.Flujo.FirstOrDefault().MotivoPQRSId);
+                }
+            });
+        }
+
+        function showUserModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.UsuarioFlujoPQRS.init();
+                },
+                fnHidden: function () {
+
+                }
+            });
+        }
+
+        function showConfigStepModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.ConfigStep.init();
+                },
+                fnHidden: function () {
+
+                }
+            });
+        }
+
+    </script>
+}
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title | Reason: @Model.Flujo.FirstOrDefault().MotivoPQRS.Nombre<small>@ViewBag.Subtitle</small>
+                    </h2>
+
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+                    <div class="row clearfix" id="steps">
+                        <div class="list-group">
+                            @foreach (var s in Model.Flujo.Where(f => f.Id == 1 || f.Id == 2))
+                            {
+                                <button class="list-group-item disabled">
+                                    <div class="col-md-10" style="margin-bottom: 0px !important; ">
+                                        <p style="margin-bottom: 0px !important;"> <b>Name: </b><small>@s.Nombre  </small></p>
+                                        <p style="margin-bottom: 0px !important;"> <b>Type: </b><small>@s.TipoPaso </small></p>
+                                        <p style="margin-bottom: 0px !important;"> <b>Send mail recipients: </b><small>@s.EnviaCorreoDestinatarios </small></p>                                        
+                                    </div>
+                                    <div class="col-md-2" style="margin-bottom: 0px !important;padding-top: 10px !important; ">
+                                        @if (s.Id == 2)
+                                        {
+                                            <a href="/@controllerName/UsuariosStep?MotivoPQRSId={{@s.MotivoPQRSId}}&Id={{@s.Id}}" onclick="showUserModal(event, this.href)" class="btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float " data-toggle="tooltip" data-placement="top" title="" data-original-title="Users">
+                                                <i class="material-icons">person</i>
+                                            </a>
+                                        }
+                                    </div>
+                                </button>
+                            }
+                        </div>
+                        <template v-if="list.length == 0">
+                            <ul class="list-group">
+
+                                <li class="list-group-item disabled">
+                                    No Steps
+                                </li>
+
+                            </ul>
+                        </template>
+                        <template v-else>
+                           
+                            <div class="list-group" v-sortable="{ onUpdate: onUpdate }">
+                                <button type="button" class="list-group-item " v-for="item in list">
+                                    <div class="col-md-10" style="margin-bottom: 0px !important; ">
+                                        <p style="margin-bottom: 0px !important;"> <b>Name: </b><small>{{ item.Nombre }} </small></p>
+                                        <p style="margin-bottom: 0px !important;"> <b>Type: </b><small>{{ item.TipoPaso }} </small></p>
+                                        <p style="margin-bottom: 0px !important;"> <b>Send mail recipients: </b><small>{{ item.EnviaCorreoDestinatarios }} </small></p>
+                                    </div>
+                                    <div class="col-md-2" style="margin-bottom: 0px !important;padding-top: 10px !important; ">
+                                        <a href="/@controllerName/EditStep?MotivoPQRSId={{item.MotivoPQRSId}}&Id={{item.Id}}" onclick="showStepModal(event, this.href)" class="btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float " data-toggle="tooltip" data-placement="top" title="" data-original-title="View">
+                                            <i class="material-icons">mode_edit</i>
+                                        </a>
+                                        <a href="/@controllerName/DeleteStep?MotivoPQRSId={{item.MotivoPQRSId}}&Id={{item.Id}}" onclick="showStepModal(event, this.href)" class="btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float " data-toggle="tooltip" data-placement="top" title="" data-original-title="View">
+                                            <i class="material-icons">delete</i>
+                                        </a>
+                                        <a href="/@controllerName/UsuariosStep?MotivoPQRSId={{item.MotivoPQRSId}}&Id={{item.Id}}" onclick="showUserModal(event, this.href)" class="btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float " data-toggle="tooltip" data-placement="top" title="" data-original-title="Users">
+                                            <i class="material-icons">person</i>
+                                        </a>
+                                        <a href="/@controllerName/ConfigStep?MotivoPQRSId={{item.MotivoPQRSId}}&Id={{item.Id}}" onclick="showConfigStepModal(event, this.href)" class="btn-table bg-amber btn-sm btn-sm-circle waves-circle waves-effect waves-float " data-toggle="tooltip" data-placement="top" title="" data-original-title="Configuration">
+                                            <i class="material-icons">settings</i>
+                                        </a>
+                                    </div>
+                                </button>
+                            </div>
+                        </template>
+                        <div class="row clearfix">
+                            <div class="col-md-12" align="center">
+                                <a href="/@controllerName/CreateStep?MotivoPQRSId=@Model.Flujo.FirstOrDefault().MotivoPQRSId" onclick="showStepModal(event, this.href)" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float ">
+                                    <i class="material-icons" style="color:black !important">add</i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="list-group">
+                            @foreach (var s in Model.Flujo.Where(f => f.Id == 3))
+                            {
+                                <button class="list-group-item disabled">
+
+                                    <div class="col-md-10" style="margin-bottom: 0px !important; ">
+                                        <p style="margin-bottom: 0px !important;"> <b>Name: </b><small>@s.Nombre  </small></p>
+                                        <p style="margin-bottom: 0px !important;"> <b>Type: </b><small>@s.TipoPaso </small></p>
+                                        <p style="margin-bottom: 0px !important;"> <b>Send mail recipients: </b><small>@s.EnviaCorreoDestinatarios </small></p>  
+                                    </div>
+                                    <div class="col-md-2" style="margin-bottom: 0px !important;padding-top: 10px !important; ">
+                                        <a href="/@controllerName/UsuariosStep?MotivoPQRSId={{@s.MotivoPQRSId}}&Id={{@s.Id}}" onclick="showUserModal(event, this.href)" class="btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float " data-toggle="tooltip" data-placement="top" title="" data-original-title="Users">
+                                            <i class="material-icons">person</i>
+                                        </a>
+                                    </div>
+                                </button>
+                            }
+                        </div>
+              
+
+                    </div>
+
+
+                </div>
+                <hr class="m-b-0 m-t--20" />
+
+                <div class="body">
+                    @*<input type="submit" value="Save" class="btn btn-primary waves-effect" />*@
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+

@@ -1,0 +1,550 @@
+﻿@model IEnumerable<MMS.Models.PQRSPanel>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Main PQRS";
+    ViewBag.Subtitle = "Control Panel";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        var select2Analista;
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+
+
+
+            $("#selectBuscarEstado").select2({
+                placeholder: "Search @Html.DisplayNameFor(model => model.Estado)",
+                allowClear: true,
+                theme: "bootstrap"
+            })
+
+            $("#selectBuscarPrioridad").select2({
+                placeholder: "Search @Html.DisplayNameFor(model => model.Prioridad)",
+                allowClear: true,
+                theme: "bootstrap"
+            })
+
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    {
+                        data: "NroTracking",
+                        render: function (data, type, row) {
+                            if (row.NroTracking != null) {
+                                
+                                return `<b class="">${row.NroTracking}</b>`;
+                            } else {
+                                return ``;
+                            }
+                        }
+                    },
+                    { data: "PQRSRecordId" },
+                    {
+                        data: "TipoPQRS",
+                        render: function (data, type, row) {
+                            return row.TipoPQRS + " - " + row.MotivoPQRSNombre
+                        }
+                    },
+                    {
+                        data: "Asunto",
+                        render: function (data, type, row) {
+                            if (row.Asunto.length > 20) {
+                                return row.Asunto.substring(0, 20);
+                            } else {
+                                return row.Asunto;
+                            }
+                        }
+                    },
+                    {
+                        data: "FlujoPQRSNombre",
+                        render: function (data, type, row) {
+                            return `<b>${row.FlujoPQRSNombre}</b>`;
+                        }
+                    },
+                    {
+                        data: "Cliente",
+                        render: function (data, type, row) {
+                            if (row.Cliente.length > 20) {
+                                return row.Cliente.substring(0, 20);
+                            } else {
+                                return row.Cliente;
+                            }
+                        }
+                    },
+                    {
+                        data: "Prioridad",
+                        render: function (data, type, row) {
+                            if (row.Prioridad.toLowerCase() == ("Baja").toLowerCase()) {
+                                return "<img src='/Content/Images/prioridad_baja.png' style='width: 32px !important;height: 32px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='Low' />";
+                            } else if (row.Prioridad.toLowerCase() == ("Media").toLowerCase()) {
+                                return "<img src='/Content/Images/prioridad_media.png' style='width: 32px !important;height: 32px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='Medium' />";
+                            } else if (row.Prioridad.toLowerCase() == ("Alta").toLowerCase()) {
+                                return "<img src='/Content/Images/prioridad_alta.png' style='width: 32px !important;height: 32px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='High' />";
+                            } else if (row.Prioridad.toLowerCase() == ("Sin prioridad").toLowerCase()) {
+                                return "<img src='/Content/Images/sin_prioridad.png' style='width: 32px !important;height: 32px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='No priority' />";
+                            }
+
+
+                        }
+                    },
+                    {
+                        data: "Analista",
+                        render: function (data, type, row) {
+                            if (row.Analista != null) {
+                                if (row.Analista.length > 20) {
+                                    return row.Analista.substring(0, 20);
+                                } else {
+                                    return row.Analista;
+                                }
+                            } else {
+                                return row.Analista;
+                            }
+
+                        }
+                    },
+                    { data: "FechaCreacion" },
+                    { data: "Estado" },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            var result = "";
+                            var vlTipoPQRS = 0;
+
+                            if (row.TipoPQRS == 'Return') {
+                                vlTipoPQRS = 1;
+
+                            } else if (row.TipoPQRS == 'Guarantee') {
+                                vlTipoPQRS = 2;
+
+                            } else if (row.TipoPQRS == 'New') {
+                                vlTipoPQRS = 3;
+                            }
+
+
+                            result += `<a href='/@controllerName/Details?TipoPQRS=${vlTipoPQRS}&DataId=${row.Id}&RecordId=${row.PQRSRecordId}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>`;
+                            result += `<a href='/@controllerName/UsuarioStep?RecordId=${row.PQRSRecordId}&Order=${row.PQRSRecordOrder}' onclick="showUsersModal(event, this.href)" class='btn-table bg-amber btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}UsuarioStep"]' data-toggle="tooltip" data-placement="top" title="Users in Step"><i class='material-icons'>person</i></a>`;
+
+                            if (row.Estado == 'In Process') {
+
+                                result += `<a href='/@controllerName/AsignarAnalista?tipo=${vlTipoPQRS}&DataId=${row.Id}' onclick="showAsigModal(event, this.href)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}AsignarAnalista"]' data-toggle="tooltip" data-placement="top" title="Assign Analyst"><i class='material-icons'>assignment_ind</i></a>`;
+                                result += `<a href='/@controllerName/AddComment?TipoPQRS=${vlTipoPQRS}&DataId=${row.Id}&RecordId=${row.PQRSRecordId}' onclick="showAddCommentModal(event, this.href)" class='btn-table bg-teal btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}AddComment"]' data-toggle="tooltip" data-placement="top" title="Add Comment"><i class='material-icons'>comment</i></a>`;
+
+                                if (row.TipoPQRS == "Return")
+                                    result += `<a href='/Devoluciones/Edit/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_DevolucionesEdit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`;
+                                else if (row.TipoPQRS == "New")
+                                    result += `<a href='/Novedades/Edit/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_NovedadesEdit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`;
+                                else if (row.TipoPQRS == "Guarantee")
+                                    result += `<a href='/Garantias/Edit/${row.Id}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_GarantiasEdit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`;
+
+                            } else {
+                                result += `<a href='javascript:function() { return false; }' onclick="return false;" class='btn-table bg-grey btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}AsignarAnalista"]' ><i class='material-icons'>assignment_ind</i></a>`;
+                                result += `<a href='javascript:function() { return false; }' onclick="return false;" class='btn-table bg-grey btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}AddComment"]' ><i class='material-icons'>comment</i></a>`;
+                                result += `<a href='javascript:function() { return false; }' onclick="return false;" class='btn-table bg-grey btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_GarantiasEdit"]' ><i class='material-icons'>mode_edit</i></a>`;
+                            }
+
+
+                            return result;
+
+
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["txtBuscarNroTracking", "txtBuscarPQRSRecordId", "txtBuscarMotivoPQRSNombre", "txtBuscarAsunto", "txtBuscarCliente", "selectBuscarPrioridad", "txtBuscarAnalista", "txtBuscarFechaCreacion", "selectBuscarEstado"],
+                    fnServerParams: function () {
+                        return [
+                            { name: "_nrotracking", value: $('#txtBuscarNroTracking').val() },
+                            { name: "_pqrsrecordid", value: $('#txtBuscarPQRSRecordId').val() },
+                            { name: "_motivopqrsnombre", value: $('#txtBuscarMotivoPQRSNombre').val() },
+                            { name: "_asunto", value: $('#txtBuscarAsunto').val() },
+                            { name: "_cliente", value: $('#txtBuscarCliente').val() },
+                            { name: "_prioridad", value: $('#selectBuscarPrioridad').val() },
+                            { name: "_analista", value: $('#txtBuscarAnalista').val() },
+                            { name: "_fechacreacion", value: $('#txtBuscarFechaCreacion').val() },
+                            { name: "_estado", value: $('#selectBuscarEstado').val() },
+                        ];
+                    },
+                    fnSetFilterControls: function (values) {
+                        var clienteId = values[5];
+                        var analistaId = values[7];
+
+
+                        if (!clienteId) {
+
+                        }
+                        else {
+                            $('#txtBuscarCliente').val(clienteId);
+                            var clientes = clienteId.split(",");
+                            var _clientes = [];
+
+
+                            clientes.forEach(function (element) {
+
+
+                                $.get("/api/Devoluciones/ClienteDescripcion/" + element.replaceAll("'", ""), function (result) {
+
+
+                                    if (result) {
+                                        var cliente = element.replaceAll("'", "");
+
+                                        var option = document.createElement("option");
+                                        option.text = result;
+                                        option.value = cliente;
+                                        option.selected = true;
+
+                                        var SCliente = document.getElementById("selectBuscarCliente");
+                                        SCliente.add(option);
+
+                                        //$('#selectBuscarAnalista').append(`<option value='${usuario}' selected>${result}</option>`).val(usuario);
+                                    }
+                                    //$('#selectBuscarCliente').append(`<option value='${clienteId}'> ${clienteId} - ${result}</option>`).val(values[4]).change();
+
+                                    //$('#selectBuscarCliente').append(`<option value='${clienteId}'> ${clienteId} - ${result}</option>`).val(values[4]).change();
+
+                                });
+                            });
+
+
+                        }
+
+                        $("#selectBuscarCliente").select2({
+                            placeholder: "Search @Html.DisplayNameFor(model => model.ClienteId)",
+                            allowClear: true,
+                            theme: "bootstrap",
+                            ajax: {
+                                url: function (params) {
+                                    return '/api/Devoluciones/BuscarCliente?q=' + encodeURIComponent(params.term);
+                                },
+                                delay: 300,
+                                type: 'GET',
+                                minimumInputLength: 1,
+                                processResults: function (data) {
+                                    return {
+                                        results: $.map(data, function (item) {
+                                            return {
+                                                text: item.ClienteID + " - " + item.ClienteRazonSocial,
+                                                id: item.ClienteID
+                                            }
+                                        })
+                                    };
+                                }
+                            }
+                        })
+
+
+                        $("#selectBuscarCliente").on("select2:select", function (e) {
+                            //console.log(e.value)
+                            ArrayToString($(e.currentTarget).val(), "txtBuscarCliente");
+                        });
+                        $("#selectBuscarCliente").on("select2:unselect", function (e) {
+                            ArrayToString($(e.currentTarget).val(), "txtBuscarCliente");
+                        });
+
+
+                        if (!analistaId)
+                        { }
+                        else {
+                            $('#txtBuscarAnalista').val(analistaId);
+                            var analistas = analistaId.split(",");
+                            var _analista = [];
+                            analistas.forEach(function (element) {
+
+                                $.get("/api/Usuarios/UsuarioDescripcion/" + element.replaceAll("'", ""), function (result) {
+                                    if (result) {
+                                        var usuario = element.replaceAll("'", "");
+
+                                        var option = document.createElement("option");
+                                        option.text = result;
+                                        option.value = usuario;
+                                        option.selected = true;
+
+                                        var SAnalista = document.getElementById("selectBuscarAnalista");
+                                        SAnalista.add(option);
+
+                                        //$('#selectBuscarAnalista').append(`<option value='${usuario}' selected>${result}</option>`).val(usuario);
+                                    }
+                                });//$.get(
+
+                            });//analistas.forEach(function (element) {
+                            //var selectedValues = $("#selectBuscarAnalista").val().split(',');
+                            //$('#selectBuscarAnalista').val(selectedValues).trigger("change");
+
+
+                        }
+
+                        select2Analista = $("#selectBuscarAnalista").select2({
+                            placeholder: "Search @Html.DisplayNameFor(model => model.AnalistaId)",
+                            allowClear: true,
+                            theme: "bootstrap",
+                            ajax: {
+                                url: function (params) {
+                                    return '/api/Usuarios/BuscarAnalista?q=' + encodeURIComponent(params.term);
+                                },
+                                delay: 300,
+                                type: 'GET',
+                                minimumInputLength: 1,
+                                processResults: function (data) {
+                                    return {
+                                        results: $.map(data, function (item) {
+                                            return {
+                                                text: item.UsuarioNombre,
+                                                id: item.UsuarioId
+                                            }
+                                        })
+                                    };
+                                }
+                            }
+                        });
+
+                        $("#selectBuscarAnalista").on("select2:select", function (e) {
+                            //console.log(e.value)
+                            ArrayToString($(e.currentTarget).val(), "txtBuscarAnalista");
+                        });
+                        $("#selectBuscarAnalista").on("select2:unselect", function (e) {
+                            ArrayToString($(e.currentTarget).val(), "txtBuscarAnalista");
+                        });
+
+
+                    }
+                }
+                );
+
+
+
+
+        });
+
+        function ArrayToString(arr, htmlObj) {
+            //var arr = $(o).val();
+            var result = "";
+            if (arr != null) {
+                arr.forEach(function (element) {
+                    result = result + "'" + element + "',"
+                });
+            }
+            //$("#txtBuscarAnalista").val(RemoveLastString(result, ","));
+            $("#" + htmlObj).val(RemoveLastString(result, ","));
+
+            dt.fnDraw();
+        }
+
+        function RemoveLastString(text, remove) {
+            if (text.endsWith(remove)) {
+                text = text.slice(0, text.length - remove.length);
+            }
+            return text;
+        }
+
+
+        function showAsigModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.AsignarAnalista.init();
+                },
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+
+        function showAddCommentModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.AddComment.init();
+                },
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+
+        //function showAddAnswerModal(event, href) {
+        //    ajaxModal(event, href, 3, {
+        //        static: true,
+        //        fnShown: function () {
+        //            $.MMS.AddAnswer.init();
+        //        },
+        //        fnHidden: function () {
+        //            dt.api().draw('page');
+        //        }
+        //    });
+        //}
+
+
+        function showUsersModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    //$.MMS.AddComment.init();
+                },
+                fnHidden: function () {
+                    // dt.api().draw('page');
+                }
+            });
+        }
+
+    </script>
+}
+
+
+
+<div class="row">
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                            <ul class="header-dropdown m-r--5">
+                                <li class="dropdown">
+                                    <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+                                        <i class="material-icons">more_vert</i>
+                                    </a>
+                                    <ul class="dropdown-menu pull-right">
+                                        <li><a href="/Devoluciones/Create" class="waves-effect waves-block @ViewData[$"has_DevolucionesCreate"]">Create return</a></li>
+                                        <li><a href="/Garantias/Create" class="waves-effect waves-block @ViewData[$"has_GarantiasCreate"]">Create guarantee</a></li>
+                                        <li><a href="/Novedades/Create" class="waves-effect waves-block @ViewData[$"has_NovedadesCreate"]">Create new</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <div class="row">
+                    @*Actions*@
+                    @*<div class="col-md-12">
+                            <a href="/Devoluciones/Create" data-toggle="tooltip" data-placement="bottom" title="Create return" class="btn bg-grey waves-effect @ViewData[$"has_DevolucionesCreate"]" onclick="redirtWithReturnSearch(this, event);">
+                                <i class="material-icons">assignment_return</i>
+                                <span>Create return</span>
+                            </a>
+                            <a href="/Garantias/Create" data-toggle="tooltip" data-placement="bottom" title="Create guarantee" class="btn bg-grey waves-effect @ViewData[$"has_GarantiasCreate"]" onclick="redirtWithReturnSearch(this, event);">
+                                <i class="material-icons">perm_data_setting</i>
+                                <span>Create guarantee</span>
+                            </a>
+
+                            <a href="/Novedades/Create" data-toggle="tooltip" data-placement="bottom" title="Create new" class="btn bg-grey waves-effect @ViewData[$"has_NovedadesCreate"]" onclick="redirtWithReturnSearch(this, event);">
+                                <i class="material-icons">new_releases</i>
+                                <span>Create new</span>
+                            </a>
+                        </div>*@
+                    @*Actions*@
+                    @*Filters*@
+                    <div class="col-md-6">
+                        <select id="selectBuscarCliente" class="ms full-width" style="width:100% !important;" multiple></select>
+                        <input id="txtBuscarCliente" type="text" class="form-control" readonly="readonly" style="display:none;" />
+                    </div>
+                    <div class="col-md-6">
+                        <select id="selectBuscarAnalista" class="ms full-width" style="width:100% !important;" multiple></select>
+                        <input id="txtBuscarAnalista" type="text" class="form-control" readonly="readonly" style="display:none;" />
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="txtBuscarNroTracking" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.NroTracking)" />
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="txtBuscarPQRSRecordId" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.PQRSRecordId)" />
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="txtBuscarMotivoPQRSNombre" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.MotivoPQRSNombre)" />
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="txtBuscarAsunto" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.Asunto)" />
+                    </div>
+                    <div class="col-md-3">
+                        <select id="selectBuscarPrioridad" class="ms full-width" style="width:100% !important;">
+                            <option value=""></option>
+                            <option value="Baja">Baja</option>
+                            <option value="Media">Media</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="txtBuscarFechaCreacion" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => model.FechaCreacion)" />
+                    </div>
+                    <div class="col-md-3">
+                        <select id="selectBuscarEstado" class="ms full-width" style="width:100% !important;">
+                            <option value=""></option>
+                            <option value="Open">Open</option>
+                            <option value="In Process">In Process</option>
+                            <option value="Complete">Complete</option>
+                            <option value="Deleted">Deleted</option>
+                        </select>
+                    </div>
+                    @*Filters*@
+                    <div class="col-md-12">
+                        <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                            <thead>
+
+                                <tr>
+
+                                    <th style="width: 5%;">
+                                        @Html.DisplayNameFor(model => model.NroTracking)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.PQRSRecordId)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.MotivoPQRSNombre)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Asunto)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.FlujoPQRSNombre)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.ClienteId)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Prioridad)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.AnalistaId)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.FechaCreacion)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Estado)
+                                    </th>
+                                    <th style="width: 15%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot>
+
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

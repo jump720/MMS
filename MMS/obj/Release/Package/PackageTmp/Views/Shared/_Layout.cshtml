@@ -1,0 +1,173 @@
+﻿@using MMS.Models;
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @*@{
+            ViewBag.Title = "MMS";
+        }*@
+    <title>@ViewBag.Title - AIS</title>
+    <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico" />
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    @Styles.Render("~/Content/Materialize")
+    <style>
+        /**
+        * Para dejar el footer adhesivo.
+        */
+        body {
+            background-color: #fcfcfc;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        input[readonly] , textarea[readonly] ,select[readonly] ,
+        input[disabled] , textarea[disabled] ,select[disabled],
+        label{
+            color: black !important;
+        }
+
+        #logo-container {
+            height: 156px !important;
+        }
+    </style>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <link href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.1.0/css/responsive.dataTables.min.css" rel="stylesheet">
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.1.0/js/dataTables.responsive.min.js"></script>
+    
+    <script src="~/Scripts/DataTablesGeneral.js"></script>
+
+</head>
+<body>
+    @{
+        Seguridadcll seguridadcll = (Seguridadcll)Session["seguridad"];
+        var usuarioActual = seguridadcll.Usuario.UsuarioNombre;
+    }
+    <header>
+        <nav class="top-nav">
+            <div class="container">
+                <div class="nav-wrapper">
+                    <ul class="right hide-on-med-and-down">
+                        <li><ins>@usuarioActual</ins></li>
+                        <li><a class="tooltipped" href="javascript:void(0)" onclick="actualizarSeguridad()" data-position="down" data-delay="50" data-tooltip="Refrescar Seguridad."><i class="material-icons">autorenew</i></a></li>
+                        <li><a class="tooltipped" href="~/Usuarios/Login" data-position="down" data-delay="50" data-tooltip="Cerrar Sesión."><i class="material-icons">input</i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <a href="#" data-activates="mobile-mms" class="button-collapse top-nav full hide-on-large-only">
+                <i class="material-icons">menu</i>
+            </a>
+        </div>
+        <!-- Menú -->
+        <ul id="mobile-mms" class="side-nav fixed" style="transform: translateX(0px);">
+            <li class="logo" style="margin-top:0px">
+                <a id="logo-container" href="~/Test/Index" class="brand-logo">
+                    @*<object id="front-page-logo" data="~/Content/Images/MMS2.png"></object>*@
+                    <img class="img-responsive" style="width:90%" src="~/Content/Images/MMS2.png" />
+                </a>
+            </li>
+            <li class="no-padding">
+                <ul class="collapsible collapsible-accordion">
+                    <li id="boldCatalogos" class="bold">
+                        <a class="collapsible-header waves-effect waves-teal">Catálogos</a>
+                        <div class="collapsible-body" style="display: block;">
+                            <ul>
+                                <li id="pais" style="display: none;"><a href="~/Pais/Index">País</a></li>
+                                <li id="departamento" style="display: none;"><a href="~/Departamento/Index">Departamento</a></li>
+                                <li id="ciudad" style="display: none;"><a href="~/Ciudad/index">Ciudad</a></li>
+                                <li id="areas" style="display: none;"><a href="~/Areas/index">Área</a></li>
+                                <li id="canales" style="display: none;"><a href="~/Canales/index">Canal</a></li>
+                                <li id="centrocostos" style="display: none;"><a href="~/CentroCostos/index">Centro de Custo</a></li>
+                                <li id="planta" style="display: none;"><a href="~/Plantas/index">Plantas</a></li>
+                                <li id="clientes" style="display: none;"><a href="~/Clientes/index">Clientes</a></li>
+                                <li id="presupuestovendedor" style="display: none;"><a href="~/PresupuestoVendedor/Index">Investimento de Cliente</a></li>
+                                <li id="productos" style="display: none;"><a href="~/Productos/Index">Productos</a></li>
+                                <li id="tipoactividades" style="display: none;"><a href="~/TipoActividades/index">Tipo de Actividad</a></li>
+                                <li id="tipogastos" style="display: none;"><a href="~/TipoGastos/index">Tipo de Gasto</a></li>
+                                <li id="tipomovimientos" style="display: none;"><a href="~/TipoMovimientos/index">Tipo de Movimento</a></li>
+                                <li id="tipoproductos" style="display: none;"><a href="~/TipoProductos/index">Tipo de Producto</a></li>
+                                <li id="ventasxclientes" style="display: none;"><a href="~/VentasxClientes/Index">Ventas por Cliente</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li id="boldTrans" class="bold">
+                        <a class="collapsible-header  waves-effect waves-teal">Transacciones</a>
+                        <div class="collapsible-body" style="display: block;">
+                            <ul>
+                                <li id="ActividadesApprove" style="display: none;"><a href="~/Actividades/Approve">Aprobar Actividades</a></li>
+                                <li id="actividades" style="display: none;"><a href="~/Actividades/Index">Actividad</a></li>                                
+                                <li id="movimientos" style="display: none;"><a href="~/Movimientos/Index">Movimiento</a></li>
+                                <li id="ordenes" style="display: none;"><a href="~/Ordenes/Index">Orden</a></li>
+                                <li id="gastos" style="display: none;"><a href="~/Gastos/Index">Gastos</a></li>
+                                <li id="movimientosConsultaInventario" style="display: none;"><a href="~/Movimientos/ConsultaInventario">Consulta de Inv.</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li id="boldConfig" class="bold">
+                        <a class="collapsible-header  waves-effect waves-teal">Perfect Store</a>
+                        <div class="collapsible-body" style="display: block;">
+                            <ul>
+                                <li id="visitas" style="display: none;"><a href="~/Visitas/Index">Visita</a></li>
+                                <li id="visitasMaps" style="display: none;"><a href="~/Visitas/Maps">Maps</a></li>
+                                <li id="tipovisita" style="display: none;"><a href="~/TipoVisita/Index">Tipo de Visita</a></li>
+                                <li id="tipoindustria" style="display: none;"><a href="~/TipoIndustria/Index">Tipo de Industria</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li id="boldConfig" class="bold">
+                        <a class="collapsible-header  waves-effect waves-teal">Configuración</a>
+                        <div class="collapsible-body" style="display: block;">
+                            <ul>
+                                <li id="auditoria" style="display: none;"><a href="~/Auditoria/Index">Auditoria</a></li>
+                                <li id="logs" style="display: none;"><a href="~/Logs/Index">Logs</a></li>
+                                <li id="objetos" style="display: none;"><a href="~/Objetos/Index">Objetos</a></li>
+                                <li id="roles" style="display: none;"><a href="~/Roles/Index">Roles</a></li>
+                                <li id="usuarios" style="display: none;"><a href="~/Usuarios/Index">Usuarios</a></li>
+                                <li id="plantillas" style="display: none;"><a href="~/Plantillas/Index">Templates</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+    <main>
+        <div class="container">
+            <br>
+            @RenderBody()
+            <div id="_ModalSheet" class="modal bottom-sheet" style="z-index: 1003 !important;"></div>
+            <div id="modales"></div>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="container">
+            <center>
+                <p>&copy; @DateTime.Now.Year - Apex Tool Group SAS</p>
+            </center>
+            <div class="modal" id="Loading" tabindex="-1" aria-hidden="true" style="width:30%;">
+                <div class="modal-content">
+                    <div class="progress">
+                        <div class="indeterminate"></div>
+                    </div>
+                    <h6 class="center-align">Cargando</h6>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    @Scripts.Render("~/bundles/Materialize")
+    @Scripts.Render("~/bundles/Seguridad")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

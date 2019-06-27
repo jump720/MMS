@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewBag.Title = "Unauthorized";
+    ViewBag.Subtitle = "Action Not Authorized";
+    //Layout = "~/Views/Shared/_LayoutTT.cshtml";
+    Layout = ViewBag.Layout;
+}
+
+<div class="row clearfix">
+    <div class="col-md-5 col-md-offset-3">
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <i class="material-icons" style="color:red;font-size:200px;">do_not_disturb_alt</i>
+            </div>
+            <div class="col-md-8">
+                <h2>401 - Unauthorized</h2>
+                <p>Access is denied.</p>
+                <p>You do not have permission to view or run this resource using the current user.</p>
+                <p><strong>Resource requested:</strong> @ViewBag.ObjetoId</p>
+            </div>
+        </div>
+    </div>
+</div>

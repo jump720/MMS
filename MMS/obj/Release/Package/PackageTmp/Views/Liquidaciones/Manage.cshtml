@@ -1,0 +1,491 @@
+@model MMS.Models.Liquidacion
+
+@{
+    MMS.Models.Asesor asesorDisplay = null;
+    MMS.Models.LiquidacionAprobacion liquidacionAprobacionModel = null;
+    MMS.Models.LiquidacionAprobacion liquidacionDesaprobacionModel = null;
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Settlement : " + Model.Descripcion;
+    ViewBag.Subtitle = "Manage";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+    <link href="/Content/dist/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet" />
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jsVue")
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="/Content/dist/plugins/momentjs/moment.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $("#ColeccionPIV").select2({
+                placeholder: "Select PIP Collection",
+                allowClear: true,
+                theme: "bootstrap",
+            });
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            var estado = "@Model.Estado.ToString()";
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Manage/@Model.Id", getUrlWithReturnSearch("/@controllerName/Manage/@Model.Id"),
+                [
+                    { data: "ColeccionPIV.Nombre" },
+                    { data: "Asesor.Cedula" },
+                    { data: "Asesor.NombreCompleto" },
+                    {
+                        data: "Asesor.Meta",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        render: function (value, npi, full) {
+                            if (full.ColeccionPIV.CDE) {
+                                if (full.CategoriaCDE) {
+                                    var tt = `${full.CategoriaCDE.Nombre} - ${full.CategoriaCDE.Porcentaje} % <br>$ ${full.CategoriaCDE.ValorMinimo.formatMoney(0)} - $ ${full.CategoriaCDE.ValorMaximo.formatMoney(0)}`;
+                                    return `<img src="/Content/dist/images/levels/${full.CategoriaCDE.Icon}.png" width="32" data-toggle="tooltip" data-html="true" data-placement="top" title="${tt}">`;
+                                }
+                                return "";
+                            }
+                            return `<span data-toggle="tooltip" data-placement="top" title="${full.PorcentajePIVBase} %">PIP</span>`;
+                        }
+                    },
+                    {
+                        data: "Total",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "Porcentaje",
+                        render: function (value) {
+                            var res = `<div class="text-right m-t-5"> ${value.formatMoney(2)} %</div><div class="progress m-b-0" style="height: 4px;">`;
+
+                            if (value < 100)
+                                res += `<div class="progress-bar" style="width: ${value.toFixed(0)}%;"></div>`;
+                            else
+                                res += `<div class="progress-bar" style="width: ${(10000 / value).toFixed(0)}%;"></div><div class="progress-bar progress-bar-warning" style="width: ${((100 * (value - 100)) / value).toFixed(0)}%;"></div>`;
+
+                            return res + "</div>";
+                        }
+                    },
+                    {
+                        render: function (value, npi, full) {
+                            return `<img src="/Content/dist/images/settlement/${full.Img}.png" width="32" data-toggle="tooltip" data-html="true" data-placement="top" title="<small>${full.Msg.replaceAll("\n", "<br>")}</small>">`;
+                        }
+                    },
+                    {
+                        data: "PorcentajeAplicado",
+                        render: function (value) {
+                            return `<div class="text-right">${value.formatMoney(2)} %</div>`;
+                        }
+                    },
+                    {
+                        data: "ValorAplicado",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "ValorReglas",
+                        render: function (value, npi, full) {
+                            return `<div class="text-right" data-toggle="tooltip" data-html="true" data-placement="top" title="<small>${full.MsgReglas.replaceAll("\n", "<br>")}</small>">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        render: function (value, npi, full) {
+                            var actions = `<a href='/@controllerName/Asesor/@Model.Id?asesorId=${full.Asesor.Id}' onclick="ajaxModal(event, this.href, 4)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float' data-toggle="tooltip" data-placement="top" title="Detail"><i class='material-icons'>list</i></a>`;
+
+                            if (estado == "Open" && full.Porcentaje < 100) {
+                                if (full.Aprobacion)
+                                    actions += `<a href='javascript:void(0)' onclick="disapproveAsesorModal(${full.Aprobacion.Id},'${full.Asesor.NombreCompleto}', '${full.Aprobacion.Observacion.replaceAll("'", "[']").replaceAll("\n", "<br>")}', '${full.Aprobacion.UsuarioNombre}')" class='@ViewData[$"has_LiquidacionesApprove"] btn-table bg-red btn-sm btn-sm-circle waves-circle waves-effect waves-float' data-toggle="tooltip" data-placement="top" title="Disapprove"><i class='material-icons'>thumb_down</i></a>`
+                                else
+                                    actions += `<a href='javascript:void(0)' onclick="approveAsesorModal(${full.Asesor.Id},'${full.Asesor.NombreCompleto}')" class='@ViewData[$"has_LiquidacionesApprove"] btn-table bg-green btn-sm btn-sm-circle waves-circle waves-effect waves-float' data-toggle="tooltip" data-placement="top" title="Approve"><i class='material-icons'>thumb_up</i></a>`
+                            }
+
+                            return actions;
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["ColeccionPIV", "txtBuscarCedula", "txtBuscarNombreCompleto"],
+                    fnServerParams: function () {
+                        return [
+                            { name: "_coleccionPIV", value: $('#ColeccionPIV').val() },
+                            { name: "_cedula", value: $('#txtBuscarCedula').val() },
+                            { name: "_nombreCompleto", value: $('#txtBuscarNombreCompleto').val() },
+                        ];
+                    },
+                });
+
+            $("#frmApprove").submit(function (event) {
+                event.preventDefault();
+
+                if (!$(this).valid())
+                    return;
+
+                $.post(this.action, {
+                    AsesorId: $("#liquidacionAprobacionModel_AsesorId").val(),
+                    Observacion: $("#liquidacionAprobacionModel_Observacion").val(),
+                })
+                    .done(function (result) {
+                        if (result.Res) {
+                            msgSuccess("Seller approved");
+                            $("#frmApprove .modal").modal("hide");
+                            dt.api().draw('page');
+                        }
+                        else
+                            msgError(result.Msg);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        msgError(errorThrown);
+                    });
+            });
+
+            $("#frmDisapprove").submit(function (event) {
+                event.preventDefault();
+
+                $.post("/api/@controllerName/DisapproveSeller/" + $("#liquidacionDesaprobacionModel_Id").val())
+                    .done(function (result) {
+                        if (result) {
+                            msgSuccess("Seller disapproved");
+                            $("#frmDisapprove .modal").modal("hide");
+                            dt.api().draw('page');
+                        }
+                        else
+                            msgError("Error disapproving Seller.");
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        msgError(errorThrown);
+                    });
+            });
+
+            $("#frmPaymentFile").submit(function (event) {
+                event.preventDefault();
+
+                if (!$(this).valid())
+                    return;
+
+                window.open("/@controllerName/PaymentFile/@Model.Id?date=" + encodeURIComponent($("#paymentdatetime").val() + ":00"), "_blank");
+                $("#frmPaymentFile .modal").modal("hide");
+            });
+
+            $('#paymentdatetime').bootstrapMaterialDatePicker({
+                format: 'YYYY-MM-DD HH:mm',
+                weekStart: 1
+            });
+        });
+
+        function liquidacionModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+
+        function approveAsesorModal(id, nombre) {
+            $("#frmApprove .modal-title").html(`Approve Seller : <em>${nombre}</em>`);
+            $("#liquidacionAprobacionModel_AsesorId").val(id);
+            $("#liquidacionAprobacionModel_Observacion").val("");
+
+            $("#frmApprove .modal")
+                .on("shown.bs.modal", function () {
+                    $("#liquidacionAprobacionModel_Observacion").focus();
+                })
+                .on("hidden.bs.modal", function () {
+                    dt.api().draw('page');
+                })
+                .modal();
+        }
+
+        function disapproveAsesorModal(id, nombre, observacion, usuario) {
+            $("#frmDisapprove .modal-title").html(`Disapprove Seller : <em>${nombre}</em>`);
+            $("#liquidacionDesaprobacionModel_Id").val(id);
+            $("#liquidacionDesaprobacionModel_Observacion").val(observacion.replaceAll("[']", "'").replaceAll("<br>", "\n"));
+            $("#liquidacionDesaprobacionModel_UsuarioNombre").val(usuario);
+            updateMaterialTextFields("#frmDisapprove .modal");
+
+            $("#frmDisapprove .modal")
+                .on("hidden.bs.modal", function () {
+                    dt.api().draw('page');
+                })
+                .modal();
+        }
+
+        function closeSettlement() {
+            swal({
+                title: "Confirmation",
+                text: "This settlement will be close, and you will not be able to modify it anymore.",
+                type: "warning",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                showLoaderOnConfirm: true,
+            }, function () {
+                $.ajax({
+                    url: '/api/@controllerName/Close/@Model.Id',
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.Res) {
+                            swal.close();
+                            msgSuccess("Settlement Close");
+                            location.reload();
+                        }
+                        else
+                        {
+                            var errors = "";
+                            for (var i in result.Data)
+                                errors += `<li>${result.Data[i]}</li>`;
+
+                            swal.close();
+                            msgError(`<ul>${errors}</ul>`);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        msgError(errorThrown);
+                    }
+                })
+            });
+        }
+
+        function paymentFileModal() {
+            $("#frmPaymentFile .modal").modal();
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Files/@Model.Id" onclick="liquidacionModal(event, this.href)" data-toggle="tooltip" data-placement="bottom" title="Files" class="btn btn-default btn-circle waves-effect waves-circle waves-float">
+                                <i class="material-icons" style="color:black !important">list</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+                <ul class="header-dropdown m-r--5">
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons">more_vert</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href='/@controllerName/Asesor/@Model.Id?asesorId=0' onclick="ajaxModal(event, this.href, 4)">View 'Without Seller' Detail</a></li>
+                            @if (Model.Estado == MMS.Models.EstadoLiquidacion.Open)
+                            {
+                                <li><a href="javascript:void(0);" onclick="closeSettlement()">Close Settlement</a></li>
+                            }
+                            else
+                            {
+                                <li><a href="javascript:void(0);" onclick="paymentFileModal()">Download Payment File</a></li>
+                            }
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th width="15%">
+                                PIP Collection
+                            </th>
+                            <th width="10%">
+                                @Html.DisplayNameFor(model => asesorDisplay.Id)
+                            </th>
+                            <th width="20%">
+                                Full Name
+                            </th>
+                            <th style="text-align: right;">
+                                @Html.DisplayNameFor(model => asesorDisplay.Meta)
+                            </th>
+                            <th>
+                                Cat.
+                            </th>
+                            <th style="text-align: right;">
+                                Total
+                            </th>
+                            <th style="text-align: right;">
+                                Percent
+                            </th>
+                            <th width="4%">
+                                State
+                            </th>
+                            <th style="text-align: right;">
+                                Applied <br /> Percent
+                            </th>
+                            <th style="text-align: right;">
+                                Applied <br /> Incentive
+                            </th>
+                            <th style="text-align: right;">
+                                Rules
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th>
+                                @Html.DropDownList("ColeccionPIV", null, "", new { @class = "ms full-width" })
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarCedula" class="form-control" style="width: 100%;" placeholder="Search @Html.DisplayNameFor(model => asesorDisplay.Id)" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" id="txtBuscarNombreCompleto" class="form-control" style="width: 100%;" placeholder="Search Full Name" />
+                                    </div>
+                                </div>
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<form action="/api/@controllerName/ApproveSeller/@Model.Id" novalidate="novalidate" id="frmApprove">
+    <div class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row clearfix">
+                        @Html.HiddenFor(model => liquidacionAprobacionModel.AsesorId)
+
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextAreaFor(model => liquidacionAprobacionModel.Observacion, new { @class = "form-control", @rows = "3" })
+                                    @Html.LabelFor(model => liquidacionAprobacionModel.Observacion, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                                @Html.ValidationMessageFor(model => liquidacionAprobacionModel.Observacion, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <hr class="m-b-0 m-t--10" />
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success waves-effect">Approve</button>
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form novalidate="novalidate" id="frmDisapprove">
+    <div class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row clearfix">
+                        @Html.HiddenFor(model => liquidacionDesaprobacionModel.Id)
+
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextAreaFor(model => liquidacionDesaprobacionModel.Observacion, new { @class = "form-control", @readonly = "readonly", @rows = "3" })
+                                    @Html.LabelFor(model => liquidacionDesaprobacionModel.Observacion, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" id="liquidacionDesaprobacionModel_UsuarioNombre" readonly="readonly" />
+                                    @Html.LabelFor(model => liquidacionDesaprobacionModel.UsuarioId, htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="m-b-0 m-t--10" />
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger waves-effect">Disapprove</button>
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form novalidate="novalidate" id="frmPaymentFile">
+    <div class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Download Payment File : <em>@Model.Descripcion</em></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row clearfix">
+
+                        <div class="col-sm-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input type="text" name="paymentdatetime" id="paymentdatetime" class="form-control" placeholder="Please choose date & time..."
+                                           data-val="true"
+                                           data-val-required="This field is required.">
+                                </div>
+                                <span class="field-validation-valid " data-valmsg-for="paymentdatetime" data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <hr class="m-b-0 m-t--10" />
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success waves-effect">Download</button>
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

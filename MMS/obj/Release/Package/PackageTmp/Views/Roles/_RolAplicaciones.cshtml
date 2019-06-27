@@ -1,0 +1,105 @@
+﻿@model MMS.Models.RolAplicacionViewModel
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+
+
+        fixMaterialCheckboxes();
+        $("#frmRolAplicaciones").submit(function (e) {
+            e.preventDefault();
+
+
+            $.ajax({
+                type: this.method,
+                url: this.action,
+                data: $(this).serialize(),
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded",
+                beforeSend: function () {
+                    //sLoading("");
+                    $('#Loading').openModal();
+                },
+                success: function (data) {
+                    if (data) {
+                        Materialize.toast("Apps saved.", 3000, '');
+                        $('#_ModalSheet').closeModal();
+                        //  hModal(getCurrentModalId());
+                        //msgSuccess("Events saved.");
+                    }
+                    else
+                        Materialize.toast("Error, Apps not saved.", 5000, '');
+                    //msgError("Error, Events not saved.");
+                },
+                complete: function () {
+                    $('#_ModalSheet').closeModal();
+                    // hLoading();
+                    $('#Loading').closeModal();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    //msgError(errorThrown);
+                    $('#Loading').closeModal();
+                    Materialize.toast(errorThrown, 5000, '');
+                }
+            });
+        });
+    });
+
+
+    function fixMaterialCheckboxes(container) {
+        if (container)
+            container += " ";
+        else
+            container = "";
+
+        $(container + ".fix-checkbox").each(function (index, item) {
+            $("#" + $(item).attr("for")).after($(item));
+            $(item).removeClass("fix-checkbox");
+        });
+    }
+</script>
+
+    @using (Html.BeginForm("RolAplicaciones", "api/Roles", FormMethod.Post, new { id = "frmRolAplicaciones" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="modal-content">
+            <h4>Apps</h4>
+            @Html.ValidationSummary(true, "", new { @class = "red-text text-accent-4" })
+            @Html.HiddenFor(model => model.rol.RolId)
+            <table id="tableEventos" class="table table-bordered table-hover table-condensed table-striped table-va-middle">
+                <thead>
+                    <tr>
+                        <th>
+                            Apps
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.aplicaciones[0].Seleccionado)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.aplicaciones.Count; i++)
+                    {
+                        <tr>
+
+                            <td style="padding: 0px 0px !important;">
+                                @Html.DisplayFor(model => model.aplicaciones[i].Nombre)
+                                @Html.HiddenFor(model => model.aplicaciones[i].Id)
+                            </td>
+                            <td style="padding: 0px 0px !important;">
+                               @Html.EditorFor(model => model.aplicaciones[i].Seleccionado, new { htmlAttributes = new { @class = "form-control" } })
+                               @Html.LabelFor(model => model.aplicaciones[i].Seleccionado," ", htmlAttributes: new { @class = "fix-checkbox" })
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn waves-effect light-blue accent-4">Save</button>
+            <input id="btncancelar" type="button" value="Cerrar" class="btn waves-effect grey" onclick="$('#_Modal').closeModal();" />
+        </div>
+
+    }

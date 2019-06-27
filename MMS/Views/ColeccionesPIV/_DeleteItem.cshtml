@@ -1,0 +1,47 @@
+﻿@model MMS.Models.ColeccionPIVItem
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@Scripts.Render("~/bundles/jqueryval")
+<script src="~/Scripts/PIV/ColeccionesPIVItem.js"></script>
+
+<script type="text/javascript">
+    $.MMS.ColeccionesPIVItem.init = function () {
+        $.MMS.ColeccionesPIVItem("delete", @Model.ItemId);
+    };
+</script>
+
+<div class="modal-header">
+    <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Delete PIP Collection Item : <em>@ViewBag.ColeccionPIVNombre</em></h4>
+</div>
+
+<div class="modal-body" id="bodyForm">
+    <div class="row clearfix">
+        <div class="col-md-6">
+            <div class="form-group form-float">
+                <div class="form-line">
+                    @Html.EditorFor(model => model.Codigo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.LabelFor(model => model.Codigo, htmlAttributes: new { @class = "form-label" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ItemId, htmlAttributes: new { @class = "form-select-label" })
+                @Html.DropDownListFor(model => model.ItemId, new SelectList(new List<string>(), "", ""), new { @class = "ms full-width" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="m-b-0 m-t--10" />
+
+<div class="modal-footer">
+    @using (Html.BeginForm("DeleteItem/" + Model.Id, "api/" + controllerName, FormMethod.Post, new { id = "frmColeccionPIVItem" }))
+    {
+        <button type="submit" class="btn btn-danger waves-effect">Delete</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    }
+</div>

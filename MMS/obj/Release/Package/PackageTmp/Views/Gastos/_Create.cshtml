@@ -1,0 +1,125 @@
+﻿@model MMS.Models.Gasto
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+@Scripts.Render("~/bundles/jqueryval")
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+<script src="~/Scripts/Transacciones/Gastos.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $.MMS.Gastos.init = function () {
+
+        $.MMS.Gastos("create");
+    };
+</script>
+
+
+@using (Html.BeginForm("Create", "api/" + controllerName, FormMethod.Post, new { id = "frmGasto" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Create Spent</h4>
+    </div>
+    <div class="modal-body">
+
+        <div class="row clearfix">
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.Label("Spent Type", new { @class = "form-select-label" })
+                        @Html.DropDownList("TipoGastoID", null, "- Select -", new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.TipoGastoID, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.Label("Cost Center", new { @class = "form-select-label" })
+                        @Html.DropDownList("CentroCostoID", null, "- Select -", new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.CentroCostoID, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.LabelFor(model => model.ProductoId, htmlAttributes: new { @class = "form-select-label" })
+                        @Html.DropDownListFor(model => model.ProductoId, new SelectList(new List<string>(), "", ""), new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.ProductoId, "", new { @class = "" })
+                </div>
+            </div>
+
+        
+
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.GastoValor, new { htmlAttributes = new { @class = "form-control text-right" } })
+                        @Html.LabelFor(model => model.GastoValor, htmlAttributes: new { @class = "form-label" })
+                        @Html.ValidationMessageFor(model => model.GastoValor, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.GastoCant, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.LabelFor(model => model.GastoCant, htmlAttributes: new { @class = "form-label" })
+                        @Html.ValidationMessageFor(model => model.GastoCant, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">                        
+                        <input type="text" id="GastoTotal" class="form-control text-right" />
+                        <label class="form-label" for="GastoTotal">Total</label>                                             
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.GastoFactura, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.LabelFor(model => model.GastoFactura, htmlAttributes: new { @class = "form-label" })
+                        @Html.ValidationMessageFor(model => model.GastoFactura, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.LabelFor(model => model.GastoEstado, htmlAttributes: new { @class = "form-select-label" })
+                        @Html.EnumDropDownListFor(model => model.GastoEstado, new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.GastoEstado, "", new { @class = "" })
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(model => model.GastoComentario, 4, 0, new { @class = "form-control no-resize", @placeholder = "Comments..." })
+                        @Html.ValidationMessageFor(model => model.GastoComentario, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+    <hr class="m-b-0 m-t--10" />
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+
+}

@@ -1,0 +1,106 @@
+﻿@model IEnumerable<MMS.Models.PresupuestoVendedor>
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Investimentos em Lista";
+    ViewBag.Subtitle = "Lista";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jsSelect2")
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "PresupuestoVendedorAno" },
+                    { data: "PlantaDesc" },
+                    { data: "CanalDesc" },
+                    { data: "CentroCostoDesc" },
+                    { data: "PresupuestoValor",render: function (value) {return `<div class="text-right">R$ ${value.formatMoney(2)}</div>`;}},
+                    { data: "PresupuestoGasto",render: function (value) {return `<div class="text-right">R$ ${value.formatMoney(2)}</div>`;}},
+                    { data: "",
+                        render: function (data, type, row) {
+                            return (
+                                `<a href='/@controllerName/Details?Ano=${row.PresupuestoVendedorAno}&CentroCostoId=${row.CentroCostoID}&CanalID=${row.CanalID}&CanalID=${row.CanalID}&PlantaID=${row.PlantaID}&PresupuestoValor=${row.PresupuestoValor}&PresupuestoGasto=${row.PresupuestoGasto}' onclick="PresupuestoModal(event, this.href);"class='btn-table btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>` +
+                                `<a href='/@controllerName/Edit?Ano=${row.PresupuestoVendedorAno}&CentroCostoId=${row.CentroCostoID}&CanalID=${row.CanalID}&CanalID=${row.CanalID}&PlantaID=${row.PlantaID}&PresupuestoValor=${row.PresupuestoValor}&PresupuestoGasto=${row.PresupuestoGasto}' onclick="PresupuestoModal(event, this.href);" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>`
+                            );
+                        }
+                    }
+                ]);
+        });
+        function PresupuestoModal(event, href) {
+            ajaxModal(event, href, 4, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.Presupuesto.init();
+                },
+                fnHidden: function () {
+                    dt.api().draw('page');
+                }
+            });
+        }
+    </script>
+}
+
+ 
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Create" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Create"]" onclick="PresupuestoModal(event, this.href);">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                Planta
+                            </th>
+                            <th>
+                                Canal
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.PresupuestoVendedorAno)
+                            </th>
+                            <th>
+                                Centro de Custo
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.PresupuestoValor)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.PresupuestoGasto)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

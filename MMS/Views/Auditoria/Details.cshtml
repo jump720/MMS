@@ -1,0 +1,74 @@
+﻿@model MMS.Models.Auditoria
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Auditoria</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.AuditoriaFecha)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AuditoriaFecha)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AuditoriaHora)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AuditoriaHora)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.usuarioId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.usuarioId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AuditoriaEvento)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AuditoriaEvento)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AuditoriaDesc)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AuditoriaDesc)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ObjetoId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ObjetoId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AuditoriaEquipo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AuditoriaEquipo)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.AuditoriaId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

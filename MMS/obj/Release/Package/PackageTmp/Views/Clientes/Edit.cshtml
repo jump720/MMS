@@ -1,0 +1,182 @@
+﻿@model MMS.Models.Cliente
+
+@{
+    ViewBag.Title = "Clientes";
+    ViewBag.Subtitle = "Modify";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/Catalogos/Clientes.js" type="text/javascript"> </script>
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $.MMS.Clientes("edit");
+        });
+    </script>
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+                    @Html.HiddenFor(model => model.ClienteID)
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ClienteID, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.ClienteID, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.ClienteID, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ClienteNit, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.ClienteNit, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.ClienteNit, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ClienteRazonSocial, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.ClienteRazonSocial, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.ClienteRazonSocial, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="vendedorContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.VendedorId, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.VendedorId, null, "", new { @class = "ms full-width" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.VendedorId, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="paisContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.PaisID, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.PaisID, null, "", new { @class = "ms full-width", @onchange = "_DropDownInCascada('PaisID'+';'+'DepartamentoID')" })
+    @*("PaisID", null, new { @class = "ms full-width", @onchange = "_DropDownInCascada('PaisID'+';'+'DepartamentoID')" })*@
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="dptoContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.DepartamentoID, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.DepartamentoID, null, "", new { @class = "ms full-width", @onchange = "_DropDownInCascada('DepartamentoID' + ';' + 'CiudadID' + ';' + 'PaisID')" })
+    @*("DepartamentoID", null, new { @class = "ms full-width", @onchange = "_DropDownInCascada('DepartamentoID'+';'+'CiudadID'+';'+'PaisID')" })*@
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.DepartamentoID, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="ciudadContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.CiudadID, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.CiudadID, null, "", new { @class = "ms full-width" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.CiudadID, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="canalContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.CanalID, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.CanalID, null, "", new { @class = "ms full-width" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.CanalID, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="pivContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.ColeccionPIVId, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.ColeccionPIVId, null, "", new { @class = "ms full-width" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.ColeccionPIVId, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @if (Model == null)
+                                        {
+                                            @Html.TextBoxFor(model => model.ClienteAprobacion, new { @type = "checkbox" })
+                                        }
+                                        else
+                                        {
+                                            if (Model.ClienteAprobacion == true)
+                                            {
+                                                @Html.TextBoxFor(model => model.ClienteAprobacion, new { @type = "checkbox", @value = Model.ClienteAprobacion, @checked = "checked" })
+                                            }
+                                            else
+                                            {
+                                                @Html.TextBoxFor(model => model.ClienteAprobacion, new { @type = "checkbox", @value = Model.ClienteAprobacion })
+                                            }
+                                        }
+                                        @Html.LabelFor(model => model.ClienteAprobacion, new { @class = "", @for = "ClienteAprobacion" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.ClienteAprobacion, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+}

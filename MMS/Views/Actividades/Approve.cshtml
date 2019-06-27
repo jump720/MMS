@@ -1,0 +1,164 @@
+﻿@model IEnumerable<MMS.Models.ActividadAutorizacion>
+@{
+    ViewBag.Title = "Aprovar Atividades";
+}
+
+<script src="~/Scripts/Catalogos/DeleteCatalogos.js" type="text/javascript"></script>
+<script type="text/javascript" src="~/Scripts/jquery.number/jquery.number.js"></script>
+<script type="text/javascript" src="~/Scripts/Catalogos/NumeroToMoneda.js"></script>
+<script type="text/javascript" >
+    $(document).ready(function () {
+        $("td[id*='valor']").number(true, 0, ',', '.');
+    });
+</script>
+
+
+<div class="row">
+    <div class="col s12 s12 s12 ">
+        <div class="card">
+            <nav>
+                <div class="nav-wrapper">
+                    <div class="col s12" style="margin-left: 25px;">
+                        <a href="~/Actividades/Approve" class="breadcrumb">Aprobar Actividades</a>
+                    </div>
+                </div>
+            </nav>
+            <div class="card-content">
+                <table id="table" data-order='[[ 9, "asc" ]]' class="table-with-number display highlight cell-border compact hover responsive nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.ActividadAutorizacionAutoriza)
+                            </th>
+                            <th class="all">
+                                No. Activ.
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Actividad.ActividadTitulo)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Actividad.ActividadFecha)
+                            </th>
+                            <th>
+                                @*@Html.DisplayNameFor(model => model.Actividad.cliente.ClienteRazonSocial)*@
+                                Cliente
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Actividad.UsuarioIdElabora)
+                            </th>
+                            <th>
+                                Valor Total
+                            </th>
+                            <th class="none">
+                                @Html.DisplayNameFor(model => model.ActividadAutorizacionFecha)
+                            </th>
+                            <th class="none">
+                                @Html.DisplayNameFor(model => model.ActividadAutorizacionMotivo)
+                            </th>
+                            <th class="all"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{int inc = 0;}
+                        @foreach (var item in Model.Where(a => a.ActividadAutorizacionAutoriza != MMS.Models.EstadoAutorizaActividad.Autorizado))
+                        {
+                            inc = inc + 1;
+                            string totalAutorizacionId = "Autorizacion" + inc;
+                            string porAutorizar = "Por Autorizar";
+                            <tr>
+                                <td>
+                                    @if (item.ActividadAutorizacionAutoriza != MMS.Models.EstadoAutorizaActividad.Por_Autorizar)
+                                    {
+                                        @Html.DisplayFor(modelItem => item.ActividadAutorizacionAutoriza)
+                                    }
+                                    else
+                                    {
+                                        @porAutorizar
+                                    }
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Actividad.ActividadId)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Actividad.ActividadTitulo)
+                                </td>
+                                <td>
+                                    @{string z = Convert.ToDateTime(item.Actividad.ActividadFecha).ToShortDateString();
+                                    }
+                                    @z
+                                </td>
+                                <td>
+                                    (@Html.DisplayFor(modelItem => item.Actividad.ClienteID)) @Html.DisplayFor(modelItem => item.Actividad.cliente.ClienteRazonSocial)
+                                </td>
+                                <td>
+                                    @foreach (var usuarios in ViewBag.UsuarioElabora)
+                                    {
+                                        if (usuarios.Value == item.Actividad.UsuarioIdElabora)
+                                        {
+                                            @usuarios.Text
+                                        }
+                                    }
+                                </td>
+                                <td id="valor">
+                                    @{ decimal valor = item.Actividad.ActividadItemList.Sum(a => (a.ActividadItemPrecio * a.ActividadItemCantidad)) ?? 0; }
+                                    @valor
+                                </td>
+                                <td>
+                                    @if (item.ActividadAutorizacionAutoriza != MMS.Models.EstadoAutorizaActividad.Por_Autorizar)
+                                    {
+                                        @Html.DisplayFor(modelItem => item.ActividadAutorizacionFecha)
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ActividadAutorizacionAutoriza == MMS.Models.EstadoAutorizaActividad.Rechazado)
+                                    {
+                                        @Html.DisplayFor(modelItem => item.ActividadAutorizacionMotivo)
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ActividadAutorizacionAutoriza == MMS.Models.EstadoAutorizaActividad.Por_Autorizar)
+                                    {
+                                        <div class="fixed-action-btn-list horizontal">
+                                            <a class="btn-floating btn-sm blue">
+                                                <i class="material-icons">more_horiz</i>
+                                            </a>
+                                            <ul>
+                                                <li>
+                                                    <a href="javascript:void(0)" class="btn-floating green tooltipped" data-position="top" data-delay="50"
+                                                       data-tooltip="Aprobar">
+                                                        <i class="material-icons" onclick="_ApproveActividad('@item.ActividadId'+';'+'@MMS.Models.EstadoAutorizaActividad.Autorizado', 'Actividades')">done</i>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="javascript:void(0)" class="btn-floating red tooltipped" data-position="top" data-delay="50"
+                                                       data-tooltip="No Aprobar">
+                                                        <i class="material-icons" onclick="_ApproveActividad('@item.ActividadId'+';'+'@MMS.Models.EstadoAutorizaActividad.Rechazado', 'Actividades')">clear</i>
+                                                    </a>
+                                                </li>
+                                                @*<li>@Html.ActionLink("done", "Approve", new { id = Model.ActividadId, tipo = 2 }, new { @class = "btn-floating green material-icons" })</li>*@
+                                                @*<li>@Html.ActionLink("clear", "Approve", new { id = Model.ActividadId, tipo = 3 }, new { @class = "btn-floating red material-icons" })</li>*@
+                                                <li>
+                                                    @Html.ActionLink("view_headline", "Details", new { id = item.ActividadId }, new
+                                               {
+                                                   @class = "btn-floating yellow material-icons tooltipped",
+                                                   @data_position = "top",
+                                                   @data_delay = "50",
+                                                   @data_tooltip = "Detalle"
+                                               })
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink("view_headline", "Details", new { id = item.ActividadId }, new { @class = "btn-floating yellow material-icons  tooltipped" })
+                                    }
+                                </td>
+                            </tr>
+                                        } @*@foreach (var item in Model.Where(a => a.ActividadAutorizacionAutoriza != MMS.Models.EstadoAutorizaActividad.Autorizado))*@
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>

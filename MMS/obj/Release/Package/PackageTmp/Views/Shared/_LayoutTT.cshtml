@@ -1,0 +1,238 @@
+﻿@using MMS.Models;
+@{
+    var seguridadcll = (Seguridadcll)Session["seguridad"];
+    var SystemMode = "";
+#if DEBUG
+    SystemMode = "Development Environment";
+#else
+    SystemMode = "Production environment";
+#endif
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>@ViewBag.Title | @ViewBag.Subtitle | @seguridadcll.Aplicacion.Link.ToUpper()</title>
+    <link rel="icon" href="/Content/dist/favicon.ico" type="image/x-icon">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+    <link href="/Content/dist/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/Content/dist/plugins/node-waves/waves.min.css" rel="stylesheet" />
+    <link href="/Content/dist/plugins/animate-css/animate.min.css" rel="stylesheet" />
+    <link href="~/Content/dist/plugins/sweetalert/sweetalert.css" rel="stylesheet" />
+
+    @RenderSection("Styles", false)
+
+    <style>
+        .app-icon {
+            width: 36px;
+            height: 36px;
+            color: #fff;
+            text-align: center;
+            display: inline-block;
+        }
+    </style>
+
+    <link href="/Content/dist/css/style.min.css" rel="stylesheet">
+    <link href="~/Content/dist/css/style.reset.css" rel="stylesheet">
+    <link href="/Content/dist/css/themes/theme-blue.min.css" rel="stylesheet" />
+
+</head>
+<body class="theme-blue">
+    <!-- Page Loader -->
+    <div class="page-loader-wrapper">
+        <div class="loader">
+            <div class="preloader">
+                <div class="spinner-layer pl-red">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                </div>
+            </div>
+            <p>Please wait...</p>
+        </div>
+    </div>
+    <!-- #END# Page Loader -->
+    <!-- Overlay For Sidebars -->
+    <div class="overlay"></div>
+    <!-- #END# Overlay For Sidebars -->
+    <!-- Search Bar -->
+    <!-- #END# Search Bar -->
+    <!-- Top Bar -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
+                <a href="javascript:void(0);" class="bars"></a>
+                <a class="navbar-brand" href="@seguridadcll.Aplicacion.Inicio">@seguridadcll.Aplicacion.Link.ToUpper() - <small>@seguridadcll.Aplicacion.Nombre </small></a>
+                
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                            <i class="material-icons" style="margin-top: -3px;">apps</i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="header">APPLICATIONS</li>
+                            <li class="body">
+                                <ul class="menu" style="list-style-type: none;">
+                                    @foreach (var app in seguridadcll.Aplicaciones)
+                                    {
+                                        <li>
+                                            <a href="http://@(app.Link).@seguridadcll.Configuracion.ConfigDominioWeb@app.Inicio">
+                                                <div class="icon app-icon">
+                                                    <img src="~/Content/dist/images/apps/@(app.Link).ico" height="35" />
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4>@app.Nombre</h4>
+                                                    <p>
+                                                        <i class="material-icons">link</i> @app.Link
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" id="usernameLinkProfile">
+                            @seguridadcll.Usuario.UsuarioNombre
+                        </a>
+                        <ul class="dropdown-menu p-t-0">
+                            <li class="header bg-light-blue" style="padding-top: 10px;">
+                                <div>
+                                    <img class="img-circle m-b-5" style="background-color: white; padding: 2px;" src="/Profile/Picture" height="100" />
+                                </div>
+                                <p>
+                                    <span class="font-16">@seguridadcll.Usuario.UsuarioNombre</span><br />
+                                    <span class="font-12 font-no-bold">@seguridadcll.Usuario.UsuarioCorreo</span><br />
+                                    <span class="font-12 font-no-bold">@seguridadcll.Usuario.UsuarioId</span>
+                                </p>
+                            </li>
+                            <li class="body" id="menu-user-options">
+                                <ul class="menu" style="list-style-type: none;">
+                                    <li>
+                                        <a href="/Usuarios/ChangePassword/@seguridadcll.Usuario.UsuarioId" onclick="showChangePasswordModal(event, this.href);">
+                                            <div class="icon-circle bg-deep-orange">
+                                                <i class="material-icons">vpn_key</i>
+                                            </div>
+                                            <div class="menu-info">
+                                                <h4>Change password</h4>
+                                                <p>You can change your password</p>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/Profile/Index">
+                                            <div class="icon-circle bg-deep-purple">
+                                                <i class="material-icons">person</i>
+                                            </div>
+                                            <div class="menu-info">
+                                                <h4>Profile</h4>
+                                                <p>Your profile information</p>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" onclick="refreshSecurity()">
+                                            <div class="icon-circle bg-light-green">
+                                                <i class="material-icons">autorenew</i>
+                                            </div>
+                                            <div class="menu-info">
+                                                <h4>Refresh Security</h4>
+                                                <p>Refresh User's Security Session</p>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/Usuarios/Login">
+                                            <div class="icon-circle bg-cyan">
+                                                <i class="material-icons">input</i>
+                                            </div>
+                                            <div class="menu-info">
+                                                <h4>Sign Out</h4>
+                                                <p>End User's Session</p>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="pull-right">
+                        <a href="javascript:void(0);" id="userPictureProfile">
+                            <img class="img-circle" style="background-color: white; padding: 1px; margin-top: -10px" src="/Profile/Picture" height="40" />
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- #Top Bar -->
+    <section>
+        <!-- Left Sidebar -->
+        <aside id="leftsidebar" class="sidebar">
+            <!-- User Info -->
+            <div class="user-info" style="background: url(/Content/dist/images/apps/@(seguridadcll.Aplicacion.Link).png) no-repeat no-repeat;">
+                <div class="image">
+
+                </div>
+            </div>
+            <!-- #User Info -->
+            <!-- Menu -->
+            <div class="menu">
+                <ul class="list">
+                    <li class="header">MAIN NAVIGATION</li>
+                    @Html.Raw(ViewBag.SidebarMenuHtml)
+                </ul>
+            </div>
+            <!-- #Menu -->
+            <!-- Footer -->
+            <div class="legal">
+                <div class="copyright">
+                    <p>&copy; @DateTime.Now.Year - Apex Tool Group SAS</p>
+                    <p>@SystemMode</p>
+                </div>
+            </div>
+            <!-- #Footer -->
+        </aside>
+        <!-- #END# Left Sidebar -->
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            @if (ViewBag.sTitles != null && ViewBag.sTitles == true)
+            {
+                <div class="block-header">
+                    <span class="font-20">@ViewBag.Title</span> <span class="font-15 col-grey">@ViewBag.Subtitle</span>
+                </div>
+            }
+
+            @RenderBody()
+        </div>
+    </section>
+
+    <script src="/Content/dist/plugins/jquery/jquery.min.js"></script>
+    <script src="/Content/dist/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="/Content/dist/plugins/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="/Content/dist/plugins/node-waves/waves.min.js"></script>
+    <script src="~/Content/dist/plugins/jquery-loading-overlay/loadingoverlay.min.js"></script>
+    <script src="~/Content/dist/plugins/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="~/Content/dist/plugins/sweetalert/sweetalert.min.js"></script>
+    <script src="/Content/dist/js/admin.js"></script>
+    <script src="~/Scripts/_LayoutTT.js"></script>
+
+    @RenderSection("Scripts", false)
+</body>
+</html>

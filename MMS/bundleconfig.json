@@ -1,0 +1,20 @@
+[
+  {
+    "outputFileName": "Content/dist/plugins/jquery-validation/jquery.validate.unobtrusive.min.js",
+    "inputFiles": [
+      "Content/dist/plugins/jquery-validation/jquery.validate.unobtrusive.js"
+    ]
+  },
+  {
+    "outputFileName": "Content/dist/css/style.min.css",
+    "inputFiles": [
+      "Content/dist/css/style.css"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/Peak/Peak.min.js",
+    "inputFiles": [
+      "Scripts/Peak/Peak.js"
+    ]
+  }
+]

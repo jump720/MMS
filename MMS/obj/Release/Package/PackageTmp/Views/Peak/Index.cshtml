@@ -1,0 +1,193 @@
+@model IEnumerable<MMS.Models.Peak>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Peak Performance Review";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsVue")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "Descripcion" },
+                    { data: "FechaIni" },
+                    { data: "FechaFin" },
+                    {
+                        data: "EstadoPeriodo",
+                        render: function (value) {
+                            var estado = ""
+
+                            if (value == -2)
+                                estado = "Not Started";
+                            else if (value == -1)
+                                estado = "Finished";
+                            else if (value == 1)
+                                estado = "Standby";
+                            else if (value == 2)
+                                estado = "Review";
+                            else if (value == 3)
+                                estado = "Final Review";
+
+                            return estado;
+                        }
+                    },
+                    {
+                        data: "Peak",
+                        render: function (value) {
+                            return value ? value.Estado : "Not Created";
+                        }
+                    },
+                    {
+                        data: "Id",
+                        render: function (value, npi, item) {
+                            var notActive = (item.EstadoPeriodo == -2 || (item.EstadoPeriodo == -1 && !item.Peak)) ? "not-active" : "";
+
+                            return `<a href='/@controllerName/Manage/${value}' onclick="redirtWithReturnSearch(this, event)" class='${notActive} btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float' data-toggle="tooltip" data-placement="top" title="Manage"><i class='material-icons'>assignment</i></a>`;
+                        }
+                    }
+                ], { mainFilter: false });
+
+            var vueReviews = new Vue({
+                el: "#tableReviews",
+                data: {
+                    peaks: null
+                },
+                methods: {
+                    getPeaks: function () {
+                        var vm = this;
+                        $.get("/api/Peak/Reviews/")
+                            .done(function (result) {
+                                vm.peaks = result;
+                                setTimeout(function () {
+                                    $('[data-toggle="tooltip"]').tooltip();
+                                }, 100);
+                            })
+                            .fail(handleError);
+                    }
+                }
+            });
+
+            $.MMS.CheckPeakReviews = function () {
+                if (!vueReviews.peaks)
+                    vueReviews.getPeaks();
+            };
+        });
+
+        function getPeakReviews() {
+            $.MMS.CheckPeakReviews();
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <h2>
+                    @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                </h2>
+            </div>
+            <div class="body">
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" class="active"><a href="#tabMisPeaks" data-toggle="tab" aria-expanded="true">MY PEAKS</a></li>
+                    <li role="presentation" class=""><a href="#tabRevisiones" data-toggle="tab" aria-expanded="false" onclick="getPeakReviews()">REVIEWS</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade active in" id="tabMisPeaks">
+                        <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Period @Html.DisplayNameFor(model => model.Periodo.Descripcion)
+                                    </th>
+                                    <th>
+                                        Period @Html.DisplayNameFor(model => model.Periodo.FechaIni)
+                                    </th>
+                                    <th>
+                                        Period @Html.DisplayNameFor(model => model.Periodo.FechaFin)
+                                    </th>
+                                    <th>Period Status</th>
+                                    <th>Peak Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="tabRevisiones">
+                        <table id="tableReviews" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.PeriodoId)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.UsuarioId)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.AreaId)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Cargo)
+                                    </th>
+                                    <th>
+                                        Date Sent
+                                    </th>
+                                    <th>
+                                        Peak @Html.DisplayNameFor(model => model.Estado)
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!peaks || peaks.length == 0">
+                                    <td colspan="5">
+                                        <div class="text-center"><em>You have none review to do.</em></div>
+                                    </td>
+                                </tr>
+                                <tr v-for="peak in peaks">
+                                    <td>
+                                        {{ peak.Periodo }}
+                                    </td>
+                                    <td>
+                                        {{ peak.Usuario }}
+                                    </td>
+                                    <td>
+                                        {{ peak.Area }}
+                                    </td>
+                                    <td>
+                                        {{ peak.Cargo }}
+                                    </td>
+                                    <td>
+                                        {{ peak.FechaEnvio }}
+                                    </td>
+                                    <td>
+                                        {{ peak.Estado }}
+                                    </td>
+                                    <td>
+                                        <a v-bind:href="`/@controllerName/Review/${peak.Id}`" onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float' data-toggle="tooltip" data-placement="top" title="Review">
+                                            <i class='material-icons'>assignment</i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,82 @@
+﻿@model MMS.Models.Gasto
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Gasto</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.actividad.ActividadTitulo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.actividad.ActividadTitulo)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.producto.ProductoDesc)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.producto.ProductoDesc)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.tipogasto.TipoGastoDesc)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.tipogasto.TipoGastoDesc)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GastoValor)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GastoValor)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GastoCant)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GastoCant)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GastoComentario)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GastoComentario)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GastoFactura)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GastoFactura)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GastoEstado)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GastoEstado)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

@@ -1,0 +1,72 @@
+﻿@model MMS.Models.UsuarioFlujoPQRSViewModel
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jsDataTables")
+<script src="~/Scripts/WCSS/UsuarioFlujoPQRS.js"></script>
+
+
+<script type="text/javascript">
+    $.MMS.UsuarioFlujoPQRS.init = function () {
+    
+        $.MMS.UsuarioFlujoPQRS("edit");
+    };
+</script>
+
+@using (Html.BeginForm("UsuariosStep", "api/" + controllerName, FormMethod.Post, new { id = "formStep" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Select User to Step : <em>@ViewBag.EtapaNombre</em></h4>
+    </div>
+
+    <div class="modal-body">
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <table class="table table-condensed table-hover table-striped table-va-middle" id="tableUsuarios">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.UsuariosStepList[0].UsuarioId)</th>
+                            <th>@Html.DisplayNameFor(model => model.UsuariosStepList[0].check) </th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.UsuariosStepList.Count; i++)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    @Html.HiddenFor(model => model.UsuariosStepList[i].MotivoPQRSId)
+                                    @Html.HiddenFor(model => model.UsuariosStepList[i].FlujoPQRSId)
+                                    @Html.HiddenFor(model => model.UsuariosStepList[i].UsuarioId)
+                                    @Model.UsuariosStepList[i].UsuarioNombre
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.UsuariosStepList[i].check, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.UsuariosStepList[i].check, " ", htmlAttributes: new { @class = "fix-checkbox" })
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+            <hr class="m-b-0 m-t--10" />
+
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary waves-effect">Save</button>
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+            </div>
+}

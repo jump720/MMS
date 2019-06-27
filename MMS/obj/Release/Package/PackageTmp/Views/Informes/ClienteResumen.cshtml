@@ -1,0 +1,674 @@
+﻿@model IEnumerable<MMS.Models.ClienteResumenViewModel>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Customer's Battle Card";
+    ViewBag.Subtitle = "Report";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        //var select2Analista;
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+
+            var template = function (data) {
+                return '<div class="select2-result-repository clearfix" style="width: 50%">' +
+                    `<div><b>${data.ClienteID} - ${data.ClienteRazonSocial}</b></div>` +
+                    "<div>" +
+                    `<small>Zone: ${data.Zona}</small><br>` +
+                    `<small>Channel: ${data.Canal}</small><br>` +
+                    `<small>Seller: ${data.Vendedor}</small>` +
+                    "</div>" +
+                    '</div>';
+            };
+
+            var select2Options = {
+                placeholder: "Search Customer",
+                theme: "bootstrap",
+                allowClear: true,
+                ajax: {
+                    type: "GET",
+                    url: function (params) {
+                        return "/api/Devoluciones/BuscarCliente?q=" + encodeURIComponent(params.term)
+                    },
+                    delay: 300,
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    text: item.ClienteRazonSocial,
+                                    id: item.ClienteID,
+                                    data: item
+                                }
+                            }),
+                            pagination: { more: (params.page * 30) < data.total_count }
+                        };
+                    }
+                },
+                minimumInputLength: 1,
+                templateResult: function (repo) {
+                    if (repo.loading)
+                        return repo.text;
+
+                    return template(repo.data);
+                },
+                templateSelection: function (repo) {
+                    if (!repo.id)
+                        return repo.text;
+
+                    return template(repo.data);
+                },
+                escapeMarkup: function (m) { return m; }
+            };
+
+            $("#selectBuscarCliente").select2(select2Options);
+
+
+            dtPQRS = dataTablesIndex("tableDT", "/api/Informes/PQRS", "/Informes/ClienteResumen",
+                [
+                    { data: "NroTracking" },
+                    { data: "PQRSRecordId" },
+                    {
+                        data: "TipoPQRS",
+                        render: function (data, type, row) {
+                            return row.TipoPQRS + " - " + row.MotivoPQRSNombre
+                        }
+                    },
+                    {
+                        data: "Asunto",
+                        render: function (data, type, row) {
+                            if (row.Asunto.length > 20) {
+                                return row.Asunto.substring(0, 20);
+                            } else {
+                                return row.Asunto;
+                            }
+                        }
+                    },
+                    { data: "FlujoPQRSNombre" },
+                    {
+                        data: "Cliente",
+                        render: function (data, type, row) {
+                            if (row.Cliente.length > 20) {
+                                return row.Cliente.substring(0, 20);
+                            } else {
+                                return row.Cliente;
+                            }
+                        }
+                    },
+                    {
+                        data: "Prioridad",
+                        render: function (data, type, row) {
+                            if (row.Prioridad.toLowerCase() == ("Baja").toLowerCase()) {
+                                return "<img src='/Content/Images/prioridad_baja.png' style='width: 34px !important;height: 34px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='Low' />";
+                            } else if (row.Prioridad.toLowerCase() == ("Media").toLowerCase()) {
+                                return "<img src='/Content/Images/prioridad_media.png' style='width: 34px !important;height: 34px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='Medium' />";
+                            } else if (row.Prioridad.toLowerCase() == ("Alta").toLowerCase()) {
+                                return "<img src='/Content/Images/prioridad_alta.png' style='width: 34px !important;height: 34px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='High' />";
+                            } else if (row.Prioridad.toLowerCase() == ("Sin prioridad").toLowerCase()) {
+                                return "<img src='/Content/Images/sin_prioridad.png' style='width: 34px !important;height: 34px !important;' class='img-responsive' data-toggle='tooltip' data-placement='top' title='No priority' />";
+                            }
+
+
+                        }
+                    },
+                    {
+                        data: "Analista",
+                        render: function (data, type, row) {
+                            if (row.Analista != null) {
+                                if (row.Analista.length > 20) {
+                                    return row.Analista.substring(0, 20);
+                                } else {
+                                    return row.Analista;
+                                }
+                            } else {
+                                return row.Analista;
+                            }
+
+                        }
+                    },
+                    { data: "FechaCreacion" },
+                    { data: "Estado" }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["PQRSBuscarCliente"],
+                    fnServerParams: function () {
+                        return [
+
+                            { name: "_cliente", value: $('#PQRSBuscarCliente').val() },
+                        ]
+                    },
+                    fnSetFilterControls: function (values) {
+                        var clienteId = values[1];
+
+
+                        console.log(clienteId);
+                    }
+                }
+                );
+
+            //Tabla Actividades MMS
+            dtMMS = dataTablesIndex("tableMMS", "/api/Informes/ActividadesMMS", "/Informes/ClienteResumen",
+                [
+                    { data: "ActividadId" },
+                    { data: "ActividadFecha" },
+                    { data: "ActividadEstado" },
+                    { data: "ActividadTitulo" },
+                    { data: "ClienteID" },
+                    { data: "ClienteRazonSocial" },
+                    { data: "Usuario" }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["MMSBuscarCliente"],
+                    fnServerParams: function () {
+                        return [
+
+                            { name: "_cliente", value: $('#MMSBuscarCliente').val() },
+                        ]
+                    },
+                    fnSetFilterControls: function (values) {
+                        var clienteId = values[1];
+                    }
+                }
+                );
+
+            //Tabla PIV
+            dtPIV = dataTablesIndex("tablePIV", "/api/Informes/PIV", "/Informes/ClienteResumen",
+                [
+                    { data: "Liquidacion" },
+                    { data: "ColeccionPIVNombre" },
+                    { data: "AsesorId" },
+                    { data: "AsesorNombre" },
+                    {
+                        data: "AsesorPresupuesto",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "AsesorCategoria"
+                    },
+                    {
+                        data: "ValorTotal",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "PorcentajeCumplimiento",
+                        render: function (value) {
+                            var res = `<div class="text-right m-t-5"> ${value.formatMoney(2)} %</div><div class="progress m-b-0" style="height: 4px;">`;
+
+                            if (value < 100)
+                                res += `<div class="progress-bar" style="width: ${value.toFixed(0)}%;"></div>`;
+                            else
+                                res += `<div class="progress-bar" style="width: ${(10000 / value).toFixed(0)}%;"></div><div class="progress-bar progress-bar-warning" style="width: ${((100 * (value - 100)) / value).toFixed(0)}%;"></div>`;
+
+                            return res + "</div>";
+                        }
+                    },
+                    
+                    {
+                        data: "PorcentajePago",
+                        render: function (value) {
+                            var res = `<div class="text-right m-t-5"> ${value.formatMoney(2)} %</div><div class="progress m-b-0" style="height: 4px;">`;
+
+                            if (value < 100)
+                                res += `<div class="progress-bar" style="width: ${value.toFixed(0)}%;"></div>`;
+                            else
+                                res += `<div class="progress-bar" style="width: ${(10000 / value).toFixed(0)}%;"></div><div class="progress-bar progress-bar-warning" style="width: ${((100 * (value - 100)) / value).toFixed(0)}%;"></div>`;
+
+                            return res + "</div>";
+                        }
+                    },
+                    {
+                        data: "ValorPago",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "ValorReglasPago",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["PIVBuscarCliente"],
+                    fnServerParams: function () {
+                        return [
+
+                            { name: "_cliente", value: $('#PIVBuscarCliente').val() },
+                        ]
+                    },
+                    fnSetFilterControls: function (values) {
+                        var clienteId = values[1];
+                    }
+                }
+                );
+
+            //Tabla Ventas
+            dtVentas = dataTablesIndex("tableVentas", "/api/Informes/Ventas", "/Informes/ClienteResumen",
+                [
+                    { data: "Customer" },
+                    { data: "CustomerName" },
+                    { data: "Brand" },
+                    { data: "Qty" },
+                    {
+                        data: "Amount",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["VentasBuscarCliente"],
+                    fnServerParams: function () {
+                        return [
+
+                            { name: "_cliente", value: $('#VentasBuscarCliente').val() },
+                        ]
+                    },
+                    fnSetFilterControls: function (values) {
+                        var clienteId = values[1];
+                    }
+                }
+                );
+
+            //Tabla cartera
+            dtCartera = dataTablesIndex("tableCartera", "/api/Informes/Cartera", "/Informes/ClienteResumen",
+                [
+                    { data: "CustomerNo" },
+                    { data: "CustomerName" },
+                    {
+                        data: "LocalCurrencyAmount",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "Age1",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "Age2",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "Age3",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "Age4",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    },
+                    {
+                        data: "Age5",
+                        render: function (value) {
+                            return `<div class="text-right">$ ${value.formatMoney(0)}</div>`;
+                        }
+                    }
+                ],
+                {
+                    mainFilter: false,
+                    filterControls: ["CarteraBuscarCliente"],
+                    fnServerParams: function () {
+                        return [
+
+                            { name: "_cliente", value: $('#CarteraBuscarCliente').val() },
+                        ]
+                    },
+                    fnSetFilterControls: function (values) {
+                        var clienteId = values[1];
+                    }
+                }
+                );
+
+
+
+        });
+
+        $("#selectBuscarCliente").on("select2:select", function (e) {
+            $("#PQRSBuscarCliente").val($(e.currentTarget).val());
+            $("#MMSBuscarCliente").val($(e.currentTarget).val());
+            $("#PIVBuscarCliente").val($(e.currentTarget).val());
+            $("#VentasBuscarCliente").val($(e.currentTarget).val());
+            $("#CarteraBuscarCliente").val($(e.currentTarget).val());
+            dtPQRS.fnDraw();
+            dtMMS.fnDraw();
+            dtPIV.fnDraw();
+            dtVentas.fnDraw();
+            dtCartera.fnDraw();
+        });
+
+        $("#selectBuscarCliente").on("select2:unselect", function (e) {
+            $("#PQRSBuscarCliente").val("");
+            $("#MMSBuscarCliente").val("");
+            $("#PIVBuscarCliente").val("");
+            $("#VentasBuscarCliente").val("");
+            $("#CarteraBuscarCliente").val("");
+            dtPQRS.fnDraw();
+            dtMMS.fnDraw();
+            dtPIV.fnDraw();
+            dtVentas.fnDraw();
+            dtCartera.fnDraw();
+        });
+
+    </script>
+}
+
+<div class="row">
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="body">
+                <div class="row">
+
+                    @*Filters*@
+                    <div class="col-md-6">
+                        <select id="selectBuscarCliente" class="ms full-width" style="width:100% !important;"></select>
+                        <input id="MMSBuscarCliente" type="text" class="form-control" readonly="readonly" style="display:none;" />
+                        <input id="PQRSBuscarCliente" type="text" class="form-control" readonly="readonly" style="display:none;" />
+                        <input id="PIVBuscarCliente" type="text" class="form-control" readonly="readonly" style="display:none;" />
+                        <input id="VentasBuscarCliente" type="text" class="form-control" readonly="readonly" style="display:none;" />
+                        <input id="CarteraBuscarCliente" type="text" class="form-control" readonly="readonly" style="display:none;" />
+                    </div>
+
+
+                    @*Filters*@
+
+                </div>
+                <div class="panel-group" id="AccordionPQRS" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" role="tab" id="headingOne_1">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion_1" href="#CollapsePQRS" aria-expanded="false" aria-controls="CollapsePQRS" class="">
+                                    P.Q.R.S <i class="material-icons">keyboard_arrow_down</i>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="CollapsePQRS" class="panel-collapse collapse in " role="tabpanel" aria-labelledby="headingOne_1" aria-expanded="true" style="">
+                            <div class="panel-body">
+                                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 5%;">
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].NroTracking)
+                                            </th>
+                                            <th style="width: 5%;">
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].PQRSRecordId)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].MotivoPQRSNombre)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].Asunto)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].FlujoPQRSNombre)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].ClienteId)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].Prioridad)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].AnalistaId)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].FechaCreacion)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.PQRSPanel[0].Estado)
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-group" id="AccordionMMS" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" role="tab" id="headingOne_1">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion_1" href="#CollapseMMS" aria-expanded="false" aria-controls="CollapseMMS" class="">
+                                    Activities (Marketing Management System) <i class="material-icons">keyboard_arrow_down</i>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="CollapseMMS" class="panel-collapse collapse in " role="tabpanel" aria-labelledby="headingOne_1" aria-expanded="true" style="">
+                            <div class="panel-body">
+                                <table id="tableMMS" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Activity
+                                            </th>
+                                            <th>
+                                                Date
+                                            </th>
+                                            <th>
+                                                State
+                                            </th>
+                                            <th>
+                                                Title
+                                            </th>
+                                            <th>
+                                                Customer
+                                            </th>
+                                            <th>
+                                                Full name
+                                            </th>
+                                            <th>
+                                                User
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-group" id="AccordionPIV" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" role="tab" id="headingOne_1">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion_1" href="#CollapsePIV" aria-expanded="false" aria-controls="CollapsePIV" class="">
+                                    Settlements  <i class="material-icons">keyboard_arrow_down</i>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="CollapsePIV" class="panel-collapse collapse in " role="tabpanel" aria-labelledby="headingOne_1" aria-expanded="true" style="">
+                            <div class="panel-body">
+                                <table id="tablePIV" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Settlement
+                                            </th>
+                                            <th>
+                                                PIP Collection
+                                            </th>
+                                            <th>
+                                                ID
+                                            </th>
+                                            <th>
+                                                Full Name
+                                            </th>
+                                            <th>
+                                                Target
+                                            </th>
+                                            <th>
+                                                Cat.
+                                            </th>
+                                            <th>
+                                                Total
+                                            </th>
+                                            <th>
+                                                Percent
+                                            </th>
+                                           
+                                            <th>
+                                                Applied <br /> Percent
+                                            </th>
+                                            <th>
+                                                Applied <br /> Incentive
+                                            </th>
+                                            <th>
+                                                Rules
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-group" id="AccordionVentas" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" role="tab" id="headingOne_1">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion_1" href="#CollapseVentas" aria-expanded="false" aria-controls="CollapseVentas" class="">
+                                    Sales MTD  <i class="material-icons">keyboard_arrow_down</i>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="CollapseVentas" class="panel-collapse collapse in " role="tabpanel" aria-labelledby="headingOne_1" aria-expanded="true" style="">
+                            <div class="panel-body">
+                                <table id="tableVentas" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Customer
+                                            </th>
+                                            <th>
+                                                Full Name
+                                            </th>
+                                            <th>
+                                                Brand
+                                            </th>
+                                            <th>
+                                                Qty
+                                            </th>
+                                            <th>
+                                                Amount
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-group" id="AccordionCartera" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" role="tab" id="headingOne_1">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion_1" href="#CollapseCartera" aria-expanded="false" aria-controls="CollapseCartera" class="">
+                                    Receivable accounts  <i class="material-icons">keyboard_arrow_down</i>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="CollapseCartera" class="panel-collapse collapse in " role="tabpanel" aria-labelledby="headingOne_1" aria-expanded="true" style="">
+                            <div class="panel-body">
+                                <table id="tableCartera" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Customer
+                                            </th>
+                                            <th>
+                                                Full Name
+                                            </th>
+                                            <th>
+                                                Local Amount
+                                            </th>
+                                            <th>
+                                                1 - 30
+                                            </th>
+                                            <th>
+                                                31 - 60
+                                            </th>
+                                            <th>
+                                                61 - 90
+                                            </th>
+                                            <th>
+                                                91 - 120
+                                            </th>
+                                            <th>
+                                                120
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

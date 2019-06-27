@@ -1,0 +1,85 @@
+﻿@model IEnumerable<MMS.Models.Auditoria>
+
+@{
+    ViewBag.Title = "Auditoria";
+}
+
+<script src="~/Scripts/Seguridad/Auditoria.js" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col s12 ">
+        <div class="card">
+            <nav>
+                <div class="nav-wrapper">
+                    <div class="col s12" style="margin-left: 25px;">
+                        <a href="~/Auditoria/index" class="breadcrumb">Auditoria</a>
+                    </div>
+                </div>
+            </nav>
+            <div class="card-content">               
+                <table id="tableAuditoria" class="display">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.AuditoriaId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.AuditoriaFecha)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.AuditoriaHora)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.usuarioId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.AuditoriaEvento)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.AuditoriaDesc)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.ObjetoId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.AuditoriaEquipo)
+                            </th>
+                           
+                        </tr>
+                    </thead>
+                    @*<tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AuditoriaFecha)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AuditoriaHora)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.usuarioId)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AuditoriaEvento)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AuditoriaDesc)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ObjetoId)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AuditoriaEquipo)
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Details", "Details", new { id = item.AuditoriaId })
+                                </td>
+                            </tr>
+                        }
+                                        </tbody>*@
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

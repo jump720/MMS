@@ -1,0 +1,183 @@
+@model IEnumerable<MMS.Models.CategoriaCDE>
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ViewBag.Title = "Categories";
+    ViewBag.Subtitle = "List";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssDataTables")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            dt = dataTablesIndex("tableDT", "/api/@controllerName/Index", "/@controllerName/Index",
+                [
+                    { data: "Nombre" },
+                    {
+                        data: "Icon",
+                        render: function (value) {
+                            if (value)
+                                return `<img src="/Content/dist/images/levels/${value}.png" width="25">`;
+                            else
+                                return "";
+                        }
+                    },
+                    {
+                        data: "ValorMinimo",
+                        render: function (value, npi, item) {
+                            return item.Id == 0 ? "" : `<p class="text-right margin-0">$ ${value.formatMoney(0)}</p>`;
+                        }
+                    },
+                    {
+                        data: "ValorMaximo",
+                        render: function (value, npi, item) {
+                            return item.Id == 0 ? "" : `<p class="text-right margin-0">$ ${value.formatMoney(0)}</p>`;
+                        }
+                    },
+                    {
+                        data: "Porcentaje",
+                        render: function (value) {
+                            return `<p class="text-right margin-0">${value.formatMoney(2)} %</p>`;
+                        }
+                    },
+                    {
+                        data: "Id",
+                        render: function (value) {
+                            var notActive = value == 0 ? "not-active" : "";
+
+                            return (
+                                `<a href='/@controllerName/Details/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table btn-info ${notActive} btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Details"]' data-toggle="tooltip" data-placement="top" title="View"><i class='material-icons'>remove_red_eye</i></a>` +
+                                `<a href='/@controllerName/Edit/${value}' onclick="editCategory(this, event, ${value})" class='btn-table btn-primary btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Edit"]' data-toggle="tooltip" data-placement="top" title="Modify"><i class='material-icons'>mode_edit</i></a>` +
+                                `<a href='/@controllerName/Delete/${value}' onclick="redirtWithReturnSearch(this, event)" class='btn-table bg-red ${notActive} btn-sm btn-sm-circle waves-circle waves-effect waves-float @ViewData[$"has_{controllerName}Delete"]' data-toggle="tooltip" data-placement="top" title="Delete"><i class='material-icons'>delete</i></a>`
+                                );
+                        }
+                    }
+                ]);
+
+            $("#frmPIPPercent").submit(function (event) {
+                event.preventDefault();
+
+                $.get(this.action + "?value=" + parseFloat($("#Porcentaje").val().replaceAll(",", ".")))
+                    .done(function (result) {
+                        $("#PIPPercent").modal("hide");
+                        msgSuccess("PIP Percent Modified");
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        msgError(errorThrown);
+                    });
+
+            });
+
+        });
+
+        function editCategory(link, event, categoriaId) {
+            if (!categoriaId) {
+                event.preventDefault();
+
+                $.get("/api/@controllerName/GetPIPPercent/", function (result) {
+                    $("#Porcentaje").val(result);
+                    $("#PIPPercent").modal().on('shown.bs.modal', function () {
+                        $("#Porcentaje").focus();
+                    });
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    msgError(errorThrown);
+                });
+            }
+            else
+                redirtWithReturnSearch(link, event);
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="header bg-blue">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/@controllerName/Create" data-toggle="tooltip" data-placement="bottom" title="Create" class="btn btn-default btn-circle waves-effect waves-circle waves-float @ViewData[$"has_{controllerName}Create"]" onclick="redirtWithReturnSearch(this, event);">
+                                <i class="material-icons" style="color:black !important">add</i>
+                            </a>
+                        </td>
+                        <td style="padding-left: 10px">
+                            <h2>
+                                @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                            </h2>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="body">
+                <table id="tableDT" class="table table-bordered table-striped table-hover dataTable table-condensed table-va-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Nombre)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Icon)
+                            </th>
+                            <th style="text-align: right;">
+                                @Html.DisplayNameFor(model => model.ValorMinimo)
+                            </th>
+                            <th style="text-align: right;">
+                                @Html.DisplayNameFor(model => model.ValorMaximo)
+                            </th>
+                            <th style="text-align: right;">
+                                @Html.DisplayNameFor(model => model.Porcentaje)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form action="/api/@controllerName/PostPIPPercent/" novalidate="novalidate" id="frmPIPPercent">
+    <div class="modal fade" id="PIPPercent" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="defaultModalLabel">PIP Percent</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="input-group" style="margin-bottom: 0px;">
+                                <div class="form-line">
+                                    <input id="Porcentaje" name="Porcentaje" type="text" class="form-control text-box single-line" placeholder="Percent"
+                                           data-val="true"
+                                           data-val-number="The field Percent must be a number."
+                                           data-val-range="The field Percent must not be lower than 0."
+                                           data-val-range-min="0"
+                                           data-val-required="The Percent field is required.">
+                                </div>
+                                <span class="input-group-addon">%</span>
+                            </div>
+                            <span class="field-validation-valid " data-valmsg-for="Porcentaje" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-link waves-effect">Save</button>
+                    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

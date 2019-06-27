@@ -1,0 +1,815 @@
+﻿@using MMS.Models;
+@model MMS.Models.PQRSTimeLineViewModel
+@{
+    ViewBag.Title = "PQRS";
+    ViewBag.Subtitle = "Time Line";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+    MMS.Models.PQRSRecord StepCurrent = new MMS.Models.PQRSRecord();
+    var seguridadcll = (Seguridadcll)Session["seguridad"];
+    string controllerName = "PQRS";//ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+    @Styles.Render("~/bundles/TimeLine")
+}
+@section Scripts{
+
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+
+
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jsVue")
+    <script src="~/Scripts/WCSS/PQRS.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            var items = [
+                    @foreach (var item in Model.formatoItems)
+                    {<text>
+                           {
+                               Id: @item.Id,
+                               ItemId: @item.ItemId,
+                               ItemDesc: `@item.Items.Codigo -  @item.Items.Descripcion`,
+                               Cantidad: `@item.Cantidad`,
+                               Precio: `@Math.Round(item.Precio,0)`,
+                               NroFactura: `@item.NroFactura`,
+                               NroGuia: `@item.NroGuia`,
+                               MotivoPQRSId: @Html.Raw(Json.Encode(item.MotivoPQRS)),
+                               ComentarioAdicional: `@item.ComentarioAdicional`,
+                               Estado: `@item.Estado`,
+                               CantidadRecibida: `@item.CantidadRecibida`,
+                               CantidadSubida: `@item.CantidadSubida`,
+                               ComentarioEstadoMercancia: `@item.ComentarioEstadoMercancia`,
+                               DocSoporte: `@item.DocSoporte`,
+                           },
+
+                       </text>
+                }
+            ];
+
+            var filesFormato = [ @foreach (var file in Model.formatoArchivos)
+            {
+
+                <text>
+                { order: @file.Item, FileName: @Html.Raw(Json.Encode(file.FileName)) },
+                </text>
+            }
+            ];
+
+            $.MMS.PQRS("details", @Html.Raw(Json.Encode(Model.formato)),items,filesFormato);
+        });
+
+
+
+        function showAsigModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.AsignarAnalista.init();
+                },
+                fnHidden: function () {
+                    //dt.api().draw('page');
+                    location.reload();
+                }
+            });
+        }
+
+        function showAddCommentModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.AddComment.init();
+                },
+                fnHidden: function () {
+                    //dt.api().draw('page');
+                    location.reload();
+                }
+            });
+        }
+
+        function showAddAnswerModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    $.MMS.AddAnswer.init();
+                },
+                fnHidden: function () {
+                    //dt.api().draw('page');
+                    location.reload();
+                }
+            });
+        }
+
+
+        function showUsersModal(event, href) {
+            ajaxModal(event, href, 3, {
+                static: true,
+                fnShown: function () {
+                    //$.MMS.AddComment.init();
+                },
+                fnHidden: function () {
+                    // dt.api().draw('page');
+                }
+            });
+        }
+    </script>
+
+}
+
+
+
+<div class="card">
+    <div class="body">
+        @*Time Line*@
+        <div class="card ">
+            <div class="header">
+                @Html.ActionLink("Back to List", "Panel", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+            <div class="body" style="overflow: auto; ">
+                <div class="row clearfix">
+                    <div class="col-md-12 CardTime">
+                        <ul class="timeline" id="timeline">
+
+                            @foreach (var s in Model.PQRSRecords)
+                            {
+                                if (s.PasoActual ?? false)
+                                {
+                                    StepCurrent = s;
+                                }
+
+                                string vlEstado = "";
+                                //if (s.EstadoStep == MMS.Models.EstadoStep.Approved)
+                                if (s.EstadoStep == MMS.Models.EstadoStep.Done)
+                                {
+                                    //vlEstado = "Approve";
+                                    vlEstado = "Done";
+                                }
+                                else if (s.EstadoStep == MMS.Models.EstadoStep.In_Process)
+                                {
+                                    vlEstado = "process";
+                                }
+                                //else if (s.EstadoStep == MMS.Models.EstadoStep.Rejected)
+                                else if (s.EstadoStep == MMS.Models.EstadoStep.Returned)
+                                {
+                                    //vlEstado = "reject";
+                                    vlEstado = "Returned";
+                                }
+                                else if (s.EstadoStep == MMS.Models.EstadoStep.Completed)
+                                {
+                                    vlEstado = "complete";
+                                }
+                                else if (s.EstadoStep == MMS.Models.EstadoStep.Closed)
+                                {
+                                    vlEstado = "complete";
+                                }
+                                else if (s.EstadoStep == MMS.Models.EstadoStep.Pending)
+                                {
+                                    vlEstado = "";
+                                }
+                                <li class="li @vlEstado">
+                                    @if (s.Order != 1)
+                                    {
+                                        <a href='/@controllerName/UsuarioStep?RecordId=@s.Id&Order=@s.Order' onclick="showUsersModal(event, this.href)">
+                                            <div class="timestamp">
+                                                <span class="author">Step @s.Order</span>
+                                                @*<span class="date">@s.FlujoPQRSTipoPaso.ToString()</span>*@
+                                            </div>
+                                            <div class="status" data-toggle="tooltip" data-placement="top" title="" data-original-title="@s.FlujoPQRSNombre">
+                                                @*<h4>@s.FlujoPQRSNombre</h4>*@
+                                                <h4> @s.EstadoStep.ToString()</h4>
+                                            </div>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <div class="timestamp">
+                                            <span class="author">Step @s.Order</span>
+                                            @*<span class="date">@s.FlujoPQRSTipoPaso.ToString()</span>*@
+                                        </div>
+                                        <div class="status" data-toggle="tooltip" data-placement="top" title="" data-original-title="@s.FlujoPQRSNombre">
+                                            @*<h4>@s.FlujoPQRSNombre</h4>*@
+                                            <h4> @s.EstadoStep.ToString()</h4>
+                                        </div>
+                                    }
+
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*Time Line*@
+
+
+        @*Formato: Devolución o Garantia o Novedad*@
+
+        @{
+            string colorStatus = "bg-black";
+            if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.Pending)
+            {
+                colorStatus = "bg-grey";
+            }
+            else if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.In_Process)
+            {
+                colorStatus = "bg-amber";
+            }
+            else if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.Completed)
+            {
+                colorStatus = "bg-green";
+            }
+            //else if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.Approved)
+            else if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.Done)
+            {
+                colorStatus = "bg-green";
+            }
+            else if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.Closed)
+            {
+                colorStatus = "bg-green";
+            }
+            //else if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.Rejected)
+            else if (StepCurrent.EstadoStep == MMS.Models.EstadoStep.Returned)
+            {
+                colorStatus = "bg-red";
+            }
+
+        }
+        <div class="card cardInfo">
+            <div class="header bg-blue">
+                <h2>@Model.formato.Asunto <b class="badge @colorStatus">@Html.DisplayNameFor(model => model.formato.Estado) : @StepCurrent.EstadoStep</b></h2>
+                <h5 style="margin: 0px !important;"><small>@Html.DisplayNameFor(model => model.formato.NroTracking) : @Model.formato.NroTracking</small></h5>
+                <h5 style="margin: 0px !important;"><small>@Html.DisplayNameFor(model => model.formato.UsuarioIdCreacion) : @Model.formato.UsuarioIdCreacion</small></h5>
+                <h5 style="margin: 0px !important;"><small>@Html.DisplayNameFor(model => model.formato.FechaCreacion) : @Model.formato.FechaCreacion</small></h5>
+                <h5 style="margin: 0px !important;"><small>@Html.DisplayNameFor(model => model.formato.AnalistaId) : @Model.formato.AnalistaId</small></h5>
+                <ul class="header-dropdown m-r--5">
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons">more_vert</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="javascript:void(0);" onclick="AttachFileFormato()">Files attached </a></li>
+                            <li><a href="/PQRS/ReportTimeLine?archivo=PDF&TipoPQRS=@Model.formato.TipoPQRS&DataId=@Model.formato.Id&RecordId=@Model.PQRSRecords.FirstOrDefault().Id" target="_blank">Download PDF </a></li>
+                        </ul>
+                       
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.DropDownListFor(model => model.formato.ClienteId, new SelectList(new List<string>(), "", ""), new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            @Html.LabelFor(model => model.PQRSRecords.FirstOrDefault().MotivoPQRSNombre, htmlAttributes: new { @class = "form-label active" })
+                            <div class="form-line">
+                                @Html.DisplayFor(model => model.PQRSRecords.FirstOrDefault().MotivoPQRSNombre, new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group ">
+                            @Html.EnumDropDownListFor(model => model.PQRSRecords.FirstOrDefault().TipoPQRS, new { @class = "ms full-width" })
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            @Html.LabelFor(model => model.formato.Observacion, htmlAttributes: new { @class = "form-label active" })
+                            <div class="form-line">
+                                @Html.DisplayFor(model => model.formato.Observacion, new { @class = "form-control", @placeholder = "Comments..." })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            @Html.LabelFor(model => model.formato.Destinatarios, htmlAttributes: new { @class = "form-label" })
+                            <div class="form-line">
+                                @Html.DisplayFor(model => model.formato.Destinatarios, new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-group" id="AccordionItems" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-primary">
+                <div class="panel-heading" role="tab" id="headingOne_1">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion_1" href="#CollapseItems" aria-expanded="false" aria-controls="CollapseItems" class="">
+                            Items <i class="material-icons">keyboard_arrow_down</i>
+                        </a>
+                    </h4>
+                </div>
+                <div id="CollapseItems" class="panel-collapse collapse " role="tabpanel" aria-labelledby="headingOne_1" aria-expanded="true" style="">
+                    <div class="panel-body">
+                        <table class="table table-condensed table-hover table-striped table-va-middle" id="tableItems">
+                            <thead>
+                                <tr>
+
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].ItemId)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].Cantidad)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].Precio)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].NroFactura)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].NroGuia)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].MotivoPQRSId)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].DocSoporte)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].Estado)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].CantidadRecibida)</th>
+                                    <th>@Html.DisplayNameFor(model => model.formatoItems[0].CantidadSubida)</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if="items.length == 0">
+                                    <tr class="align-center">
+                                        <td colspan="11"><em>This template has no Items.</em></td>
+                                    </tr>
+                                </template>
+
+                                <template v-else>
+                                    <tr v-for="(item, index) in items">
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].Id'" v-bind:value="index" />
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].ItemId'" v-bind:value="item.ItemId" />
+                                            {{ item.ItemDesc }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].Cantidad'" v-bind:value="item.Cantidad" />
+                                            {{ item.Cantidad }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].Precio'" v-bind:value="item.Precio" />
+                                            {{ item.Precio }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].NroFactura'" v-bind:value="item.NroFactura" />
+                                            {{ item.NroFactura }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].NroGuia'" v-bind:value="item.NroGuia" />
+                                            {{ item.NroGuia }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].MotivoPQRSId'" v-bind:value="item.MotivoPQRSId.Id" />
+                                            {{ item.MotivoPQRSId.Nombre }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].DocSoporte'" v-bind:value="item.DocSoporte" />
+                                            {{ item.DocSoporte }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].Estado'" v-bind:value="item.Estado" />
+                                            <span v-if="item.Estado === 'Approved'">Approved</span>
+                                            <span v-if="item.Estado === 'Rejected'">Rejected</span>
+                                            <span v-if="item.Estado === '1'">Approved</span>
+                                            <span v-if="item.Estado === '2'">Rejected</span>
+                                            <span v-if="item.Estado === ''">No Status</span>
+
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].CantidadRecibida'" v-bind:value="item.CantidadRecibida" />
+                                            {{ item.CantidadRecibida }}
+                                        </td>
+                                        <td>
+                                            <input type="hidden" v-bind:name="'Items[' + index + '].CantidadSubida'" v-bind:value="item.CantidadSubida" />
+                                            {{ item.CantidadSubida }}
+                                        </td>
+                                        <td>
+
+                                            <a v-on:click.prevent="details(index)" class='btn-info btn-sm btn-sm-circle waves-circle waves-effect waves-float btn-table btnDetails'><i class='material-icons'>remove_red_eye</i></a>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="frmFiles">
+            <div class="modal fade" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="">Files attached </h4>
+                        </div>
+                        <div class="modal-body" data-spy="scroll" data-target="#ListFiles">
+                            <div id="ListFiles">
+                                <div class="row clearfix">
+                                    <template v-if="filesFormato.length == 0">
+                                        <div class="col-md-12" style="padding-top: 12px;">
+                                            <em>This template has no Items.</em>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+
+                                        <div class="col-md-12" v-for="(f, idx) in filesFormato" style="padding-top: 12px;">
+                                            @if (Model.formato.TipoPQRS == MMS.Models.TipoPQRS.Devolucion)
+                                            {
+                                                <div class="col-md-10"><i class="material-icons">insert_drive_file</i> <a v-bind:href="'/Devoluciones/DescargarArchivo?d=' + @Model.formato.Id + '&o=' + f.order" target="_blank"> {{f.FileName}} </a></div>
+                                            }
+                                            else if (Model.formato.TipoPQRS == MMS.Models.TipoPQRS.Garantia)
+                                            {
+                                                <div class="col-md-10"><i class="material-icons">insert_drive_file</i> <a v-bind:href="'/Garantias/DescargarArchivo?d=' + @Model.formato.Id + '&o=' + f.order" target="_blank"> {{f.FileName}} </a></div>
+                                            }
+                                            else if (Model.formato.TipoPQRS == MMS.Models.TipoPQRS.Novedad)
+                                            {
+                                                <div class="col-md-10"><i class="material-icons">insert_drive_file</i> <a v-bind:href="'/Novedades/DescargarArchivo?d=' + @Model.formato.Id + '&o=' + f.order" target="_blank"> {{f.FileName}} </a></div>
+                                            }
+                                        </div>
+
+
+                                    </template>
+                                </div>
+
+                            </div>
+                        </div>
+                        <hr class="m-b-0 m-t--10" />
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="frmItems">
+            <div class="modal fade" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="_titlemodal">Detail Item : </h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row clearfix">
+                                <div class="col-md-12">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <select id="_selectItemId" class="ms full-width" style="width: 100%" required></select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_Cantidad" class="form-control" type="number" required />
+                                            <label for="_Cantidad" class="form-label active">@Html.DisplayNameFor(model => model.formatoItems[0].Cantidad)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_Precio" class="form-control" type="number" />
+                                            <label for="_Precio" class="form-label ">@Html.DisplayNameFor(model => model.formatoItems[0].Precio)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_NroFactura" class="form-control" type="text" maxlength="50" />
+                                            <label for="_NroFactura" class="form-label ">@Html.DisplayNameFor(model => model.formatoItems[0].NroFactura)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_NroGuia" class="form-control" type="text" maxlength="50" />
+                                            <label for="_NroGuia" class="form-label ">@Html.DisplayNameFor(model => model.formatoItems[0].NroGuia)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <select id="_selectMotivoPQRSId" class="ms full-width" style="width: 100%"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_ComentarioAdicional" class="form-control" type="text" maxlength="200" />
+                                            <label for="_ComentarioAdicional" class="form-label ">@Html.DisplayNameFor(model => model.formatoItems[0].ComentarioAdicional)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <select id="_selectEstado" class="ms full-width" style="width: 100%">
+                                                <option value="">--Empty--</option>
+                                                <option value="1">Approved</option>
+                                                <option value="2">Rejected</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_DocSoporte" class="form-control" type="text" maxlength="50" />
+                                            <label for="_DocSoporte" class="form-label ">@Html.DisplayNameFor(model => model.formatoItems[0].DocSoporte)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_CantidadRecibida" class="form-control" type="number" />
+                                            <label for="_CantidadRecibida" class="form-label ">@Html.DisplayNameFor(model => model.formatoItems[0].CantidadRecibida)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_CantidadSubida" class="form-control" type="number" />
+                                            <label for="_CantidadSubida" class="form-label ">@Html.DisplayNameFor(model => model.formatoItems[0].CantidadSubida)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="_ComentarioEstadoMercancia" class="form-control" type="text" maxlength="200" />
+                                            <label for="_ComentarioEstadoMercancia" class="form-label active">@Html.DisplayNameFor(model => model.formatoItems[0].ComentarioEstadoMercancia)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="m-b-0 m-t--10" />
+
+                        <div class="modal-footer">
+                            @*<button type="button" class="btn btn-primary waves-effect" id="btnSave">Save</button>*@
+                            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*Formato: Devolución o Garantia o Novedad*@
+        @*Comentarios*@
+        @foreach (var comment in Model.PQRSRecordComentarios)
+        {
+            var step = Model.PQRSRecords.Where(pr => pr.Id == comment.PQRSRecordComentarios.PQRSRecordId && pr.Order == comment.PQRSRecordComentarios.PQRSRecordOrder).FirstOrDefault();
+            string colorHeader = "";
+            string TituloHeader = "";
+            string tipoComentario = "";
+            if (step == null)
+            {
+                colorHeader = "bg-grey";
+                TituloHeader = "General Comment";
+            }
+            else
+            {
+                if (comment.PQRSRecordComentarios.TipoComentario == MMS.Models.TipoComentario.Approval)
+                {
+                    colorHeader = "bg-green";
+                    //tipoComentario = "Approved";
+                    tipoComentario = "Done";
+                }
+                else if (comment.PQRSRecordComentarios.TipoComentario == MMS.Models.TipoComentario.Rejection)
+                {
+                    colorHeader = "bg-red";
+                    //tipoComentario = "Rejected";
+                    tipoComentario = "Returned";
+                }
+                else if (comment.PQRSRecordComentarios.TipoComentario == MMS.Models.TipoComentario.Close)
+                {
+                    colorHeader = "bg-amber";
+                    tipoComentario = "Closed";
+                }
+                TituloHeader = "Step: " + step.FlujoPQRSNombre + " - " + tipoComentario;
+            }
+
+            <div class="card cardInfo">
+                <div class="header @colorHeader">
+
+                    <h2>
+                        @TituloHeader 
+                    </h2>
+                    <h5 style="margin: 0px !important;"><small>@Html.DisplayNameFor(model => model.PQRSRecordComentarios[0].PQRSRecordComentarios.FechaCreacion) : @comment.PQRSRecordComentarios.FechaCreacion</small></h5>
+                    <h5 style="margin: 0px !important;"><small>@Html.DisplayNameFor(model => model.PQRSRecordComentarios[0].PQRSRecordComentarios.UsuarioId) : @comment.PQRSRecordComentarios.UsuarioId - @comment.PQRSRecordComentarios.Usuario.UsuarioNombre</small></h5>
+
+                    <p>Months: @((DateTime.Now - comment.PQRSRecordComentarios.FechaCreacion).Days / 30) Days: @((DateTime.Now - comment.PQRSRecordComentarios.FechaCreacion).Days % 30) Hours: @((DateTime.Now - comment.PQRSRecordComentarios.FechaCreacion).Hours) Minutes: @((DateTime.Now - comment.PQRSRecordComentarios.FechaCreacion).Minutes)</p>
+                  
+                    
+
+                    <ul class="header-dropdown m-r--5">
+                        <li class="dropdown">
+                            @if (comment.PQRSRecordArchivos.Count > 0)
+                            {
+                                <a href="javascript:void(0);" onclick="AttachCommentFile('@Json.Encode(comment.PQRSRecordArchivos)')" data-toggle="tooltip" data-placement="top" title="" data-original-title="Files Attached">
+                                    <i class="material-icons">attach_file</i>
+                                </a>
+                            }
+                            @if (comment.PQRSRecordDocumentos.Count > 0)
+                            {
+                                <a href="javascript:void(0);" onclick="DocumentsModal('@Json.Encode(comment.PQRSRecordDocumentos.Select(pd => new { pd.NroDocumento, TipoDocSoporteNombre = pd.TipoDocSoporte.Nombre}))')" data-toggle="tooltip" data-placement="top" title="" data-original-title="Documents">
+                                    <i class="material-icons">receipt</i>
+                                </a>
+                            }
+
+                        </li>
+                    </ul>
+                </div>
+                <div class="body">
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group ">
+                                <p>@comment.PQRSRecordComentarios.Comentario</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @*Comentarios*@
+
+        @*Acciones*@
+        @if (StepCurrent.EstadoStep == EstadoStep.In_Process)
+        {
+            <div class="card cardInfo">
+                <div class="header ">
+
+                    <h2>Current step: <small>@StepCurrent.FlujoPQRSNombre</small></h2>
+
+                </div>
+
+                <div class="body">
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group " style="text-align: center;">
+
+                                @{
+                                    //Usuario en el paso actual (permiso de accion)
+                                    // var recordCurrent = Model.PQRSRecords.Where(p => p.PasoActual == true).FirstOrDefault();
+                                    var usuariorecordCurrent = new PQRSRecordUsuario();
+                                    if (StepCurrent.PQRSRecordUsuarios.Count > 0)
+                                    {
+                                        usuariorecordCurrent = StepCurrent.PQRSRecordUsuarios.Where(pu => pu.UsuarioId == seguridadcll.Usuario.UsuarioId).FirstOrDefault();
+                                    }
+                                }
+
+                                @*Asignar Analista*@
+                                <a href="/@controllerName/AsignarAnalista?tipo=@Convert.ToInt32(Model.formato.TipoPQRS)&DataId=@Model.formato.Id" onclick="showAsigModal(event, this.href)" class="btn btn-primary waves-effect @ViewData[$"has_{controllerName}AsignarAnalista"]" data-toggle="tooltip" data-placement="top" title="" data-original-title="Assign Analyst">
+                                    <i class="material-icons">assignment_ind</i>
+                                    Assign Analyst
+                                </a>
+                                @*Comments*@
+                                <a href='/@controllerName/AddComment?TipoPQRS=@Convert.ToInt32(Model.formato.TipoPQRS)&DataId=@Model.formato.Id&RecordId=@Model.PQRSRecords.FirstOrDefault().Id' onclick="showAddCommentModal(event, this.href)" class='btn bg-teal waves-effect @ViewData[$"has_{controllerName}AddComment"]' data-toggle="tooltip" data-placement="top" title="Add Comment">
+                                    <i class='material-icons'>comment</i>
+                                    Add Comment
+                                </a>
+
+                                @if (StepCurrent.Order > 2)
+                                {
+                                    if (usuariorecordCurrent != null)
+                                    {
+                                        if (usuariorecordCurrent.EstadoUsuarioFlujoPQRS == EstadoUsuarioFlujoPQRS.Unanswered)
+                                        {
+                                            if (StepCurrent.Order > 3)
+                                            {
+                                                @*Reject*@
+                                                <a href='/@controllerName/AddAnswer?TipoPQRS=@Convert.ToInt32(Model.formato.TipoPQRS)&DataId=@Model.formato.Id&RecordId=@Model.PQRSRecords.FirstOrDefault().Id&Order=@StepCurrent.Order&TipoComentario=2' onclick="showAddAnswerModal(event, this.href)" class='btn bg-red waves-effect @ViewData[$"has_{controllerName}AddAnswer"]' data-toggle="tooltip" data-placement="top" title="Back">
+                                                    <i class='material-icons'>clear</i>
+                                                    Previous Step
+                                                </a>
+                                            }
+                                            @*Approve*@
+                                            <a href='/@controllerName/AddAnswer?TipoPQRS=@Convert.ToInt32(Model.formato.TipoPQRS)&DataId=@Model.formato.Id&RecordId=@Model.PQRSRecords.FirstOrDefault().Id&Order=@StepCurrent.Order&TipoComentario=1' onclick="showAddAnswerModal(event, this.href)" class='btn bg-green waves-effect @ViewData[$"has_{controllerName}AddAnswer"]' data-toggle="tooltip" data-placement="top" title="Next">
+                                                <i class='material-icons'>done</i>
+                                                Next Step
+                                            </a>
+                                        }
+                                    }
+
+                                    @*Close*@
+
+                                    <a href='/@controllerName/AddAnswer?TipoPQRS=@Convert.ToInt32(Model.formato.TipoPQRS)&DataId=@Model.formato.Id&RecordId=@Model.PQRSRecords.FirstOrDefault().Id&Order=@StepCurrent.Order&TipoComentario=4' onclick="showAddAnswerModal(event, this.href)" class='btn bg-deep-orange waves-effect @ViewData[$"has_{controllerName}Close"]' data-toggle="tooltip" data-placement="top" title="Close PQRS">
+                                        <i class='material-icons'>highlight_off</i>
+                                        Close PQRS
+                                    </a>
+                                }
+
+                                @*<p>@comment.PQRSRecordComentarios.Comentario</p>*@<p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+       @*Acciones*@
+
+       
+
+            <hr class="m-b-0 m-t--20" />
+            <div class="body">
+                @Html.ActionLink("Back to List", "Panel", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+            </div>
+
+            @*Archivos adjuntos por comentario*@
+            <div id="frmCommentFiles">
+                <div class="modal fade" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="">Files attached </h4>
+                            </div>
+                            <div class="modal-body" data-spy="scroll" data-target="#ListCommentFiles">
+                                <div id="ListCommentFiles">
+                                    <div class="row clearfix">
+                                        <template v-if="CommentFiles.length == 0">
+                                            <div class="col-md-12" style="padding-top: 12px;">
+                                                <em>This template has no files.</em>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <div class="col-md-12" v-for="(f, idx) in CommentFiles" style="padding-top: 12px;">
+                                                <div class="col-md-10"><i class="material-icons">insert_drive_file</i> <a v-bind:href="'/PQRS/DescargarArchivo?c=' + f.Id + '&i=' + f.Item" target="_blank"> {{f.FileName}} </a></div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <hr class="m-b-0 m-t--10" />
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="frmCommentDocuments">
+                <div class="modal fade" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="">Support Documents</h4>
+                            </div>
+                            <div class="modal-body" data-spy="scroll" data-target="#ListCommentDocuments">
+
+                                <div class="row clearfix">
+                                    <table class="table table-condensed table-hover table-striped table-va-middle" id="tableDocs">
+                                        <thead>
+                                            <tr>
+                                                <th>@Html.DisplayNameFor(model => model.PQRSRecordComentarios[0].PQRSRecordDocumentos[0].NroDocumento)</th>
+                                                <th>@Html.DisplayNameFor(model => model.PQRSRecordComentarios[0].PQRSRecordDocumentos[0].TipoDocSoporteId)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template v-if="docs.length == 0">
+                                                <tr class="align-center">
+                                                    <td colspan="2"><em>This template has no documents.</em></td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr v-for="(doc, index) in docs">
+                                                    <td>
+                                                        {{doc.NroDocumento}}
+                                                    </td>
+                                                    <td>
+                                                        {{doc.TipoDocSoporteNombre}}
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                            <hr class="m-b-0 m-t--10" />
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @*Archivos adjuntos por comentario*@
+
+   </div>
+</div>

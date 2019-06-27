@@ -1,0 +1,344 @@
+﻿
+@model MMS.Models.AddCommentViewModel
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@Scripts.Render("~/bundles/jsDataTables")
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jsVue")
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+<script src="~/Scripts/WCSS/AddAnswer.js"></script>
+
+<script type="text/javascript">
+    $.MMS.AddAnswer.init = function () {
+
+        var files = [];
+        var docs = [];
+        var checks = [ @foreach (var t in Model.Tareas)
+        {<text>
+            {
+                Id: @t.Id,
+                PQRSRecordId: @t.PQRSRecordId,
+                PQRSRecordOrder: @t.PQRSRecordOrder,
+                Descripcion: @Html.Raw(Json.Encode(t.Descripcion)),
+                Requerido: @Html.Raw(Json.Encode(t.Requerido)),
+                Terminado: @Html.Raw(Json.Encode(t.Terminado)),
+            },
+
+        </text>
+        }];
+        //var conds = [];
+        var conds = [ @foreach (var t in Model.Condiciones)
+        {<text>
+            {
+                Record: @Html.Raw(Json.Encode(t.PQRSRecord)),
+                Condiciones: @Html.Raw(Json.Encode(t.Condiciones)),
+            },
+        </text>
+        }];
+
+
+        $.MMS.AddAnswer("create", files, docs, checks, conds);
+    };
+
+
+    function MaxSizeFile() {
+
+        var result = true;
+
+        var fsize = 0;
+        $('input[type=file]').each(function () {
+            if ($(this)[0].files.length > 0) {
+                fsize += $(this)[0].files[0].size;
+            }
+        });
+        $("#tSize").html((fsize / 1000000).toFixed(2));
+
+        fsize = fsize / 1000000;
+        if (fsize > 50) {
+            msgError("The attachment size exceeds the allowable limit");
+            result = false;
+        }
+
+
+        return result;
+    }
+
+</script>
+
+@using (Html.BeginForm("AddAnswer", "" + controllerName, FormMethod.Post, new { id = "formAddAnswer", enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">@*@Model.TipoComentario.ToString()*@  @Model.TipoPQRS.ToString(): <em>@Model.Asunto</em></h4>
+        <br />
+        @*@Model.FlujoPQRSDescripcion*@
+        <div class="form-group form-float" style="margin-bottom: 0px !important;">
+            <div class="form-line">
+                @Html.TextAreaFor(model => model.FlujoPQRSDescripcion, new { @class = "form-control", @rows = "4", @readonly = "readonly", @style = "resize:none" })
+                @Html.LabelFor(model => model.FlujoPQRSDescripcion, htmlAttributes: new { @class = "form-label" })
+            </div>
+        </div>
+    </div>
+    <div class="modal-body">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#comment_tab" data-toggle="tab">
+                    <i class="material-icons">comment</i> Comment
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#document_tab" data-toggle="tab">
+                    <i class="material-icons">receipt</i> Documents
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#file_tab" data-toggle="tab">
+                    <i class="material-icons">attach_file</i> Attach Files
+                </a>
+            </li>
+            @if (Model.TipoComentario == MMS.Models.TipoComentario.Approval)
+            {
+                <li role="presentation">
+                    <a href="#check_tab" data-toggle="tab">
+                        <i class="material-icons">playlist_add_check</i> Check List
+                    </a>
+                </li>
+
+
+                <li role="presentation">
+                    <a href="#conditions_tab" data-toggle="tab">
+                        <i class="material-icons">filter_list</i> Conditions
+                    </a>
+                </li>
+            }
+
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade in active" id="comment_tab">
+                <div class="row clearfix">
+                    @Html.HiddenFor(model => model.TipoPQRS)
+                    @Html.HiddenFor(model => model.Asunto)
+                    @Html.HiddenFor(model => model.PQRSRecordId)
+                    @Html.HiddenFor(model => model.PQRSRecordOrder)
+                    @Html.HiddenFor(model => model.TipoComentario)
+                    @Html.HiddenFor(model => model.DataId)
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextAreaFor(model => model.Comment, new { @class = "form-control", @rows = "8" })
+                                @Html.LabelFor(model => model.Comment, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.Comment, "", new { @class = "" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="document_tab">
+                <table class="table table-condensed table-hover table-striped table-va-middle" id="_tableDocs">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.PQRSRecordDocumentos[0].NroDocumento)</th>
+                            <th>@Html.DisplayNameFor(model => model.PQRSRecordDocumentos[0].TipoDocSoporteId)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-if="docs.length == 0">
+                            <tr class="align-center">
+                                <td colspan="2"><em>This template has no documents.</em></td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr v-for="(doc, index) in docs">
+                                <td><input type="text" v-bind:name="'PQRSRecordDocumentos[' + index + '].NroDocumento'" class="form-control" /></td>
+                                <td>
+                                    @*<input type="text" v-bind:name="'PQRSRecordDocumentos[' + index + '].TipoDocSoporteId'" />*@
+                                    <select v-bind:id="'PQRSRecordDocumentos_' + index + '_TipoDocSoporteId'" v-bind:name="'PQRSRecordDocumentos[' + index + '].TipoDocSoporteId'"
+                                            class="ms full-width select_TipoDocSoporteId" style="width:100% !important;" @*v-on:click.prevent="SetSelect2(index)"*@>
+                                        @foreach (var t in ViewBag.TipoDocSoporteId)
+                                        {
+                                            <option value="@t.Id">@t.Nombre</option>
+                                        }
+                                    </select>
+
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                    <tfoot>
+                        <tr class="align-center">
+                            <td colspan="2">
+                                <a href="javascript:void(0)" class="btn btn-default waves-effect" v-on:click.prevent="addNewDoc($event); SetSelect2();">Add row</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="file_tab">
+                <div id="_ListFiles">
+                    <h4 class="modal-title" id="">Attach Files : <small id="tSize">0.00</small> <small> /50 mb</small> </h4>
+                    <a href="javascript:void(0)" class="btn btn-default waves-effect" v-on:click.prevent="addNewFile($event)">Add File</a>
+                    <template v-if="files.length == 0">
+                        <div class="col-md-12" style="padding-top: 12px;">
+                            <em>This template has no files.</em>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="col-md-12" v-for="(f, idx) in files" style="padding-top: 12px;">
+                            <div class="col-md-10" v-if="f.New"><input type="file" v-bind:name="'Files[' + idx + ']'" v-bind:id="'Files[' + idx + ']'" v-on:change.prevent="SizeFile(idx,$event)" /></div>
+                            <div class="col-md-2" v-if="f.New"><p v-bind:id="'Size' + idx"></p></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="check_tab">
+                <table class="table table-condensed table-hover table-striped table-va-middle" id="_tablechecks">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Tareas[0].Descripcion)</th>
+                            @*<th>@Html.DisplayNameFor(model => model.Tareas[0].Requerido)</th>*@
+                            <th>@Html.DisplayNameFor(model => model.Tareas[0].Terminado)</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-if="checks.length == 0">
+                            <tr class="align-center">
+                                <td colspan="3"><em>This template has no item.</em></td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr v-for="(check, index) in checks">
+
+                                <td>
+                                    <input type="hidden" v-bind:name="'Tareas[' + index + '].Id'" class="form-control" v-model="check.Id" />
+                                    <input type="hidden" v-bind:name="'Tareas[' + index + '].PQRSRecordId'" class="form-control" v-model="check.PQRSRecordId" />
+                                    <input type="hidden" v-bind:name="'Tareas[' + index + '].PQRSRecordOrder'" class="form-control" v-model="check.PQRSRecordOrder" />
+                                    <input type="hidden" v-bind:name="'Tareas[' + index + '].Requerido'" class="form-control" v-model="check.Requerido" />
+
+                                    <div class="form-group m-b-0">
+                                        <div class="form-line">
+                                            <input type="text" v-bind:name="'Tareas[' + index + '].Descripcion'" v-bind:class="'form-control TareasDescripcion-' + index" v-model="check.Descripcion" placeholder="@Html.DisplayNameFor(model => model.Tareas[0].Descripcion)" readonly>
+                                        </div>
+                                        <span class="field-validation-valid " v-bind:data-valmsg-for="`Tareas[${index}].Descripcion`" data-valmsg-replace="true"></span>
+                                    </div>
+
+                                </td>
+                                @*<td>
+
+                                        <input v-if="check.Requerido == true" type="checkbox" v-bind:name="'Tareas[' + index + '].Requerido'" v-bind:id="'Tareas[' + index + '].Requerido'" class="form-control check-box" v-bind:value="check.Requerido" v-model="check.Requerido" disabled />
+                                        <input v-if="check.Requerido == false" type="checkbox" v-bind:name="'Tareas[' + index + '].Requerido'" v-bind:id="'Tareas[' + index + '].Requerido'" class="form-control check-box" v-bind:value="check.Requerido" v-model="check.Requerido" disabled />
+                                        <label v-bind:for="'Tareas[' + index + '].Requerido'" class="fix-checkbox"></label>
+                                    </td>*@
+                                <td>
+
+                                    <input v-if="check.Terminado == true" type="checkbox" v-bind:name="'Tareas[' + index + '].Terminado'" v-bind:id="'Tareas[' + index + '].Terminado'" class="form-control check-box" v-bind:value="check.Terminado" v-model="check.Terminado" />
+                                    <input v-if="check.Terminado == false" type="checkbox" v-bind:name="'Tareas[' + index + '].Terminado'" v-bind:id="'Tareas[' + index + '].Terminado'" class="form-control check-box" v-bind:value="check.Terminado" v-model="check.Terminado" />
+                                    <label v-bind:for="'Tareas[' + index + '].Terminado'" class="fix-checkbox"></label>
+                                </td>
+
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="conditions_tab">
+                <div id="_tableConditions">
+                    <div @*v-for="(cond, index) in conds"*@>
+                        <div v-for="(cond, index) in conds" class="panel-group" v-bind:id="'accordion_' + index" role="tablist" aria-multiselectable="true">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading" role="tab" id="headingOne_19">
+                                    <h4 class="panel-title">
+                                        <a role="button" data-toggle="collapse" v-bind:href="'#collapseOne_' + index" aria-expanded="true" v-bind:aria-controls="'collapseOne_' + index">
+                                            <i class="material-icons">perm_contact_calendar</i> Conditions step {{cond.Record.Order}}: {{cond.Record.FlujoPQRSNombre}}
+                                            - Reason {{cond.Record.MotivoPQRSNombre}}
+                                        </a>
+                                    </h4>
+                                </div>
+                                @*<div class="col-md-6">
+                                        <label class="form-label" v-bind:for="`Condiciones[${index}].PQRSRecord.FlujoPQRSNombre`">Conditions step: {{cond.Record.Order}}</label>
+                                        <input type="text" v-bind:name="`Condiciones[${index}].PQRSRecord.FlujoPQRSNombre`" v-bind:id="`Condiciones[${index}].PQRSRecord.FlujoPQRSNombre`" v-bind:class="'form-control'" v-model="cond.Record.FlujoPQRSNombre" placeholder="@Html.DisplayNameFor(model => model.Condiciones[0].PQRSRecord.FlujoPQRSNombre)" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label" v-bind:for="`Condiciones[${index}].PQRSRecord.MotivoPQRSNombre`">Reason</label>
+                                        <input type="text" v-bind:name="`Condiciones[${index}].PQRSRecord.MotivoPQRSNombre`" v-bind:class="'form-control'" v-bind:id="`Condiciones[${index}].PQRSRecord.MotivoPQRSNombre`" v-model="cond.Record.MotivoPQRSNombre" placeholder="@Html.DisplayNameFor(model => model.Condiciones[0].PQRSRecord.MotivoPQRSNombre)" disabled>
+                                    </div>*@
+                                <div v-bind:id="'collapseOne_' + index" class="panel-collapse collapse in" role="tabpanel" v-bind:aria-labelledby="'headingOne_' + index">
+                                    <div class="panel-body">
+                                        <table class="table table-condensed table-hover table-striped table-va-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>@Html.DisplayNameFor(model => model.Condiciones[0].Condiciones[0].Descripcion)</th>
+                                                    <th>@Html.DisplayNameFor(model => model.Condiciones[0].Condiciones[0].RespValor)</th>
+                                                    @*<th>@Html.DisplayNameFor(model => model.Condiciones[0].Condiciones[0].RespSiNo)</th>*@
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template v-if="conds.length == 0">
+                                                    <tr class="align-center">
+                                                        <td colspan="6"><em>This template has no conditions.</em></td>
+                                                    </tr>
+                                                </template>
+                                                <template v-else>
+                                                    <tr v-for="(c, idx) in cond.Condiciones">
+                                                        <td>
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].Id'" class="form-control" v-model="c.Id" />
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].PQRSRecordId'" class="form-control" v-model="c.PQRSRecordId" />
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].PQRSRecordOrder'" class="form-control" v-model="c.PQRSRecordOrder" />
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].TipoCondicion'" class="form-control" v-model="c.TipoCondicion" />
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].CondicionesValor'" class="form-control" v-model="c.CondicionesValor" />
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].Valor'" class="form-control" v-model="c.Valor" />
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].SiNo'" class="form-control" v-model="c.SiNo" />
+                                                            <input type="text" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].Descripcion'" v-bind:class="'form-control CondicionesDescripcion-' + index" v-model="c.Descripcion" placeholder="@Html.DisplayNameFor(model => model.Condiciones[0].Condiciones[0].Descripcion)" readonly>
+
+                                                        </td>
+                                                        <td v-if="c.TipoCondicion == '2'">
+                                                            <input type="text" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].RespValor'" v-bind:class="'form-control text-right RespValorCondiciones-' + index" v-model="c.RespValor" v-bind:data-index="index" v-bind:data-idx="idx" />
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].RespSiNo'" class="form-control" v-model="c.RespSiNo" />
+                                                        </td>
+                                                        <td v-if="c.TipoCondicion == '1'">
+                                                            <input v-if="c.RespSiNo == true" type="checkbox" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].RespSiNo'" v-bind:id="'Condiciones[' + index + '].Condiciones[' + idx + '].RespSiNo'" class="form-control check-box" v-bind:value="c.RespSiNo" v-model="c.RespSiNo" />
+                                                            <input v-if="c.RespSiNo == false" type="checkbox" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].RespSiNo'" v-bind:id="'Condiciones[' + index + '].Condiciones[' + idx + '].RespSiNo'" class="form-control check-box" v-bind:value="c.RespSiNo" v-model="c.RespSiNo" />
+                                                            <label v-bind:for="'Condiciones[' + index + '].Condiciones[' + idx + '].RespSiNo'" class="fix-checkbox"></label>
+                                                            <input type="hidden" v-bind:name="'Condiciones[' + index + '].Condiciones[' + idx + '].RespValor'" class="form-control" v-model="c.RespValor" />
+                                                        </td>
+
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="m-b-0 m-t--10" />
+    <div class="modal-footer">
+        <button id="btnSave" type="submit" class="btn btn-primary waves-effect" style="display:none">Save</button>
+        @if (Model.TipoComentario == MMS.Models.TipoComentario.Approval)
+                {
+            <button type="button" class="btn btn-success waves-effect" onclick="SaveComment();">Next</button>
+        }
+        else if (Model.TipoComentario == MMS.Models.TipoComentario.Rejection)
+        {
+            <button type="button" class="btn btn-danger waves-effect" onclick="SaveComment();">Back</button>
+        }
+        else if (Model.TipoComentario == MMS.Models.TipoComentario.Close)
+        {
+            <button type="button" class="btn btn-danger waves-effect" onclick="SaveComment();">Close PQRS</button>
+        }
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+}
+
+

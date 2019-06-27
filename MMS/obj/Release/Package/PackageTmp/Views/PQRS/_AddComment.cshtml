@@ -1,0 +1,159 @@
+﻿@model MMS.Models.AddCommentViewModel
+
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+@Scripts.Render("~/bundles/jsDataTables")
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jsVue")
+<script src="~/Scripts/WCSS/AddComment.js"></script>
+
+<script type="text/javascript">
+    $.MMS.AddComment.init = function () {
+
+        var files = [];
+        var docs = [];
+        $.MMS.AddComment("create", files, docs);
+    };
+
+
+    function MaxSizeFile() {
+
+        var result = true;
+
+        var fsize = 0;
+        $('input[type=file]').each(function () {
+            if ($(this)[0].files.length > 0) {
+                fsize += $(this)[0].files[0].size;
+            }
+        });
+        $("#tSize").html((fsize / 1000000).toFixed(2));
+
+        fsize = fsize / 1000000;
+        if (fsize > 50) {
+            msgError("The attachment size exceeds the allowable limit");
+            result = false;
+        }
+
+
+        return result;
+    }
+
+</script>
+
+@using (Html.BeginForm("AddComment", "" + controllerName, FormMethod.Post, new { id = "formAddComment", enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Add general comment @Model.TipoPQRS.ToString(): <em>@Model.Asunto</em></h4>
+    </div>
+
+    <div class="modal-body">
+
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#comment_tab" data-toggle="tab">
+                    <i class="material-icons">comment</i> Comment
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#document_tab" data-toggle="tab">
+                    <i class="material-icons">receipt</i> Documents
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#file_tab" data-toggle="tab">
+                    <i class="material-icons">attach_file</i> Attach Files
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade in active" id="comment_tab">
+                <div class="row clearfix">
+                    @Html.HiddenFor(model => model.TipoPQRS)
+                    @Html.HiddenFor(model => model.Asunto)
+                    @Html.HiddenFor(model => model.PQRSRecordId)
+                    @Html.HiddenFor(model => model.DataId)
+                    @Html.HiddenFor(model => model.PQRSRecordOrder)
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextAreaFor(model => model.Comment, new { @class = "form-control", @rows = "8" })
+                                @Html.LabelFor(model => model.Comment, htmlAttributes: new { @class = "form-label" })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.Comment, "", new { @class = "" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="document_tab">
+                <table class="table table-condensed table-hover table-striped table-va-middle" id="_tableDocs">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.PQRSRecordDocumentos[0].NroDocumento)</th>
+                            <th>@Html.DisplayNameFor(model => model.PQRSRecordDocumentos[0].TipoDocSoporteId)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-if="docs.length == 0">
+                            <tr class="align-center">
+                                <td colspan="2"><em>This template has no documents.</em></td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr v-for="(doc, index) in docs">
+                                <td><input type="text" v-bind:name="'PQRSRecordDocumentos[' + index + '].NroDocumento'"  class="form-control"  /></td>
+                                <td>
+                                    @*<input type="text" v-bind:name="'PQRSRecordDocumentos[' + index + '].TipoDocSoporteId'" />*@
+                                    <select v-bind:id="'PQRSRecordDocumentos_' + index + '_TipoDocSoporteId'"  v-bind:name="'PQRSRecordDocumentos[' + index + '].TipoDocSoporteId'" 
+                                            class="ms full-width select_TipoDocSoporteId" style="width:100% !important;"  @*v-on:click.prevent="SetSelect2(index)"*@>
+                                        @foreach (var t in ViewBag.TipoDocSoporteId)
+                                        {
+                                            <option value="@t.Id">@t.Nombre</option>
+                                        }
+                                    </select>
+                                 
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                    <tfoot>
+                        <tr class="align-center">
+                            <td colspan="2">
+                                <a href="javascript:void(0)" class="btn btn-default waves-effect" v-on:click.prevent="addNewDoc($event); SetSelect2();">Add row</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="file_tab">
+                <div id="_ListFiles">
+                    <h4 class="modal-title" id="">Attach Files : <small id="tSize">0.00</small> <small> /50 mb</small> </h4>
+                    <a href="javascript:void(0)" class="btn btn-default waves-effect" v-on:click.prevent="addNewFile($event)">Add File</a>
+                    <template v-if="files.length == 0">
+                        <div class="col-md-12" style="padding-top: 12px;">
+                            <em>This template has no files.</em>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="col-md-12" v-for="(f, idx) in files" style="padding-top: 12px;">
+                            <div class="col-md-10" v-if="f.New"><input type="file" v-bind:name="'Files[' + idx + ']'" v-bind:id="'Files[' + idx + ']'" v-on:change.prevent="SizeFile(idx,$event)" /></div>
+                            <div class="col-md-2" v-if="f.New"><p v-bind:id="'Size' + idx"></p></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="m-b-0 m-t--10" />
+    <div class="modal-footer">
+        <button id="btnSave" type="submit" class="btn btn-primary waves-effect" style="display:none">Save</button>
+        <button type="button" class="btn btn-primary waves-effect" onclick="SaveComment();">Save</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+}
+
+

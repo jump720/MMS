@@ -1,0 +1,89 @@
+﻿@model MMS.Models.Departamento
+
+@{
+    ViewBag.Title = "State";
+    ViewBag.Subtitle = "Create";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+}
+
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/Catalogos/Ubicaciones/Departamentos.js"></script>
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            checkValidationSummaryErrors();
+            $.MMS.Departamentos("create");
+        });
+    </script>
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(true, "", new { @class = "hide" })
+
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.DepartamentoID, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.DepartamentoID, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.DepartamentoID, "", new { @class = "" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.DepartamentoDesc, new { htmlAttributes = new { @class = "form-control text-right" } })
+                                        @Html.LabelFor(model => model.DepartamentoDesc, htmlAttributes: new { @class = "form-label" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.DepartamentoDesc, "", new { @class = "" })
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="paisContainer">
+                            <div class="form-group form-float">
+                                <div class="input-group">
+                                    <div class="form-line">
+                                        @Html.LabelFor(model => model.PaisID, htmlAttributes: new { @class = "form-select-label" })
+                                        @Html.DropDownListFor(model => model.PaisID, null, "", new { @class = "ms full-width" })
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <hr class="m-b-0 m-t--20" />
+                    <div class="body">
+                        <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                    </div>
+            </div>
+        </div>
+    </div>
+}

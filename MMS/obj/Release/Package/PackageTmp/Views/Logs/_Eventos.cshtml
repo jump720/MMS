@@ -1,0 +1,159 @@
+﻿@model List<MMS.Models.Evento>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#txtBuscarNombre").keyup(function (event) {
+            tableEventos.api()
+                .columns(1)
+                .search(this.value)
+                .draw();
+        });
+
+        $("#txtBuscarDescripcion").keyup(function (event) {
+            tableEventos.api()
+                .columns(2)
+                .search(this.value)
+                .draw();
+        });
+
+        tableEventos = $("#tableEventos").dataTable({
+            scrollY: '55vh',
+            scrollCollapse: true,
+            paging: false,
+            aoColumns: [
+                { "orderDataType": "dom-checkbox" },
+                null,
+                null
+            ]
+        });
+
+        setTimeout(function () {
+            tableEventos.fnAdjustColumnSizing();
+        }, 5);
+
+        $("#tableEventos tr").click(function (e) {
+            var chkActivo = $(this).find(".chkActivo");
+            chkActivo.prop("checked", !chkActivo.prop("checked"))
+        });
+
+        $("#frmLogEventos .chkActivo").click(function (e) {
+            e.stopPropagation();
+            $(this).prop("checked", !$(this).prop("checked"))
+        });
+
+        $("#frmLogEventos").submit(function (e) {
+            e.preventDefault();
+
+            $("#frmLogEventos #txtBuscarNombre, #frmLogEventos #txtBuscarDescripcion").val("");
+            tableEventos.api().search('').columns().search('').draw();
+
+            $.ajax({
+                type: this.method,
+                url: this.action,
+                data: $(this).serialize(),
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded",
+                beforeSend: function () {
+                    sLoading("");
+                },
+                success: function (data) {
+                    if (data) {
+                        hModal(getCurrentModalId());
+                        msgSuccess("Events saved.");
+                    }
+                    else
+                        msgError("Error, Events not saved.");
+                },
+                complete: function () {
+                    hLoading();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    msgError(errorThrown);
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    #frmLogEventos #txtBuscarNombre, #frmLogEventos #txtBuscarDescripcion {
+        width: 100%;
+    }
+
+    #frmLogEventos #tablePermisos tr, #frmLogEventos .chkActivo {
+        cursor: pointer;
+    }
+</style>
+
+@using (Html.BeginForm("Eventos", "api/Logs", FormMethod.Post, new { id = "frmLogEventos" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Configure Events</h4>
+    </div>
+
+    <div class="modal-body">
+        <table id="tableEventos" class="table table-bordered table-hover table-condensed table-striped table-va-middle">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model[0].Activo)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model[0].Nombre)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model[0].Descripcion)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            @Html.HiddenFor(model => model[i].Id)
+                            @Html.EditorFor(model => model[i].Activo, new { htmlAttributes = new { @class = "chkActivo", @id = $"_{i}__Activo"} })
+                            <label for="@Html.Raw($"_{i}__Activo")" class="fix-checkbox m-b--10"></label>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model[i].Nombre)
+                            @Html.HiddenFor(model => model[i].Nombre)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model[i].Descripcion)
+                            @Html.HiddenFor(model => model[i].Descripcion)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>
+                    </th>
+                    <th>
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input type="text" id="txtBuscarNombre" class="form-control" placeholder="Search @Html.DisplayNameFor(model => model[0].Nombre)" value="" />
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input type="text" id="txtBuscarDescripcion" class="form-control" placeholder="Search @Html.DisplayNameFor(model => model[0].Descripcion)" value="" />
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-sm waves-effect" >Save</button>
+        <button type="button" data-dismiss="modal" class="btn btn-default btn-sm waves-effect">Cancel</button>
+    </div>
+}

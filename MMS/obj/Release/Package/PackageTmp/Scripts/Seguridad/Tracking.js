@@ -1,0 +1,3 @@
+﻿$.MMS.Tracking = function (controllerName) {
+
+}

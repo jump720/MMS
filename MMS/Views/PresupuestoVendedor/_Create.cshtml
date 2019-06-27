@@ -1,0 +1,92 @@
+﻿@model MMS.Models.PresupuestoVendedor
+@{
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+@Scripts.Render("~/bundles/jqueryval")
+<script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+<script src="~/Scripts/Catalogos/PresupuestoVendedor.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $.MMS.Presupuesto.init = function () {
+
+       
+
+        $.MMS.Presupuesto("create", null);
+    };
+</script>
+
+
+@using (Html.BeginForm("Create", "api/" + controllerName, FormMethod.Post, new { id = "frmPresupuesto" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="modal-header">
+        <button type="button" class="close btn-link" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Criar Investimento</h4>
+    </div>
+    <div class="modal-body">
+        <div class="row clearfix">
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.Label("Ano", new { @class = "form-select-label" })
+                        @Html.DropDownList("PresupuestoVendedorAno", null, "- Ano -", new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.PresupuestoVendedorAno, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.LabelFor(model => model.CentroCostoID, htmlAttributes: new { @class = "form-select-label" })
+                        @Html.DropDownList("CentroCostoID", null, "- Centro de Custo -", new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.CentroCostoID, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.Label("Planta", new { @class = "form-select-label" })
+                        @Html.DropDownList("PlantaID", null, "- Planta -", new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.PlantaID, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.Label("Canal", new { @class = "form-select-label" })
+                        @Html.DropDownList("CanalID", null, "- Canal -", new { @class = "ms form-control" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.CanalID, "", new { @class = "" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.PresupuestoValor, new { htmlAttributes = new { @class = "form-control text-right" } })
+                        @Html.LabelFor(model => model.PresupuestoValor, htmlAttributes: new { @class = "form-label" })
+                        @Html.ValidationMessageFor(model => model.PresupuestoValor, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.EditorFor(model => model.PresupuestoGasto, new { htmlAttributes = new { @class = "form-control text-right" } })
+                        @Html.LabelFor(model => model.PresupuestoGasto, htmlAttributes: new { @class = "form-label" })
+                        @Html.ValidationMessageFor(model => model.PresupuestoGasto, "", new { @class = "" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr class="m-b-0 m-t--10" />
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary waves-effect">Save</button>
+        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Cancel</button>
+    </div>
+
+}

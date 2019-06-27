@@ -1,0 +1,67 @@
+﻿
+
+@{
+    ViewBag.Title = "Inserir Atividades";
+}
+
+<script src="~/Scripts/Transacciones/ActividadesApi.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var estados = @Html.Raw(Json.Encode(@ViewBag.EstadosActividades));
+    var UsuarioAprobadorPrincipal = @Html.Raw(Json.Encode(@ViewBag.UsuarioAprobadorPrincipal));
+</script>
+<div class="row">
+    <div class="col s12 s12 s12 ">
+        <div class="card">
+            <nav>
+                <div class="nav-wrapper">
+                    <div class="col s12" style="margin-left: 25px;">
+                        <a href="~/Actividades/index" class="breadcrumb">Atividades</a>
+                    </div>
+                </div>
+            </nav>
+            <div class="card-content">
+                <p>
+                    <a href="/Actividades/Create" class="btn-floating btn-lg waves-effect waves-light blue tooltipped" data-position="right" data-delay="50" data-tooltip="Criar Atividades"><i class="material-icons">add</i></a>
+                    @if (ViewBag.ApproveView)
+                    {
+                        <a href="/Actividades/Approve" class="btn-floating btn-lg waves-effect waves-light green darken-2 tooltipped" data-position="right" data-delay="50" data-tooltip="Aprovar Atividades"><i class="material-icons">thumb_up</i></a>
+                    }
+                </p>
+
+                <table id="tableActividades" class="display responsive nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th class="all">
+                                Nº TRD
+                            </th>
+                            <th>
+                                Data
+                            </th>
+                            <th>
+                                Estado
+                            </th>
+                            <th>
+                                Título da Atividade
+                            </th>
+                            <th>
+                                Cod. Cliente
+                            </th>
+                            <th>
+                                Nome do Cliente
+                            </th>
+                            <th class="none">
+                                Tipo de Atividade
+                            </th>
+                            <th class="none">
+                                R$
+                            </th>
+                            <th class="all"></th>
+                        </tr>
+                    </thead>
+
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

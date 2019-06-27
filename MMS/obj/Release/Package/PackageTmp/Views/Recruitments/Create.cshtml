@@ -1,0 +1,372 @@
+﻿
+@model MMS.Models.Recruitment
+@{
+    ViewBag.Title = "Recrutamento";
+    ViewBag.Subtitle = "Criação";
+    Layout = "~/Views/Shared/_LayoutTT.cshtml";
+
+}
+@section Styles
+{
+    @Styles.Render("~/bundles/cssSelect2")
+    @Styles.Render("~/Content/Dropzone")
+    @Styles.Render("~/Content/TagsInput")
+    <link href="/Content/dist/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet" />
+}
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jsDataTables")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/Dropzone")
+    @Scripts.Render("~/bundles/TagsInput")
+
+    @Scripts.Render("~/bundles/jsSelect2")
+    @Scripts.Render("~/bundles/jsVue")
+    <script src="/Content/dist/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    <script src="~/Scripts/WCSS/Recruitment.js"></script>
+    <script src="/Content/dist/plugins/momentjs/moment.js"></script>
+    <script src="/Content/dist/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+
+    <script type="text/javascript">
+
+        function changeStatusType() {
+            var checkR = document.getElementById("Recrutamento");
+            var checkA = document.getElementById("Alteração_de_Função");
+            var divA = document.getElementById("divA");
+            var divB = document.getElementById("divB");
+            var type = document.getElementById("Type");
+
+            checkR.onchange = function () {
+                if (this.checked == true) {
+                    checkA.checked = false;
+                    divA.style.display = "none";
+                    divB.style.display = "none";
+                    type.value = "Recrutamento";
+                } else {
+                    divA.style.display = "none";
+                    divB.style.display = "none";
+                    type.value = "Recrutamento";
+                }
+            };
+
+            checkA.onchange = function () {
+                if (this.checked == true) {
+                    checkR.checked = false;
+                    divA.style.display = "block";
+                    divB.style.display = "block";
+                    type.value = "Alteração_de_Função";
+                }
+                else {
+                    divA.style.display = "none";
+                    divB.style.display = "none";
+                    type.value = "Recrutamento";
+                }
+            };
+
+
+
+        };
+
+        function loadDefault() {
+            document.getElementById("Recrutamento").checked = false;
+            document.getElementById("divA").style.display = "none";
+            document.getElementById("divB").style.display = "none";        };
+
+        $(function () {
+            checkValidationSummaryErrors();
+            loadDefault();
+
+            $.MMS.Recruitments("create");
+        });
+
+        function changePosicao() {
+
+            var option = $("#Position option:selected").text();
+            var divC = document.getElementById("divC");
+
+            if (option == "Cargo_Novo") {
+                divC.style.display = "none";
+            }
+
+            if (option == "Substituição") {
+                divC.style.display = "block";
+            }
+
+            if (option == "Adicional") {
+                divC.style.display = "none";
+            }
+           
+        }
+</script>
+}
+
+@using (Html.BeginForm("Create", "Recruitments", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row clearfix">
+        <div class="col-md-12">
+            <div class="card" id="cardForm">
+                <div class="header bg-blue">
+                    <h2>
+                        @ViewBag.Title <small>@ViewBag.Subtitle</small>
+                    </h2>
+                </div>
+                <div class="body">
+                    @Html.ValidationSummary(false, "", new { @class = "hide" })
+                    @Html.HiddenFor(model => model.Estado, new { Value = MMS.Models.EstadoFormatoPQRS.Open })
+
+                    @Html.ValidationSummary(false, "", new { @class = "hide" })
+                    @Html.HiddenFor(model => model.Type, new { Value = MMS.Models.Types.Recrutamento })
+
+
+                    <input type="text" class="form-control" readonly="readonly" value="@ViewBag.UsuarioId" name="UsuarioIdCreacion" style="display: none;" />
+
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Type)
+                                <br>
+                                @foreach (var value in Enum.GetValues(typeof(MMS.Models.Types)))
+                                {
+                                    var name = Enum.GetName(typeof(MMS.Models.Types), value);
+                                    <div class="col-md-3">
+                                        <label class="fix-checkbox" for="@value">@name</label>
+                                        <input type="checkbox" id="@value" name="@value" onchange="changeStatusType();" />
+                                    </div>
+                                }
+
+                                @*@Html.CheckBoxFor("Type",);*@
+                                @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Appointment, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Appointment, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Appointment, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.StartDate, new { htmlAttributes = new { @class = "form-control", @Value = DateTime.Today.ToString("u").Substring(0, 10) } })
+                                    @*@Html.EditorFor(model => model.StartDate, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", Value = DateTime.Today.ToString("u").Substring(0, 10) } })*@
+                                    @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                @Html.DropDownList("CentroCostoID", null, "Centro de Custo...", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.CentroCostoID, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                @Html.DropDownList("DepartmentId", null, "Selecione uma opção...", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.WorkSchedule, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.LabelFor(model => model.WorkSchedule, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.WorkSchedule, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.EditorFor(model => model.Salary, new {htmlAttributes = new { @onkeyup = "moeda(this);", @class = "form-control" } })
+                                    @Html.LabelFor(model => model.Salary, htmlAttributes: new { @class = "form-label" })
+                                    @Html.ValidationMessageFor(model => model.Salary, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        @*///////////////////////////////////////////////////////////////////////////////////*@
+                        <div id="divA" name="divA">
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.EmployeeName, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.LabelFor(model => model.EmployeeName, htmlAttributes: new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.EmployeeName, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.Registration, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.LabelFor(model => model.Registration, htmlAttributes: new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.Registration, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ProposedAppointment, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.LabelFor(model => model.ProposedAppointment, htmlAttributes: new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.ProposedAppointment, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ProposedSalary, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.LabelFor(model => model.ProposedSalary, htmlAttributes: new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.ProposedSalary, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.DropDownList("ProposedDepartmentId", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.ProposedDepartmentId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.DropDownList("ProposedCostCenterID", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.ProposedCostCenterID, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                        @*/////////////////////////////////////////////////////////////////////////////*@
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                @Html.DropDownList("Sector", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.Sector, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                @Html.DropDownList("Position", null, "Selecione uma opção", new { @onchange = "changePosicao();", @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.Position, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        @*/Inserir onchange="changePosition();" aqui/*@
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                @Html.DropDownList("ContractType", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.ContractType, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                @Html.DropDownList("Budget", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.Budget, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+
+                        <!-- Mexer aqui-->
+                        <div id="divB" name="divB">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    @Html.DropDownList("ResignationReason", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.ResignationReason, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    @Html.DropDownList("PreviousNotice", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.PreviousNotice, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.ResignationDate, new { htmlAttributes = new { @class = "form-control", @Value = DateTime.Today.ToString("u").Substring(0, 10) } })
+                                        @Html.LabelFor(model => model.ResignationDate, htmlAttributes: new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.ResignationDate, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.Label("", htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divC" name="divC">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.DropDownList("UsuarioIdSubstitute", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.UsuarioIdSubstitute, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    @Html.DropDownList("ExperienceTime", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                    @Html.ValidationMessageFor(model => model.ExperienceTime, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.EditorFor(model => model.SubstituteAppointment, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.LabelFor(model => model.SubstituteAppointment, htmlAttributes: new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(model => model.SubstituteAppointment, "", new { @class = "" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextAreaFor(model => model.Observation, 4, 0, new { @class = "form-control no-resize", @placeholder = "Observação..." })
+                                    @Html.ValidationMessageFor(model => model.Observation, "", new { @class = "" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.Label("Aprovadores:", htmlAttributes: new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                @Html.DropDownList("AreaManagerID", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.AreaManagerID, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                @Html.DropDownList("HumanResourcesID", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.HumanResourcesID, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                @Html.DropDownList("ImmediateBossID", null, "Selecione uma opção", new { @class = "ms full-width", @autofocus = "autofocus", @style = "width: 100%" })
+                                @Html.ValidationMessageFor(model => model.ImmediateBossID, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="m-b-0 m-t--20" />
+                <div class="body">
+                    <input type="submit" value="Save" class="btn btn-primary waves-effect" />
+                    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default waves-effect", @onclick = "redirToReturnSearch(this, event)" })
+                </div>
+            </div>
+        </div>
+    </div>
+}
